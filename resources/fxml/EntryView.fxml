@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.web.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.avatarhurden.dayonewindows.controllers.EntryViewController">
+   <children>
+      <HBox alignment="CENTER_LEFT" prefHeight="52.0" prefWidth="600.0" spacing="10.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <HBox fx:id="dateBox" alignment="CENTER_LEFT" onMouseClicked="#openDateEditor" prefHeight="52.0" prefWidth="152.0">
+               <children>
+                  <Label fx:id="dayOfWeekLabel" alignment="CENTER" prefWidth="28.0" rotate="-90.0" text="Dom">
+                     <font>
+                        <Font name="System Bold" size="12.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="dayOfMonthLabel" alignment="CENTER" minWidth="40.0" prefHeight="45.0" prefWidth="40.0" text="28">
+                     <font>
+                        <Font name="System Bold" size="30.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="monthYearLabel" alignment="CENTER_RIGHT" minWidth="34.0" prefWidth="34.0" text="mai&#10;2015&#10;">
+                     <font>
+                        <Font name="System Bold" size="12.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="timeLabel" minWidth="33.0" prefWidth="33.0" text="10:43">
+                     <HBox.margin>
+                        <Insets left="15.0" />
+                     </HBox.margin>
+                  </Label>
+               </children>
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </HBox>
+            <StackPane fx:id="tagPane" onMouseClicked="#openTagEditor" prefHeight="52.0" prefWidth="34.0">
+               <children>
+                  <SVGPath fx:id="tagIcon" content="M 0 0 L 0 30 L 10 37 L 20 30 L 20 0 L 0 0 M7,27a3,3 0 1,0 6,0a3,3 0 1,0 -6,0" fill="#f7252500" fillRule="EVEN_ODD" rotate="135.0" stroke="BLACK" />
+                  <Label fx:id="tagsLabel" text="1">
+                     <StackPane.margin>
+                        <Insets left="4.0" top="2.0" />
+                     </StackPane.margin>
+                  </Label>
+               </children>
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </StackPane>
+            <SVGPath fx:id="favoriteIcon" content="M 240.000 250.000L 251.756 256.180L 249.511 243.090L 259.021 233.820L 245.878 231.910L 240.000 220.000L 234.122 231.910L 220.979 233.820L 230.489 243.090L 228.244 256.180L 240.000 250.000" fill="TRANSPARENT" stroke="BLACK" strokeLineJoin="BEVEL">
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </SVGPath>
+            <StackPane fx:id="photoPane" onMouseClicked="#openPhotoDialog" prefHeight="32.0" prefWidth="52.0">
+               <children>
+                  <SVGPath fx:id="photoIcon" content="m 51.666667,6.8888889 -6.888889,0 c 0,0 -1.99132,0 -3.444445,-3.4444445 C 40.593316,1.6911146 39.789361,0 37.888889,0 L 24.111111,0 c -1.901333,0 -2.728,1.6809965 -3.444444,3.4444444 -1.398445,3.4444445 -3.444445,3.4444445 -3.444445,3.4444445 l -3.444444,0 c 0,-1.9013333 -1.543111,-3.4444445 -3.444445,-3.4444445 l -3.4444441,0 c -1.9013333,0 -3.4444445,1.5431112 -3.4444445,3.4444445 C 1.5431111,6.8888889 0,8.432 0,10.333333 l 0,6.888889 19.133674,0 C 21.521104,13.120212 25.912448,10.333333 31,10.333333 c 5.087552,0 9.478896,2.786879 11.867188,6.888889 l 12.243923,0 0,-6.888889 c 0,-1.901333 -1.543972,-3.4444441 -3.444444,-3.4444441 z m -39.611111,6.8888891 -6.8888893,0 c -0.9502361,0 -1.7222223,-0.771986 -1.7222223,-1.722222 0,-0.950237 0.7719862,-1.722223 1.7222223,-1.722223 l 1.7222222,0 3.4444441,0 1.722223,0 c 0.950236,0 1.722222,0.771986 1.722222,1.722223 0,0.950236 -0.771986,1.722222 -1.722222,1.722222 z m 8.611111,10.333333 c 0,5.706583 4.62675,10.333333 10.333333,10.333333 5.706583,0 10.333333,-4.62675 10.333333,-10.333333 0,-5.706583 -4.62675,-10.333333 -10.333333,-10.333333 -5.706583,0 -10.333333,4.62675 -10.333333,10.333333 z m 24.111111,0 c 0,7.608778 -6.169,13.777778 -13.777778,13.777778 -7.608778,0 -13.777778,-6.169 -13.777778,-13.777778 0,-1.194146 0.200101,-2.337809 0.486097,-3.444444 L 0,20.666667 0,37.888889 c 0,1.900472 1.5431111,3.444444 3.4444444,3.444444 l 48.2222226,0 c 1.900472,0 3.444444,-1.543972 3.444444,-3.444444 l 0,-17.222222 -10.81943,0 c 0.285996,1.106635 0.486097,2.250298 0.486097,3.444444 z" fill="TRANSPARENT" stroke="BLACK" />
+               </children>
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </StackPane>
+            <VBox fx:id="deleteIcon" onMouseClicked="#openDeleteDialog" prefHeight="52.0" prefWidth="34.0">
+               <children>
+                  <SVGPath fx:id="deleteLidIcon" content="m 203.50499,315.14298 -6.69235,0 c 0.001,-0.052 0.008,-0.1039 0.008,-0.15781 l 0,-1.52534 c 0,-2.77499 -2.00658,-5.04769 -4.45637,-5.04769 l -7.42808,0 c -2.45156,0 -4.45637,2.27258 -4.45637,5.04769 l 0,1.52534 c 0,0.0539 0.005,0.10603 0.008,0.15781 l -6.69214,0 c -1.22563,0 -2.22819,1.13654 -2.22819,2.5241 l 0,2.52348 c 0,1.38898 1.00246,2.5255 2.22819,2.5255 l 0.74307,0 0,-1.68374 28.22433,0 0,1.68374 0.74328,0 c 1.2249,0 2.22756,-1.13652 2.22756,-2.5255 l 0,-2.52348 c 10e-5,-1.38756 -1.00266,-2.5241 -2.22746,-2.5241 z m -19.33482,-2.52348 8.91264,0 0,2.52348 -8.91264,0 0,-2.52348 z">
+                     <VBox.margin>
+                        <Insets right="12.0" top="4.0" />
+                     </VBox.margin>
+                  </SVGPath>
+                  <SVGPath fx:id="deleteBodyIcon" content="m 175.8727,321.51412 0,25.23977 c 0,1.38957 1.00204,2.52551 2.2286,2.52551 l 20.79604,0 c 1.22584,0 2.22862,-1.13594 2.22862,-2.52551 l 0,-25.23977 -25.25326,0 z m 7.42722,22.29552 c 0,0.46343 -0.3346,0.84141 -0.74235,0.84141 l -1.48541,0 c -0.40943,0 -0.74308,-0.37798 -0.74308,-0.84141 l 0,-16.8273 c 0,-0.46176 0.33376,-0.84176 0.74308,-0.84176 l 1.48541,0 c 0.40775,0 0.74235,0.38 0.74235,0.84176 l 0,16.8273 z m 6.68488,0 c 0,0.46343 -0.33555,0.84141 -0.74234,0.84141 l -1.48626,0 c -0.40859,0 -0.74234,-0.37798 -0.74234,-0.84141 l 0,-16.8273 c 0,-0.46176 0.33375,-0.84176 0.74234,-0.84176 l 1.48626,0 c 0.40668,0 0.74234,0.38 0.74234,0.84176 l 0,16.8273 z m 6.68499,0 c 0,0.46343 -0.33555,0.84141 -0.74308,0.84141 l -1.48542,0 c -0.40879,0 -0.74235,-0.37798 -0.74235,-0.84141 l 0,-16.8273 c 0,-0.46176 0.33356,-0.84176 0.74235,-0.84176 l 1.48542,0 c 0.40753,0 0.74308,0.38 0.74308,0.84176 l 0,16.8273 z">
+                     <VBox.margin>
+                        <Insets left="4.0" />
+                     </VBox.margin>
+                  </SVGPath>
+               </children>
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </VBox>
+            <Button fx:id="editButton" mnemonicParsing="false" text="Edit" />
+            <Button fx:id="saveButton" mnemonicParsing="false" text="Done" />
+         </children>
+      </HBox>
+      <VBox fx:id="contentPane" alignment="TOP_CENTER" layoutY="52.0" prefWidth="598.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="52.0">
+         <children>
+            <ScrollPane fx:id="imageScroll" pannable="true" prefHeight="800.0" prefWidth="200.0">
+              <content>
+                  <StackPane fx:id="imageStack" prefHeight="150.0" prefWidth="596.0">
+                     <children>
+                        <ImageView fx:id="imageView" fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" />
+                     </children>
+                  </StackPane>
+              </content>
+            </ScrollPane>
+            <TextArea fx:id="textArea" />
+            <WebView fx:id="webView" prefHeight="-1.0" prefWidth="-1.0" />
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>

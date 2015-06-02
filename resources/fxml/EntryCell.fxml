@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane fx:id="root" prefHeight="90.0" prefWidth="481.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.avatarhurden.dayonewindows.controllers.EntryCellController">
+   <children>
+      <AnchorPane fx:id="tagPane" layoutX="90.0" layoutY="85.0" prefHeight="31.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="90.0" AnchorPane.rightAnchor="90.0" />
+      <AnchorPane layoutY="7.0" prefHeight="85.0" prefWidth="90.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <Text fx:id="dayOfWeekLabel" layoutX="-10.0" layoutY="33.0" rotate="-90.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Dom" AnchorPane.leftAnchor="-8.0" AnchorPane.topAnchor="20.0">
+               <font>
+                  <Font name="System Bold" size="21.0" />
+               </font>
+            </Text>
+            <Text fx:id="dayOfMonthLabel" layoutX="47.0" layoutY="29.0" strokeType="OUTSIDE" strokeWidth="0.0" text="28" AnchorPane.leftAnchor="33.0" AnchorPane.topAnchor="0.0">
+               <font>
+                  <Font name="System Bold" size="46.0" />
+               </font>
+            </Text>
+            <Text fx:id="timeLabel" strokeType="OUTSIDE" strokeWidth="0.0" text="10:25" AnchorPane.leftAnchor="25.0" AnchorPane.topAnchor="60.0">
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </Text>
+         </children>
+      </AnchorPane>
+      <ImageView fx:id="imageView" fitHeight="90.0" fitWidth="90.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="90.0" AnchorPane.topAnchor="0.0" />
+      <Label fx:id="textLabel" layoutX="90.0" layoutY="6.0" AnchorPane.leftAnchor="180.0" AnchorPane.topAnchor="0.0" />
+   </children>
+</AnchorPane>

@@ -1,0 +1,49 @@
+.table-row-highlight {
+    -fx-background-color: #E0736D;
+	-fx-table-cell-border-color: red;
+}
+
+.object-box {
+	-fx-color: #b4dafa;
+	-fx-background-color: -fx-body-color;
+    -fx-background-radius: 4;
+    -fx-padding: 0 0.624999em 0 0.624999em; /* 2 7,5 3 7,5 */ 
+}
+
+.object-box:disabled {
+	-fx-color: #B1BDC6;
+}
+
+.object-box:focused {
+    -fx-color: #b4dafa;
+    -fx-background-color: -fx-focus-color, -fx-outer-border, -fx-inner-border, -fx-body-color;
+    -fx-background-insets: -1.4, 0, 0.5, 1;
+    -fx-background-radius:  6.4, 5, 4, 3;
+}
+
+.object-box:hover {
+	-fx-color: #D9EBF9;
+}
+
+.clear-button {
+    -fx-padding: 0 0 0 0;
+}
+
+.clear-button > .graphic {
+    -fx-background-color: #949494;
+    -fx-scale-shape: false;
+    -fx-padding: 4.5 4.5 4.5 4.5; /* Graphic is 9x9 px */
+    -fx-shape: "M395.992,296.758l1.794-1.794l7.292,7.292l-1.795,1.794 L395.992,296.758z M403.256,294.992l1.794,1.794l-7.292,7.292l-1.794-1.795 L403.256,294.992z";
+}
+
+.clear-button:hover > .graphic {
+    -fx-background-color: #ee4444;
+}
+
+.clear-button:focused > .graphic {
+    -fx-background-color: #ee4444;
+}
+
+.clear-button:pressed > .graphic {
+    -fx-background-color: #ff1111;
+}

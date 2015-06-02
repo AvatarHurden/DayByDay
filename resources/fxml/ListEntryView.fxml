@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.shape.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<BorderPane fx:id="borderPane" prefHeight="428.0" prefWidth="417.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.avatarhurden.dayonewindows.controllers.ListEntryViewController">
+   <center>
+      <AnchorPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+         <children>
+            <AnchorPane fx:id="contentPane" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+            <HBox fx:id="buttonBar" alignment="CENTER_RIGHT" prefHeight="56.0" prefWidth="216.0" spacing="20.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+               <children>
+                  <SVGPath fx:id="homeButton" content="m 115.20559,132.30675 c 0,-2.24083 0.48018,-11.08409 -6.49573,-18.10002 -4.69507,-4.72174 -10.710627,-7.12263 -19.113729,-7.4961 L 89.596131,96 64,113.07298 l 25.609469,17.07297 0,-10.64393 c 5.335301,0.14672 8.323073,1.21378 11.564271,2.66766 4.12152,1.84068 7.37606,5.86883 10.11041,10.2171 l 2.56094,4.16154 1.37384,0 c 0,-1.34716 -0.0133,-3.05446 -0.0133,-4.24157 z">
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                  </SVGPath>
+                  <SVGPath fx:id="previousButton" content="m 374.21785,139.65444 32.15665,21.43777 0,-11.5496 22.72404,0 0,-19.77634 -22.72404,0 0,-11.5496 -32.15665,21.43777 z">
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                  </SVGPath>
+                  <SVGPath fx:id="nextButton" content="m 484.51199,139.62414 -32.15665,21.43777 0,-11.5496 -22.72403,0 0,-19.77634 22.72403,0 0,-11.5496 32.15665,21.43777 z">
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                  </SVGPath>
+               </children>
+               <padding>
+                  <Insets right="20.0" />
+               </padding>
+            </HBox>
+         </children>
+      </AnchorPane>
+   </center>
+</BorderPane>

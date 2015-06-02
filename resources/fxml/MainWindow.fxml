@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.control.*?>
+<?import org.controlsfx.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane prefHeight="724.0" prefWidth="1054.0" stylesheets="@../style/MainWindow.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.avatarhurden.dayonewindows.controllers.MainWindowController">
+   <children>
+      <VBox alignment="CENTER" prefHeight="724.0" prefWidth="62.0" spacing="5.0" styleClass="buttonBar" stylesheets="@../style/MainWindow.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <ToggleButton fx:id="newButton" contentDisplay="CENTER" graphicTextGap="0.0" mnemonicParsing="false" onAction="#showNewEntry" prefHeight="52.0">
+               <graphic>
+                  <SVGPath content="m 30.610726,16.117909 q 1.837694,0 3.124078,1.286385 1.286387,1.286385 1.286387,3.071574 0,1.785188 -1.286387,3.071574 -1.286384,1.286385 -3.124078,1.286385 l -8.715919,-0.157516 0,8.925939 q 0,1.78519 -1.286386,3.071574 -1.286385,1.286387 -3.124079,1.286387 -1.837693,0 -3.097826,-1.286387 Q 13.126383,35.38744 13.126383,33.60225 L 13.2839,24.676311 4.3579591,24.833827 q -1.8376936,0 -3.0978263,-1.286385 Q 0,22.261056 0,20.475868 0,18.690679 1.2601328,17.404294 2.5202655,16.117909 4.3579591,16.117909 l 8.9259409,0 -0.157517,-8.7684243 q 0,-1.7851883 1.260133,-3.0715738 1.260133,-1.2863855 3.097826,-1.2863855 1.837694,0 3.124079,1.2863855 1.286386,1.2863855 1.286386,3.0715738 l 0,8.7684243 8.715919,0 z" />
+               </graphic>
+            </ToggleButton>
+            <ToggleButton fx:id="listButton" contentDisplay="CENTER" graphicTextGap="0.0" mnemonicParsing="false" onAction="#showEntryList" prefHeight="52.0" prefWidth="52.0">
+               <graphic>
+                  <SVGPath content="m 32.653044,19.875788 -29.8136822,0 C 1.2713369,19.875788 0,21.147125 0,22.715022 c 0,1.568153 1.2713369,2.83949 2.8393618,2.83949 l 29.8135542,0 c 1.567897,0 2.839362,-1.271337 2.839362,-2.83949 0,-1.567897 -1.271337,-2.839234 -2.839234,-2.839234 M 2.8393618,5.6787236 l 29.8135542,0 c 1.567897,0 2.839362,-1.271337 2.839362,-2.8393618 C 35.492278,1.2713369 34.220941,0 32.653044,0 L 2.8393618,0 C 1.2713369,0 0,1.2713369 0,2.8393618 0,4.4073866 1.2713369,5.6787236 2.8393618,5.6787236 m 29.8136822,4.2591704 -29.8136822,0 C 1.2713369,9.937894 0,11.209231 0,12.777256 c 0,1.568025 1.2713369,2.839489 2.8393618,2.839489 l 29.8135542,0 c 1.567897,0 2.839362,-1.271337 2.839362,-2.839489 0,-1.568025 -1.271337,-2.839362 -2.839234,-2.839362" />
+               </graphic>
+            </ToggleButton>
+         </children>
+      </VBox>
+      <AnchorPane fx:id="contentPane" layoutX="62.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="62.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+   </children>
+</AnchorPane>
