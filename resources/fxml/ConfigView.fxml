@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane prefHeight="389.0" prefWidth="528.0" style="-fx-border-color: black; -fx-background-color: transparent;" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.avatarhurden.dayonewindows.controllers.ConfigViewController">
+   <children>
+      <TextField layoutX="187.0" layoutY="276.0" />
+      <Button layoutX="109.0" layoutY="129.0" mnemonicParsing="false" text="Load file" />
+      <Button layoutX="362.0" layoutY="129.0" mnemonicParsing="false" text="Create new file" />
+      <Separator layoutX="261.0" layoutY="29.0" orientation="VERTICAL" prefHeight="200.0" />
+   </children>
+</AnchorPane>
