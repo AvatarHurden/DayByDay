@@ -6,13 +6,15 @@ import java.io.IOException;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
-
-import org.controlsfx.control.PopOver;
+import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
 
 public class MainWindowController {
 
@@ -26,9 +28,11 @@ public class MainWindowController {
 	private EntryViewController entryViewController;
 	
 	// List View
-//	private ListView<DayOneEntry> listView;
 	private BorderPane entryListView;
 	private ListEntryViewController entryListViewController;
+	
+	// Config View
+	private VBox configView;
 	
 	
 	private EntryManager manager;
@@ -89,6 +93,31 @@ public class MainWindowController {
 		}
     	
     	entryListViewController = loader.<ListEntryViewController>getController();
+
+    	loader = new FXMLLoader(getClass().getResource("/fxml/ConfigView.fxml"));
+    	try {
+			configView = loader.load();
+	    	AnchorPane.setTopAnchor(configView, 0d);	
+	    	AnchorPane.setRightAnchor(configView, 0d);
+	    	AnchorPane.setBottomAnchor(configView, 0d);
+	    	AnchorPane.setLeftAnchor(configView, 0d);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@FXML
+	private void showConfigView() {
+		Alert alert = new Alert(AlertType.NONE);
+		alert.initModality(Modality.APPLICATION_MODAL);
+		
+		alert.getButtonTypes().setAll(ButtonType.CLOSE);
+		alert.getDialogPane().setContent(configView);
+		
+		System.out.println(configView.getPrefWidth());
+		alert.setX(contentPane.getScene().getWindow().getX() + configView.getPrefWidth() / 2 );
+		alert.setY(contentPane.getScene().getWindow().getY() + 32);
+		alert.showAndWait();
 	}
 	
 	@FXML

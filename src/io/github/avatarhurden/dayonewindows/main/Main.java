@@ -4,19 +4,13 @@ import io.github.avatarhurden.dayonewindows.controllers.MainWindowController;
 import io.github.avatarhurden.dayonewindows.managers.Config;
 import io.github.avatarhurden.dayonewindows.managers.EntryManager;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
-import javafx.scene.layout.AnchorPane;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 import javafx.stage.Window;
 
 import org.controlsfx.control.NotificationPane;
@@ -33,9 +27,6 @@ public class Main extends Application {
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		Main.primaryStage = primaryStage;
-		
-		if (Config.get().getProperty("default_folder") == null)
-			showConfigView();
 		
 		entryManager = new EntryManager();
 		entryManager.loadAndWatch();
@@ -66,35 +57,6 @@ public class Main extends Application {
 		});	
 		
 //		((AnchorPane) loader.getRoot()).setDisable(true);
-	}
-	
-	private void showConfigView() {
-		FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ConfigView.fxml"));
-		
-		AnchorPane n = null;
-		try {
-			n = loader.load();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-		Alert alert = new Alert(AlertType.NONE);
-		alert.initStyle(StageStyle.UNDECORATED);
-		alert.initOwner(primaryStage);
-		alert.initModality(Modality.NONE);
-		alert.getDialogPane().setContent(n);
-		
-		primaryStage.xProperty().addListener((obs, oldValue, newValue) -> {
-			alert.setX(alert.getX() + (newValue.doubleValue() - oldValue.doubleValue()));
-		});
-		primaryStage.yProperty().addListener((obs, oldValue, newValue) -> {
-			alert.setY(alert.getY() + (newValue.doubleValue() - oldValue.doubleValue()));
-		});
-
-		alert.setY(primaryStage.getY() + 31);
-		alert.setX(primaryStage.getX() + n.getPrefWidth() / 2);
-		
-		alert.show();
 	}
 	
 	private void savePosition(Window window) {

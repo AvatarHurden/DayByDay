@@ -1,16 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane prefHeight="389.0" prefWidth="528.0" style="-fx-border-color: black; -fx-background-color: transparent;" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.avatarhurden.dayonewindows.controllers.ConfigViewController">
+
+<VBox prefHeight="389.0" prefWidth="521.0" spacing="10.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.avatarhurden.dayonewindows.controllers.ConfigViewController">
    <children>
-      <TextField layoutX="187.0" layoutY="276.0" />
-      <Button layoutX="109.0" layoutY="129.0" mnemonicParsing="false" text="Load file" />
-      <Button layoutX="362.0" layoutY="129.0" mnemonicParsing="false" text="Create new file" />
-      <Separator layoutX="261.0" layoutY="29.0" orientation="VERTICAL" prefHeight="200.0" />
+      <VBox prefHeight="110.0" prefWidth="441.0" spacing="10.0">
+         <children>
+            <Label text="General">
+               <font>
+                  <Font name="System Bold" size="16.0" />
+               </font>
+            </Label>
+            <HBox alignment="CENTER_LEFT" prefHeight="34.0" prefWidth="441.0" spacing="30.0">
+               <children>
+                  <Label text="On Startup" />
+                  <ComboBox fx:id="startScreenSelector" onAction="#changeStartScreen" prefWidth="150.0" />
+               </children>
+            </HBox>
+            <CheckBox fx:id="launchOnStartupCheckBox" mnemonicParsing="false" text="Launch on Windows login" />
+         </children>
+      </VBox>
+      <Separator prefWidth="200.0" />
+      <VBox prefHeight="200.0" prefWidth="100.0" spacing="10.0">
+         <children>
+            <Label text="File Sync">
+               <font>
+                  <Font name="System Bold" size="16.0" />
+               </font>
+            </Label>
+            <Button mnemonicParsing="false" text="Use Dropbox..." />
+            <Button mnemonicParsing="false" text="Use Custom Location..." />
+         </children>
+      </VBox>
    </children>
-</AnchorPane>
+   <padding>
+      <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+   </padding>
+</VBox>
