@@ -49,7 +49,6 @@ public class Main extends Application {
 			try {
 				savePosition(primaryStage);
 				entryManager.close();
-//				controller.saveState();
 				Config.save();
 			} catch (Exception e) {
 				e.printStackTrace();

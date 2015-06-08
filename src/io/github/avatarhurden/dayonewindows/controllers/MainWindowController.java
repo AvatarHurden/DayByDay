@@ -1,5 +1,6 @@
 package io.github.avatarhurden.dayonewindows.controllers;
 
+import io.github.avatarhurden.dayonewindows.managers.Config;
 import io.github.avatarhurden.dayonewindows.managers.EntryManager;
 
 import java.io.IOException;
@@ -41,8 +42,18 @@ public class MainWindowController {
 		this.manager = manager;
 		
 		entryListViewController.setItems(manager.getEntries());
-
-    	showNewEntry();
+		
+		String startScreen = Config.get().getProperty("start_screen", "Open New Entry View");
+    	if (startScreen.equals("Open Last View"))
+    		startScreen = "Open " + Config.get().getProperty("last_screen", "New Entry") + " View";
+    	switch (startScreen) {
+		case "Open New Entry View":
+			newButton.fire();
+			break;
+		case "Open Entry List View":
+			listButton.fire();
+			break;
+		}
 	}
 	
 	@FXML
@@ -55,18 +66,6 @@ public class MainWindowController {
 			if (newValue == null)
 				group.selectToggle(oldValue);
 		});
-		
-//		listView = new ListView<DayOneEntry>();
-//		
-//		listView.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) -> {
-//			entryListViewController.setCurrentEntry(newValue);
-//		});
-//		
-//		listView.setCellFactory(table -> new EntryCell());
-//		AnchorPane.setTopAnchor(listView, 0d);
-//    	AnchorPane.setRightAnchor(listView, 0d);
-//    	AnchorPane.setBottomAnchor(listView, 0d);
-//    	AnchorPane.setLeftAnchor(listView, 0d);
     	
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/EntryView.fxml"));
     	try {
@@ -114,7 +113,6 @@ public class MainWindowController {
 		alert.getButtonTypes().setAll(ButtonType.CLOSE);
 		alert.getDialogPane().setContent(configView);
 		
-		System.out.println(configView.getPrefWidth());
 		alert.setX(contentPane.getScene().getWindow().getX() + configView.getPrefWidth() / 2 );
 		alert.setY(contentPane.getScene().getWindow().getY() + 32);
 		alert.showAndWait();
@@ -126,6 +124,7 @@ public class MainWindowController {
 			manager.deleteEntry(entryViewController.getEntry());
 		entryViewController.setEntry(manager.addEntry());
 		contentPane.getChildren().setAll(entryView);
+		Config.get().setProperty("last_screen", "New Entry");
 	}
 	
 	@FXML
@@ -134,5 +133,6 @@ public class MainWindowController {
 			manager.deleteEntry(entryViewController.getEntry());
 		contentPane.getChildren().setAll(entryListView);
 		entryListViewController.showList();
+		Config.get().setProperty("last_screen", "Entry List");
 	}
 }

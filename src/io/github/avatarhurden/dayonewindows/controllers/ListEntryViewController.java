@@ -7,7 +7,10 @@ import io.github.avatarhurden.dayonewindows.models.MonthEntry;
 import java.io.IOException;
 
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
@@ -16,10 +19,14 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
@@ -41,9 +48,14 @@ public class ListEntryViewController {
 	private EntryViewController entryViewController;
 	private AnchorPane entryView;
 	
-	ListView<Entry> listView;
+	private ListView<Entry> listView;
+	private BorderPane monthView;
+	private Label monthLabel;
 	
-	SimpleIntegerProperty listSize;
+	private SimpleIntegerProperty listSize;
+	
+	private ObservableList<Entry> visibleItems;
+	private DoubleProperty visibleSize;
 	
 	@FXML
 	private void initialize() {
@@ -56,11 +68,33 @@ public class ListEntryViewController {
 				entryViewController.setEntry((DayOneEntry) newValue);
 		});
 		
+		visibleItems = FXCollections.<Entry>observableArrayList();
+		visibleSize = new SimpleDoubleProperty(0);
+		visibleItems.addListener((ListChangeListener.Change<? extends Entry> event) -> {
+			while (event.next()) {
+				for (Entry t : event.getRemoved())
+					visibleSize.setValue(visibleSize.getValue() - (t instanceof DayOneEntry ? 90 : 23));
+				for (Entry t : event.getAddedSubList())
+					visibleSize.setValue(visibleSize.getValue() + (t instanceof DayOneEntry ? 90 : 23));
+			}
+		});
+		visibleSize.addListener((obs, oldValue, newValue) -> {
+			System.out.println(newValue);
+		});
+		
 		listView.setCellFactory(table -> new EntryCell());
 		AnchorPane.setTopAnchor(listView, 0d);
     	AnchorPane.setRightAnchor(listView, 0d);
     	AnchorPane.setBottomAnchor(listView, 0d);
     	AnchorPane.setLeftAnchor(listView, 0d);
+    	
+    	monthLabel = new Label();
+    	monthLabel.setFont(Font.font(30));
+    	monthView = new BorderPane(monthLabel);
+    	monthView.setBackground(new Background(new BackgroundFill(Color.WHITE, CornerRadii.EMPTY, Insets.EMPTY)));
+		AnchorPane.setTopAnchor(monthView, 0d);
+    	AnchorPane.setRightAnchor(monthView, 0d);
+    	AnchorPane.setLeftAnchor(monthView, 0d);
 		
 		previousButton.strokeProperty().bind(Bindings.when(previousButton.hoverProperty()).then(Color.BLUE).otherwise(Color.TRANSPARENT));
 		nextButton.strokeProperty().bind(Bindings.when(nextButton.hoverProperty()).then(Color.BLUE).otherwise(Color.TRANSPARENT));
@@ -113,10 +147,12 @@ public class ListEntryViewController {
 		});
 		listView.scrollTo(sorted.size() - 1);
 		listSize.bind(Bindings.size(sorted));
+		
+		monthLabel.setText(sorted.get(sorted.size() - 1).getCreationDate().toString("MMMMMMMMMMMMMMM YYYY"));
 	}
 	
 	public void showList() {
-		contentPane.getChildren().setAll(listView);
+		contentPane.getChildren().setAll(listView, monthView);
 		buttonBar.setManaged(false);
 		buttonBar.setVisible(false);
 	}
@@ -135,12 +171,12 @@ public class ListEntryViewController {
 			 setOnMouseClicked(event -> {
 		        	if (event.getClickCount() == 2)
 		        		showSingle();
+		        	entryView.requestFocus();
 		        });
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/EntryCell.fxml"));
 			try {
 				n = loader.load();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			controller = loader.<EntryCellController>getController();
@@ -153,11 +189,26 @@ public class ListEntryViewController {
 	            setText(null);
 	            setGraphic(null);
 	        } else {
+	        	
+	        	if (visibleSize.getValue() > listView.getHeight()) {
+	        		if (item.getCreationDate().isBefore(visibleItems.get(0).getCreationDate())) {
+	        			visibleItems.remove(visibleItems.size() - 1);
+	        			visibleItems.add(0, item);
+	        		} else if (item.getCreationDate().isAfter(visibleItems.get(visibleItems.size() - 1).getCreationDate())) {
+	        			visibleItems.remove(0);
+	        			visibleItems.add(item);
+	        		}
+	        	} else
+	        		visibleItems.add(item);
+	        	
+	        	monthLabel.setText(visibleItems.get(0).getCreationDate().toString("MMMMMMMMMMMMMMM YYYY"));
+	        	
 	        	if (item instanceof MonthEntry) {
 	        		setGraphic(null);
 	        		setText(item.getCreationDate().toString("MMMMMMMMMMMMMMM YYYY"));
 	        		setFont(Font.font(30));
 	        		setAlignment(Pos.CENTER);
+	        		setBackground(new Background(new BackgroundFill(Color.valueOf("#1D1D45"), CornerRadii.EMPTY, Insets.EMPTY)));
 	        	} else {
 		            setText(null);
 	        		setGraphic(n);

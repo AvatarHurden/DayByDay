@@ -12,8 +12,6 @@ public class ConfigViewController {
 	@FXML
 	private void initialize() {
 		populateScreenComboBox();
-		
-		
 	}
 	
 	private void populateScreenComboBox() {
@@ -23,7 +21,7 @@ public class ConfigViewController {
 		items.add("Open New Entry View");
 		items.add("Open Entry List View");
 		
-		startScreenSelector.setValue(Config.get().getProperty("start_screen", "Open Last View"));
+		startScreenSelector.setValue(Config.get().getPropertyAndSave("start_screen", "Open Last View"));
 	}
 	
 	@FXML
