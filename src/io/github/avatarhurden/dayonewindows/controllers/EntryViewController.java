@@ -294,7 +294,7 @@ public class EntryViewController {
 		PegDownProcessor processor = new PegDownProcessor(Extensions.TABLES);
 		textArea.textProperty().addListener((obs, oldValue, newValue) -> {
 			String[] lines = newValue.split("\n");
-			if (lines[0].length() <= 140 && Character.isAlphabetic(lines[0].charAt(0)))
+			if (lines[0].length() > 0 && lines[0].length() <= 140 && Character.isAlphabetic(lines[0].charAt(0)))
 				newValue = "## " + newValue;
 			String html = processor.markdownToHtml(newValue);
 	        webView.getEngine().loadContent(html);

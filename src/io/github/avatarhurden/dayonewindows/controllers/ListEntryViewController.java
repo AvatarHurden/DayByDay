@@ -22,11 +22,10 @@ import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
@@ -42,14 +41,12 @@ public class ListEntryViewController {
 	private HBox buttonBar;
 	@FXML
 	private AnchorPane contentPane;
-	@FXML
-	private BorderPane borderPane;
 	
 	private EntryViewController entryViewController;
 	private AnchorPane entryView;
 	
 	private ListView<Entry> listView;
-	private BorderPane monthView;
+	private BorderPane topBanner;
 	private Label monthLabel;
 	
 	private SimpleIntegerProperty listSize;
@@ -78,23 +75,24 @@ public class ListEntryViewController {
 					visibleSize.setValue(visibleSize.getValue() + (t instanceof DayOneEntry ? 90 : 23));
 			}
 		});
-		visibleSize.addListener((obs, oldValue, newValue) -> {
-			System.out.println(newValue);
-		});
 		
 		listView.setCellFactory(table -> new EntryCell());
-		AnchorPane.setTopAnchor(listView, 0d);
+		AnchorPane.setTopAnchor(listView, 45d);
     	AnchorPane.setRightAnchor(listView, 0d);
     	AnchorPane.setBottomAnchor(listView, 0d);
     	AnchorPane.setLeftAnchor(listView, 0d);
     	
     	monthLabel = new Label();
     	monthLabel.setFont(Font.font(30));
-    	monthView = new BorderPane(monthLabel);
-    	monthView.setBackground(new Background(new BackgroundFill(Color.WHITE, CornerRadii.EMPTY, Insets.EMPTY)));
-		AnchorPane.setTopAnchor(monthView, 0d);
-    	AnchorPane.setRightAnchor(monthView, 0d);
-    	AnchorPane.setLeftAnchor(monthView, 0d);
+    	topBanner = new BorderPane(monthLabel);
+		AnchorPane.setTopAnchor(topBanner, 0d);
+    	AnchorPane.setRightAnchor(topBanner, 0d);
+    	AnchorPane.setLeftAnchor(topBanner, 0d);
+    	
+    	TextField field = new TextField();
+    	topBanner.setRight(field);
+    	BorderPane.setAlignment(field, Pos.CENTER_LEFT);
+    	BorderPane.setMargin(field, new Insets(0, 6, 0, 0));
 		
 		previousButton.strokeProperty().bind(Bindings.when(previousButton.hoverProperty()).then(Color.BLUE).otherwise(Color.TRANSPARENT));
 		nextButton.strokeProperty().bind(Bindings.when(nextButton.hoverProperty()).then(Color.BLUE).otherwise(Color.TRANSPARENT));
@@ -124,6 +122,22 @@ public class ListEntryViewController {
     	entryViewController = loader.<EntryViewController>getController();
     	
     	showList();
+    	
+    	listView.setOnKeyPressed(event -> {
+			if (event.getCode() == KeyCode.ENTER)
+				showSingle();
+		});
+    	
+    	entryView.setOnKeyPressed(event -> {
+    		if (event.getCode() == KeyCode.LEFT) {
+				listView.getSelectionModel().selectPrevious();
+				event.consume();
+    		} else if (event.getCode() == KeyCode.RIGHT) {
+				listView.getSelectionModel().selectNext();
+				event.consume();
+    		} else if (event.getCode() == KeyCode.BACK_SPACE || event.getCode() == KeyCode.ESCAPE)
+				showList();
+    	});
 	}
 	
 	public void setItems(ObservableList<Entry> items) {
@@ -152,7 +166,7 @@ public class ListEntryViewController {
 	}
 	
 	public void showList() {
-		contentPane.getChildren().setAll(listView, monthView);
+		contentPane.getChildren().setAll(listView, topBanner);
 		buttonBar.setManaged(false);
 		buttonBar.setVisible(false);
 	}
@@ -168,12 +182,13 @@ public class ListEntryViewController {
 		private Node n;
 		private EntryCellController controller;
 		{
-			 setOnMouseClicked(event -> {
-		        	if (event.getClickCount() == 2)
-		        		showSingle();
-		        	entryView.requestFocus();
-		        });
+			setOnMouseClicked(event -> {
+		        if (event.getClickCount() == 2)
+		        	showSingle();
+//		        entryView.requestFocus();
+		    });
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/EntryCell.fxml"));
+			
 			try {
 				n = loader.load();
 			} catch (IOException e) {
@@ -190,16 +205,18 @@ public class ListEntryViewController {
 	            setGraphic(null);
 	        } else {
 	        	
-	        	if (visibleSize.getValue() > listView.getHeight()) {
-	        		if (item.getCreationDate().isBefore(visibleItems.get(0).getCreationDate())) {
-	        			visibleItems.remove(visibleItems.size() - 1);
-	        			visibleItems.add(0, item);
-	        		} else if (item.getCreationDate().isAfter(visibleItems.get(visibleItems.size() - 1).getCreationDate())) {
-	        			visibleItems.remove(0);
-	        			visibleItems.add(item);
-	        		}
-	        	} else
+	        	if (visibleItems.isEmpty())
 	        		visibleItems.add(item);
+	        	else if (item.getCreationDate().isBefore(visibleItems.get(0).getCreationDate()))
+	        		visibleItems.add(0, item);
+	        	else if (item.getCreationDate().isAfter(visibleItems.get(visibleItems.size() - 1).getCreationDate()))
+	        		visibleItems.add(item);
+
+	        	if (visibleSize.getValue() > listView.getHeight())
+	        		if (item.getCreationDate().isBefore(visibleItems.get(1).getCreationDate())) 
+	        			visibleItems.remove(visibleItems.size() - 1);
+	        		else if (item.getCreationDate().isAfter(visibleItems.get(visibleItems.size() - 2).getCreationDate()))
+	        			visibleItems.remove(0);
 	        	
 	        	monthLabel.setText(visibleItems.get(0).getCreationDate().toString("MMMMMMMMMMMMMMM YYYY"));
 	        	
@@ -208,7 +225,6 @@ public class ListEntryViewController {
 	        		setText(item.getCreationDate().toString("MMMMMMMMMMMMMMM YYYY"));
 	        		setFont(Font.font(30));
 	        		setAlignment(Pos.CENTER);
-	        		setBackground(new Background(new BackgroundFill(Color.valueOf("#1D1D45"), CornerRadii.EMPTY, Insets.EMPTY)));
 	        	} else {
 		            setText(null);
 	        		setGraphic(n);
