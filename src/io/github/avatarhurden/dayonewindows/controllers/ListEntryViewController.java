@@ -5,6 +5,7 @@ import io.github.avatarhurden.dayonewindows.models.Entry;
 import io.github.avatarhurden.dayonewindows.models.MonthEntry;
 
 import java.io.IOException;
+import java.util.Locale;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
@@ -13,6 +14,7 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -25,7 +27,6 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
@@ -33,21 +34,32 @@ import javafx.scene.text.Font;
 
 import org.joda.time.DateTime;
 
+import com.mdimension.jchronic.Chronic;
+import com.mdimension.jchronic.Options;
+import com.mdimension.jchronic.tags.Pointer.PointerType;
+import com.mdimension.jchronic.utils.Span;
+
 public class ListEntryViewController {
 
+	@FXML private AnchorPane root;
+	
 	@FXML
 	private SVGPath previousButton, homeButton, nextButton;
 	@FXML
 	private HBox buttonBar;
-	@FXML
-	private AnchorPane contentPane;
+	@FXML private AnchorPane contentPane;
+	@FXML private AnchorPane singleViewPane;
 	
 	private EntryViewController entryViewController;
 	private AnchorPane entryView;
 	
-	private ListView<Entry> listView;
-	private BorderPane topBanner;
-	private Label monthLabel;
+	@FXML private ListView<Entry> listView;
+	
+	private FilteredList<Entry> allItems;
+	
+	@FXML private Label monthLabel;
+	@FXML private TextField searchField;
+	@FXML private AnchorPane listViewPane;
 	
 	private SimpleIntegerProperty listSize;
 	
@@ -57,8 +69,6 @@ public class ListEntryViewController {
 	@FXML
 	private void initialize() {
 		listSize = new SimpleIntegerProperty();
-		
-		listView = new ListView<Entry>();
 		
 		listView.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) -> {
 			if (newValue instanceof DayOneEntry)
@@ -77,22 +87,6 @@ public class ListEntryViewController {
 		});
 		
 		listView.setCellFactory(table -> new EntryCell());
-		AnchorPane.setTopAnchor(listView, 45d);
-    	AnchorPane.setRightAnchor(listView, 0d);
-    	AnchorPane.setBottomAnchor(listView, 0d);
-    	AnchorPane.setLeftAnchor(listView, 0d);
-    	
-    	monthLabel = new Label();
-    	monthLabel.setFont(Font.font(30));
-    	topBanner = new BorderPane(monthLabel);
-		AnchorPane.setTopAnchor(topBanner, 0d);
-    	AnchorPane.setRightAnchor(topBanner, 0d);
-    	AnchorPane.setLeftAnchor(topBanner, 0d);
-    	
-    	TextField field = new TextField();
-    	topBanner.setRight(field);
-    	BorderPane.setAlignment(field, Pos.CENTER_LEFT);
-    	BorderPane.setMargin(field, new Insets(0, 6, 0, 0));
 		
 		previousButton.strokeProperty().bind(Bindings.when(previousButton.hoverProperty()).then(Color.BLUE).otherwise(Color.TRANSPARENT));
 		nextButton.strokeProperty().bind(Bindings.when(nextButton.hoverProperty()).then(Color.BLUE).otherwise(Color.TRANSPARENT));
@@ -120,8 +114,7 @@ public class ListEntryViewController {
 		}
     	
     	entryViewController = loader.<EntryViewController>getController();
-    	
-    	showList();
+    	contentPane.getChildren().setAll(entryView);
     	
     	listView.setOnKeyPressed(event -> {
 			if (event.getCode() == KeyCode.ENTER)
@@ -138,10 +131,36 @@ public class ListEntryViewController {
     		} else if (event.getCode() == KeyCode.BACK_SPACE || event.getCode() == KeyCode.ESCAPE)
 				showList();
     	});
+    	
+    	visibleItems.addListener((ListChangeListener.Change<? extends Entry> event) -> {
+			monthLabel.setText(visibleItems.get(0).getCreationDate().toString("MMMMMMMMMMMMMMM YYYY"));
+		});
+    	
+    	searchField.textProperty().addListener((obs, oldValue, newValue) -> {
+    		try {	
+    			Options p = new Options(false);
+    			p.setContext(PointerType.PAST);
+    			p.setNow(new DateTime().withMillisOfDay(86399999).toCalendar(Locale.getDefault()));
+    			
+    			final Span t = Chronic.parse(newValue, p);
+    			
+    			Span endT;
+    			if (new DateTime(t.getEndCalendar()).withMillisOfDay(0).isEqual(new DateTime().withMillisOfDay(0)))
+    				endT = t.add(3600);
+    			else
+    				endT = t;
+    			
+    			allItems.setPredicate(s -> s.getCreationDate().isAfter(new DateTime(t.getBeginCalendar())) 
+					&& s.getCreationDate().isBefore(new DateTime(endT.getEndCalendar())));
+    			
+			} catch (Exception e) {
+				e.printStackTrace();
+				allItems.setPredicate(entry -> true);
+			}
+		});
 	}
 	
 	public void setItems(ObservableList<Entry> items) {
-
 		SortedList<Entry> sorted = new SortedList<Entry>(items);
 		// Compares opposite so that later entries are on top
 		sorted.setComparator((entry1, entry2) -> entry1.compareTo(entry2));
@@ -152,7 +171,12 @@ public class ListEntryViewController {
 		for (int i = first.getYear()*12 + first.getMonthOfYear(); i <= last.getYear()*12 + last.getMonthOfYear(); i++)
 			items.add(new MonthEntry(i/12, i%12));
 
-		listView.setItems(sorted);
+		allItems = sorted.filtered(entry -> true);
+		allItems.predicateProperty().addListener((obs, oldValue, newValue) -> {
+			visibleItems.clear();
+		});
+    	
+		listView.setItems(allItems);
 		
 		sorted.addListener((ListChangeListener.Change<? extends Entry> event) -> {
 			event.next();
@@ -166,26 +190,22 @@ public class ListEntryViewController {
 	}
 	
 	public void showList() {
-		contentPane.getChildren().setAll(listView, topBanner);
-		buttonBar.setManaged(false);
-		buttonBar.setVisible(false);
+		root.getChildren().setAll(listViewPane);
 	}
 	
 	private void showSingle() {
-		contentPane.getChildren().setAll(entryView);
-		buttonBar.setManaged(true);
-		buttonBar.setVisible(true);
+		root.getChildren().setAll(singleViewPane);
 	}
 	
 	private class EntryCell extends ListCell<Entry> {
 		
 		private Node n;
 		private EntryCellController controller;
+		
 		{
 			setOnMouseClicked(event -> {
 		        if (event.getClickCount() == 2)
 		        	showSingle();
-//		        entryView.requestFocus();
 		    });
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/EntryCell.fxml"));
 			
@@ -205,20 +225,19 @@ public class ListEntryViewController {
 	            setGraphic(null);
 	        } else {
 	        	
+	        	boolean addedBeggining = true;
+	        	
 	        	if (visibleItems.isEmpty())
 	        		visibleItems.add(item);
 	        	else if (item.getCreationDate().isBefore(visibleItems.get(0).getCreationDate()))
 	        		visibleItems.add(0, item);
-	        	else if (item.getCreationDate().isAfter(visibleItems.get(visibleItems.size() - 1).getCreationDate()))
+	        	else if (item.getCreationDate().isAfter(visibleItems.get(visibleItems.size() - 1).getCreationDate())) {
 	        		visibleItems.add(item);
-
-	        	if (visibleSize.getValue() > listView.getHeight())
-	        		if (item.getCreationDate().isBefore(visibleItems.get(1).getCreationDate())) 
-	        			visibleItems.remove(visibleItems.size() - 1);
-	        		else if (item.getCreationDate().isAfter(visibleItems.get(visibleItems.size() - 2).getCreationDate()))
-	        			visibleItems.remove(0);
+	        		addedBeggining = false;
+	        	}
 	        	
-	        	monthLabel.setText(visibleItems.get(0).getCreationDate().toString("MMMMMMMMMMMMMMM YYYY"));
+	        	if (visibleSize.getValue() > listView.getHeight())
+	        		visibleItems.remove(addedBeggining ? visibleItems.size() - 1 : 0);
 	        	
 	        	if (item instanceof MonthEntry) {
 	        		setGraphic(null);
@@ -232,19 +251,13 @@ public class ListEntryViewController {
 
 					controller.setContent((DayOneEntry) item);
 					
-					Entry previous;
-					if (listView.getItems().indexOf(item) > 0)
-						previous = listView.getItems().get(listView.getItems().indexOf(item) - 1);
-					else
-						previous = item;
-					
-					if (previous instanceof MonthEntry)
-						if (listView.getItems().indexOf(item) > 1)
-							previous = listView.getItems().get(listView.getItems().indexOf(item) - 2);
-						else
-							previous = item;
-					
-					controller.setDateEnabled(previous.getCreationDate().getDayOfYear() != item.getCreationDate().getDayOfYear());
+					int index = listView.getItems().indexOf(item);
+					if (index == 0 || listView.getItems().get(index - 1) instanceof MonthEntry) 
+						controller.setDateEnabled(true); // First item, and items after monthEntries, must always have the date
+					else {
+						Entry previous = listView.getItems().get(index - 1);
+						controller.setDateEnabled(previous.getCreationDate().getDayOfYear() != item.getCreationDate().getDayOfYear());
+					}
 				
 					controller.widthProperty().bind(listView.widthProperty().subtract(40));
 	        	}

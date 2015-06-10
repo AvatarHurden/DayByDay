@@ -13,7 +13,6 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 
@@ -29,7 +28,7 @@ public class MainWindowController {
 	private EntryViewController entryViewController;
 	
 	// List View
-	private BorderPane entryListView;
+	private AnchorPane entryListView;
 	private ListEntryViewController entryListViewController;
 	
 	// Config View
@@ -82,7 +81,7 @@ public class MainWindowController {
     	
     	loader = new FXMLLoader(getClass().getResource("/fxml/ListEntryView.fxml"));
     	try {
-    		entryListView = loader.<BorderPane>load();
+    		entryListView = loader.<AnchorPane>load();
 	    	AnchorPane.setTopAnchor(entryListView, 0d);	
 	    	AnchorPane.setRightAnchor(entryListView, 0d);
 	    	AnchorPane.setBottomAnchor(entryListView, 0d);
