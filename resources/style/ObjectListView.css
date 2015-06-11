@@ -1,6 +1,5 @@
-.table-row-highlight {
-    -fx-background-color: #E0736D;
-	-fx-table-cell-border-color: red;
+.creation-text {
+	-fx-background-radius: 10;
 }
 
 .object-box {

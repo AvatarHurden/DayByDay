@@ -217,7 +217,8 @@ public class EntryViewController {
 		tagView.setCreationPolicy(s -> entry.addTag(s) ? s : null);
 		tagView.setDeletionPolicy(s -> entry.removeTag(s));
 		
-		tagView.setSuggestions(entry.getManager().getTags(), t -> t.getName());
+		tagView.setSuggestions(entry.getManager().getTags(), 
+				t -> t.getKey().toString().toLowerCase().startsWith(t.getValue().toLowerCase()));
 		
 		StackPane pane = new StackPane(tagView);
 		pane.setPadding(new Insets(5));

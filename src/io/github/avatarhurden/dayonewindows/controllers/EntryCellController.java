@@ -13,6 +13,7 @@ import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
 
 public class EntryCellController {
@@ -27,7 +28,8 @@ public class EntryCellController {
 	@FXML
 	private ImageView imageView;
 	@FXML
-	private Label textLabel;
+	private Label textLabel;	
+	@FXML private SVGPath favoriteIcon;
 	
 	private DoubleProperty width;
 	
@@ -41,7 +43,7 @@ public class EntryCellController {
 		tagPane.getChildren().add(tagView);
 		
 //		textLabel.setFont(new Font(16));
-		
+
 		Text text = new Text(" ");
 		textLabel.setPrefHeight(text.getLayoutBounds().getHeight() * 3);
 		
@@ -52,7 +54,7 @@ public class EntryCellController {
 	public void setContent(DayOneEntry entry) {
 //		root.backgroundProperty().bind(Bindings.when(
 //				BooleanBinding.booleanExpression(entry.starredProperty())).then(
-//						new Background(new BackgroundFill(Color.GOLD, CornerRadii.EMPTY, Insets.EMPTY))).otherwise(
+//						new Background(new BackgroundFill(Color.valueOf("FFF5A0"), CornerRadii.EMPTY, Insets.EMPTY))).otherwise(
 //								new Background(new BackgroundFill(Color.TRANSPARENT, CornerRadii.EMPTY, Insets.EMPTY))));
 
 		textLabel.textProperty().bind(entry.entryTextProperty());
@@ -64,10 +66,12 @@ public class EntryCellController {
 			textLabel.prefWidthProperty().bind(width.subtract(180));
 		}
 			
+		favoriteIcon.visibleProperty().bind(Bindings.when(dayOfMonthLabel.visibleProperty().not()).then(entry.isStarred()).otherwise(false));
+		
 		tagView.setList(entry.getObservableTags());
 	
 		dayOfMonthLabel.fillProperty().bind(Bindings.when(
-				BooleanBinding.booleanExpression(entry.starredProperty())).then(Color.GOLD).otherwise(Color.BLACK));
+				BooleanBinding.booleanExpression(entry.starredProperty())).then(Color.GOLD.darker()).otherwise(Color.BLACK));
 		dayOfMonthLabel.textProperty().bind(Bindings.createStringBinding(() -> 
 			entry.getCreationDate().toString("dd"), entry.creationDateProperty()));
 
@@ -80,9 +84,8 @@ public class EntryCellController {
 				BooleanBinding.booleanExpression(entry.starredProperty())).then(Color.GOLD.darker()).otherwise(Color.BLACK));
 		timeLabel.textProperty().bind(Bindings.createStringBinding(() ->
 			entry.getCreationDate().toString("HH:mm"), entry.creationDateProperty()));
-		
+
 		imageView.imageProperty().bind(Bindings.createObjectBinding(() -> entry.getImage(), entry.imageProperty()));
-//		imageView.setImage(entry.getImage());
 	}
 	
 	public void setDateEnabled(boolean enabled) {

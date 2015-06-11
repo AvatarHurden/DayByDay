@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import org.controlsfx.control.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane prefHeight="394.0" prefWidth="271.0" stylesheets="@../style/SearchTooltip.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="134.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <BorderPane fx:id="textFilter" prefHeight="200.0" prefWidth="200.0">
+               <top>
+                  <Label text="Text" BorderPane.alignment="CENTER_LEFT" />
+               </top>
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+               <center>
+                  <TextFlow styleClass="clickable">
+                     <children>
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Search for " />
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="&quot;Text to search&quot;" />
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text=" in entries" />
+                     </children>
+                     <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </padding>
+                  </TextFlow>
+               </center>
+            </BorderPane>
+            <BorderPane fx:id="dateFilter" prefHeight="74.0" prefWidth="100.0">
+               <top>
+                  <Label text="Date" BorderPane.alignment="CENTER_LEFT" />
+               </top>
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+               <center>
+                  <GridPane maxWidth="300.0" prefHeight="52.0" prefWidth="179.0" styleClass="clickable" vgap="10.0" BorderPane.alignment="CENTER">
+                     <columnConstraints>
+                        <ColumnConstraints hgrow="ALWAYS" maxWidth="122.0" minWidth="10.0" prefWidth="76.0" />
+                        <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" maxWidth="204.0" minWidth="10.0" prefWidth="153.0" />
+                     </columnConstraints>
+                     <rowConstraints>
+                        <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                     </rowConstraints>
+                     <children>
+                        <Label text="Entries from" />
+                        <Label fx:id="startDate" text="Monday - 22/10/2015" GridPane.columnIndex="1" />
+                        <Label text="to" GridPane.halignment="RIGHT" GridPane.rowIndex="1">
+                           <GridPane.margin>
+                              <Insets right="14.0" />
+                           </GridPane.margin>
+                        </Label>
+                        <Label fx:id="endDate" text="Tuesday - 23/10/2015" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                     </children>
+                     <BorderPane.margin>
+                        <Insets />
+                     </BorderPane.margin>
+                     <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </padding>
+                  </GridPane>
+               </center>
+            </BorderPane>
+            <BorderPane fx:id="tagFilter" prefHeight="200.0" prefWidth="200.0">
+               <top>
+                  <Label text="Tags" BorderPane.alignment="CENTER_LEFT" />
+               </top>
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+               <bottom>
+                  <Hyperlink focusTraversable="false" text="Show all tags" BorderPane.alignment="CENTER" />
+               </bottom>
+            </BorderPane>
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>

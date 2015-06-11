@@ -5,6 +5,7 @@ import io.github.avatarhurden.dayonewindows.models.Entry;
 import io.github.avatarhurden.dayonewindows.models.MonthEntry;
 
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.Locale;
 
 import javafx.beans.binding.Bindings;
@@ -140,13 +141,14 @@ public class ListEntryViewController {
     		try {	
     			Options p = new Options(false);
     			p.setContext(PointerType.PAST);
-    			p.setNow(new DateTime().withMillisOfDay(86399999).toCalendar(Locale.getDefault()));
+    			p.setNow(new DateTime().withMillisOfDay(0).toCalendar(Locale.getDefault()));
+    			p.setAmbiguousTimeRange(24);
     			
     			final Span t = Chronic.parse(newValue, p);
     			
     			Span endT;
-    			if (new DateTime(t.getEndCalendar()).withMillisOfDay(0).isEqual(new DateTime().withMillisOfDay(0)))
-    				endT = t.add(3600);
+    			if (new DateTime(t.getBeginCalendar()).withMillisOfDay(0).isEqual(new DateTime(t.getEndCalendar()).withMillisOfDay(0)))
+    				endT = new Span(t.getBeginCalendar(), Calendar.DAY_OF_MONTH, 1);
     			else
     				endT = t;
     			

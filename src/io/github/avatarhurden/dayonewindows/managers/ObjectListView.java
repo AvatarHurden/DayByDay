@@ -2,6 +2,7 @@ package io.github.avatarhurden.dayonewindows.managers;
 
 import java.util.HashMap;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import javafx.animation.FadeTransition;
 import javafx.beans.property.Property;
@@ -10,6 +11,7 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -21,6 +23,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
 import javafx.util.Duration;
+import javafx.util.Pair;
 
 import org.controlsfx.control.textfield.AutoCompletionBinding;
 import org.controlsfx.control.textfield.TextFields;
@@ -118,14 +121,15 @@ public class ObjectListView<T> extends StackPane {
 		if (autoCompletion != null)
 			autoCompletion.dispose();
 		autoCompletion = TextFields.bindAutoCompletion(textField,
-				request -> suggestions.filtered(t -> request.getUserText().length() > 0 && t.toString().contains(request.getUserText())));
+				request -> suggestions.filtered(t -> request.getUserText().length() > 0 
+								&& t.toString().contains(request.getUserText().toLowerCase())));
 	}
 	
-	public <S> void setSuggestions(ObservableList<S> suggestions, Callback<S, T> converter) {
+	public <S> void setSuggestions(ObservableList<S> suggestions, Predicate<Pair<S, String>> tester) {
 		if (autoCompletion != null)
 			autoCompletion.dispose();
 		autoCompletion = TextFields.bindAutoCompletion(textField,
-				request -> suggestions.filtered(t -> request.getUserText().length() > 0 && converter.call(t).toString().contains(request.getUserText())));
+				request -> suggestions.filtered(t -> tester.test(new Pair<S, String>(t, request.getUserText()))));
 	}
 	
 	
@@ -151,7 +155,8 @@ public class ObjectListView<T> extends StackPane {
 	
 	private void addTextField() {
 		textField = TextFields.createClearableTextField();
-	
+		textField.getStyleClass().add("creation-text");
+		
 		if (layout == ObjectLayout.VERTICAL)
 			VBox.setMargin(textField, new Insets(5, 0, 5, 0));
 		else
@@ -175,6 +180,7 @@ public class ObjectListView<T> extends StackPane {
 			return;
 		
 		HBox itemBox = new HBox(0);
+		itemBox.setCursor(Cursor.HAND);
 		itemBox.setPadding(new Insets(0));
 		itemBox.getStyleClass().add("object-box");
 		

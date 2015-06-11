@@ -1,0 +1,13 @@
+
+.clickable {
+	-fx-background-radius: 10;
+	-fx-background-color: #CCE5FF;
+	-fx-border-radius: 10;
+	-fx-border-color: #CCE5FF;
+}
+
+.clickable:hover {
+	-fx-border-radius: 10;
+	-fx-border-color: lightblue;
+	-fx-cursor: hand;
+}
