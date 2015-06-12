@@ -5,8 +5,6 @@ import io.github.avatarhurden.dayonewindows.models.Entry;
 import io.github.avatarhurden.dayonewindows.models.MonthEntry;
 
 import java.io.IOException;
-import java.util.Calendar;
-import java.util.Locale;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
@@ -33,12 +31,9 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Font;
 
+import org.controlsfx.control.PopOver;
+import org.controlsfx.control.PopOver.ArrowLocation;
 import org.joda.time.DateTime;
-
-import com.mdimension.jchronic.Chronic;
-import com.mdimension.jchronic.Options;
-import com.mdimension.jchronic.tags.Pointer.PointerType;
-import com.mdimension.jchronic.utils.Span;
 
 public class ListEntryViewController {
 
@@ -59,8 +54,11 @@ public class ListEntryViewController {
 	private FilteredList<Entry> allItems;
 	
 	@FXML private Label monthLabel;
-	@FXML private TextField searchField;
 	@FXML private AnchorPane listViewPane;
+	
+	@FXML private TextField searchField;
+	private SearchTooltipController tooltipController;
+	private PopOver tooltip;
 	
 	private SimpleIntegerProperty listSize;
 	
@@ -133,33 +131,36 @@ public class ListEntryViewController {
 				showList();
     	});
     	
+    	
     	visibleItems.addListener((ListChangeListener.Change<? extends Entry> event) -> {
 			monthLabel.setText(visibleItems.get(0).getCreationDate().toString("MMMMMMMMMMMMMMM YYYY"));
 		});
     	
-    	searchField.textProperty().addListener((obs, oldValue, newValue) -> {
-    		try {	
-    			Options p = new Options(false);
-    			p.setContext(PointerType.PAST);
-    			p.setNow(new DateTime().withMillisOfDay(0).toCalendar(Locale.getDefault()));
-    			p.setAmbiguousTimeRange(24);
-    			
-    			final Span t = Chronic.parse(newValue, p);
-    			
-    			Span endT;
-    			if (new DateTime(t.getBeginCalendar()).withMillisOfDay(0).isEqual(new DateTime(t.getEndCalendar()).withMillisOfDay(0)))
-    				endT = new Span(t.getBeginCalendar(), Calendar.DAY_OF_MONTH, 1);
-    			else
-    				endT = t;
-    			
-    			allItems.setPredicate(s -> s.getCreationDate().isAfter(new DateTime(t.getBeginCalendar())) 
-					&& s.getCreationDate().isBefore(new DateTime(endT.getEndCalendar())));
-    			
-			} catch (Exception e) {
-				e.printStackTrace();
-				allItems.setPredicate(entry -> true);
-			}
+    	searchField.setOnMouseClicked(event -> tooltip.show(searchField));
+    	
+    	searchField.focusedProperty().addListener((obs, oldValue, newValue) -> {
+			if (newValue) tooltip.show(searchField);
+			else tooltip.hide();
 		});
+    	
+    	createSearchToolTip();
+	}
+	
+	private void createSearchToolTip() {
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/SearchToolTip.fxml"));
+		AnchorPane content = null;
+    	try {
+    		content = loader.<AnchorPane>load();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    	
+    	tooltip = new PopOver(content);
+    	tooltip.setArrowLocation(ArrowLocation.TOP_CENTER);
+    	tooltip.setDetachable(false);
+
+    	tooltipController = loader.<SearchTooltipController>getController();
+    	tooltipController.searchTextProperty().bind(searchField.textProperty());
 	}
 	
 	public void setItems(ObservableList<Entry> items) {
@@ -193,6 +194,7 @@ public class ListEntryViewController {
 	
 	public void showList() {
 		root.getChildren().setAll(listViewPane);
+		listView.requestFocus();
 	}
 	
 	private void showSingle() {

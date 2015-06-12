@@ -9,23 +9,26 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane prefHeight="394.0" prefWidth="271.0" stylesheets="@../style/SearchTooltip.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane prefWidth="271.0" stylesheets="@../style/SearchTooltip.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.avatarhurden.dayonewindows.controllers.SearchTooltipController">
    <children>
       <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="134.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
-            <BorderPane fx:id="textFilter" prefHeight="200.0" prefWidth="200.0">
+            <BorderPane fx:id="textPane" prefHeight="200.0" prefWidth="200.0">
                <top>
-                  <Label text="Text" BorderPane.alignment="CENTER_LEFT" />
+                  <Label text="Text" BorderPane.alignment="CENTER_LEFT">
+                     <BorderPane.margin>
+                        <Insets bottom="10.0" />
+                     </BorderPane.margin></Label>
                </top>
                <padding>
                   <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                </padding>
                <center>
-                  <TextFlow styleClass="clickable">
+                  <TextFlow fx:id="textBox" styleClass="clickable">
                      <children>
-                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Search for " />
-                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="&quot;Text to search&quot;" />
-                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text=" in entries" />
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Search for &quot;" />
+                        <Text fx:id="textSearchLabel" strokeType="OUTSIDE" strokeWidth="0.0" text="Text to search" />
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="&quot; in entries" />
                      </children>
                      <padding>
                         <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
@@ -33,52 +36,60 @@
                   </TextFlow>
                </center>
             </BorderPane>
-            <BorderPane fx:id="dateFilter" prefHeight="74.0" prefWidth="100.0">
+            <BorderPane fx:id="tagPane" prefHeight="200.0" prefWidth="200.0">
                <top>
-                  <Label text="Date" BorderPane.alignment="CENTER_LEFT" />
+                  <Label text="Tags" BorderPane.alignment="CENTER_LEFT">
+                     <BorderPane.margin>
+                        <Insets bottom="10.0" />
+                     </BorderPane.margin></Label>
+               </top>
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+            </BorderPane>
+            <BorderPane fx:id="datePane" maxHeight="93.0" minHeight="93.0" prefHeight="93.0" prefWidth="100.0">
+               <top>
+                  <Label text="Date" BorderPane.alignment="CENTER_LEFT">
+                     <BorderPane.margin>
+                        <Insets bottom="10.0" />
+                     </BorderPane.margin></Label>
                </top>
                <padding>
                   <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                </padding>
                <center>
-                  <GridPane maxWidth="300.0" prefHeight="52.0" prefWidth="179.0" styleClass="clickable" vgap="10.0" BorderPane.alignment="CENTER">
-                     <columnConstraints>
-                        <ColumnConstraints hgrow="ALWAYS" maxWidth="122.0" minWidth="10.0" prefWidth="76.0" />
-                        <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" maxWidth="204.0" minWidth="10.0" prefWidth="153.0" />
-                     </columnConstraints>
-                     <rowConstraints>
-                        <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                     </rowConstraints>
+                  <VBox fx:id="dateBox" alignment="CENTER" styleClass="clickable" BorderPane.alignment="TOP_CENTER">
                      <children>
-                        <Label text="Entries from" />
-                        <Label fx:id="startDate" text="Monday - 22/10/2015" GridPane.columnIndex="1" />
-                        <Label text="to" GridPane.halignment="RIGHT" GridPane.rowIndex="1">
-                           <GridPane.margin>
-                              <Insets right="14.0" />
-                           </GridPane.margin>
-                        </Label>
-                        <Label fx:id="endDate" text="Tuesday - 23/10/2015" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                        <HBox spacing="10.0">
+                           <children>
+                              <Label text="Entries from" />
+                              <Label fx:id="startDate" text="Monday - 22/10/2015" />
+                           </children>
+                           <padding>
+                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                           </padding>
+                        </HBox>
+                        <HBox fx:id="endBox" spacing="10.0">
+                           <children>
+                              <Label text="to" />
+                              <Label fx:id="endDate" text="Tuesday - 23/10/2015" />
+                           </children>
+                           <VBox.margin>
+                              <Insets />
+                           </VBox.margin>
+                           <padding>
+                              <Insets bottom="5.0" left="57.0" right="5.0" top="5.0" />
+                           </padding>
+                        </HBox>
                      </children>
                      <BorderPane.margin>
                         <Insets />
                      </BorderPane.margin>
-                     <padding>
-                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                     </padding>
-                  </GridPane>
+                  </VBox>
                </center>
-            </BorderPane>
-            <BorderPane fx:id="tagFilter" prefHeight="200.0" prefWidth="200.0">
-               <top>
-                  <Label text="Tags" BorderPane.alignment="CENTER_LEFT" />
-               </top>
-               <padding>
-                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-               </padding>
-               <bottom>
-                  <Hyperlink focusTraversable="false" text="Show all tags" BorderPane.alignment="CENTER" />
-               </bottom>
+               <VBox.margin>
+                  <Insets bottom="10.0" />
+               </VBox.margin>
             </BorderPane>
          </children>
       </VBox>
