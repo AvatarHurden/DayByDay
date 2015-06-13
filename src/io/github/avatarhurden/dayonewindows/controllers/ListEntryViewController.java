@@ -3,8 +3,12 @@ package io.github.avatarhurden.dayonewindows.controllers;
 import io.github.avatarhurden.dayonewindows.models.DayOneEntry;
 import io.github.avatarhurden.dayonewindows.models.Entry;
 import io.github.avatarhurden.dayonewindows.models.MonthEntry;
+import io.github.avatarhurden.dayonewindows.models.Tag;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.Predicate;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
@@ -33,7 +37,6 @@ import javafx.scene.text.Font;
 
 import org.controlsfx.control.PopOver;
 import org.controlsfx.control.PopOver.ArrowLocation;
-import org.joda.time.DateTime;
 
 public class ListEntryViewController {
 
@@ -50,23 +53,30 @@ public class ListEntryViewController {
 	private AnchorPane entryView;
 	
 	@FXML private ListView<Entry> listView;
+
+	private ObservableList<Entry> visibleItems;
+	private DoubleProperty visibleSize;
 	
-	private FilteredList<Entry> allItems;
+	private Set<MonthEntry> months;
+	
+	private ObservableList<Entry> items;
+	private FilteredList<Entry> filteredItems;
 	
 	@FXML private Label monthLabel;
 	@FXML private AnchorPane listViewPane;
 	
 	@FXML private TextField searchField;
+	private ObservableList<Predicate<Entry>> filters;
 	private SearchTooltipController tooltipController;
 	private PopOver tooltip;
 	
 	private SimpleIntegerProperty listSize;
 	
-	private ObservableList<Entry> visibleItems;
-	private DoubleProperty visibleSize;
 	
 	@FXML
 	private void initialize() {
+		months = new HashSet<MonthEntry>();
+		
 		listSize = new SimpleIntegerProperty();
 		
 		listView.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) -> {
@@ -133,7 +143,10 @@ public class ListEntryViewController {
     	
     	
     	visibleItems.addListener((ListChangeListener.Change<? extends Entry> event) -> {
-			monthLabel.setText(visibleItems.get(0).getCreationDate().toString("MMMMMMMMMMMMMMM YYYY"));
+    		if (visibleItems.isEmpty())
+    			return;
+    		
+    		monthLabel.setText(visibleItems.get(0).getCreationDate().toString("MMMMMMMMMMMMMMM YYYY"));
 		});
     	
     	searchField.setOnMouseClicked(event -> tooltip.show(searchField));
@@ -161,25 +174,57 @@ public class ListEntryViewController {
 
     	tooltipController = loader.<SearchTooltipController>getController();
     	tooltipController.searchTextProperty().bind(searchField.textProperty());
+    	
+    	filters = FXCollections.observableArrayList();
+    	
+    	tooltipController.setOnFilterSelection(predicate -> {
+    		filters.add(entry -> entry instanceof MonthEntry ? true : predicate.test((DayOneEntry) entry));
+    		addMonths();
+    	});
+    	
+    	filters.addListener((ListChangeListener.Change<? extends Predicate<Entry>> event) -> {
+			filteredItems.setPredicate(entry -> {
+				boolean accepted = true;
+				for (Predicate<Entry> predicate : filters)
+					accepted &= predicate.test(entry);
+				return accepted;
+			});
+		});
+    	
+    	searchField.setText("");
+    	searchField.setPromptText("Search");
+	}
+
+	public void setAvailableTags(ObservableList<Tag> tags) {
+    	tooltipController.setTags(tags);
+	}
+	
+	private void addMonths() {
+		items.removeAll(months);
+		months.clear();
+		for (Entry t : filteredItems) {
+			if (t instanceof MonthEntry)
+				continue;
+			MonthEntry month = new MonthEntry(t.getCreationDate());
+			if (!months.contains(month))
+				months.add(month);
+		}
+		items.addAll(months);
 	}
 	
 	public void setItems(ObservableList<Entry> items) {
+		this.items = items;
 		SortedList<Entry> sorted = new SortedList<Entry>(items);
 		// Compares opposite so that later entries are on top
 		sorted.setComparator((entry1, entry2) -> entry1.compareTo(entry2));
 		
-		DateTime first = sorted.get(0).getCreationDate();
-		DateTime last = sorted.get(items.size() - 1).getCreationDate();
+		filteredItems = sorted.filtered(entry -> true);
+		filteredItems.predicateProperty().addListener((obs, oldValue, newValue) ->  visibleItems.clear());
 		
-		for (int i = first.getYear()*12 + first.getMonthOfYear(); i <= last.getYear()*12 + last.getMonthOfYear(); i++)
-			items.add(new MonthEntry(i/12, i%12));
-
-		allItems = sorted.filtered(entry -> true);
-		allItems.predicateProperty().addListener((obs, oldValue, newValue) -> {
-			visibleItems.clear();
-		});
-    	
-		listView.setItems(allItems);
+		
+		addMonths();
+		
+		listView.setItems(filteredItems);
 		
 		sorted.addListener((ListChangeListener.Change<? extends Entry> event) -> {
 			event.next();
@@ -269,4 +314,5 @@ public class ListEntryViewController {
 	    }
 		
 	}
+
 }

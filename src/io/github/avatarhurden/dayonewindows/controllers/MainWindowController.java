@@ -34,13 +34,13 @@ public class MainWindowController {
 	// Config View
 	private VBox configView;
 	
-	
 	private EntryManager manager;
 
 	public void setDiaryManager(EntryManager manager) {
 		this.manager = manager;
 		
 		entryListViewController.setItems(manager.getEntries());
+		entryListViewController.setAvailableTags(manager.getTags());
 		
 		String startScreen = Config.get().getProperty("start_screen", "Open New Entry View");
     	if (startScreen.equals("Open Last View"))

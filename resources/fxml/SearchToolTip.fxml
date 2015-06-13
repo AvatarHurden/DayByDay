@@ -13,7 +13,7 @@
    <children>
       <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="134.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
-            <BorderPane fx:id="textPane" prefHeight="200.0" prefWidth="200.0">
+            <BorderPane fx:id="textPane" minHeight="85.0" prefHeight="85.0" prefWidth="200.0">
                <top>
                   <Label text="Text" BorderPane.alignment="CENTER_LEFT">
                      <BorderPane.margin>
@@ -36,17 +36,6 @@
                   </TextFlow>
                </center>
             </BorderPane>
-            <BorderPane fx:id="tagPane" prefHeight="200.0" prefWidth="200.0">
-               <top>
-                  <Label text="Tags" BorderPane.alignment="CENTER_LEFT">
-                     <BorderPane.margin>
-                        <Insets bottom="10.0" />
-                     </BorderPane.margin></Label>
-               </top>
-               <padding>
-                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-               </padding>
-            </BorderPane>
             <BorderPane fx:id="datePane" maxHeight="93.0" minHeight="93.0" prefHeight="93.0" prefWidth="100.0">
                <top>
                   <Label text="Date" BorderPane.alignment="CENTER_LEFT">
@@ -58,7 +47,7 @@
                   <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                </padding>
                <center>
-                  <VBox fx:id="dateBox" alignment="CENTER" styleClass="clickable" BorderPane.alignment="TOP_CENTER">
+                  <VBox fx:id="dateBox" alignment="CENTER" styleClass="clickable" BorderPane.alignment="CENTER">
                      <children>
                         <HBox spacing="10.0">
                            <children>
@@ -90,6 +79,20 @@
                <VBox.margin>
                   <Insets bottom="10.0" />
                </VBox.margin>
+            </BorderPane>
+            <BorderPane fx:id="tagPane" prefHeight="200.0" prefWidth="200.0">
+               <top>
+                  <Label text="Tags" BorderPane.alignment="CENTER_LEFT">
+                     <BorderPane.margin>
+                        <Insets bottom="10.0" />
+                     </BorderPane.margin></Label>
+               </top>
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+               <center>
+                  <FlowPane fx:id="tagBox" hgap="7.0" prefHeight="200.0" prefWidth="200.0" vgap="7.0" />
+               </center>
             </BorderPane>
          </children>
       </VBox>

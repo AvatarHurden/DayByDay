@@ -13,6 +13,14 @@ public class MonthEntry implements Entry {
 		date = new DateTime(year, month, 1, 0, 0);
 	}
 	
+	public MonthEntry(DateTime date) {
+		this.date = date.withMillisOfDay(0).withDayOfMonth(1);
+	}
+
+	public String getUUID() {
+		return "";
+	}
+	
 	public DateTime getCreationDate() {
 		return date;
 	}
@@ -26,10 +34,17 @@ public class MonthEntry implements Entry {
 		return getCreationDate().compareTo(o.getCreationDate());
 	}
 
-	public String getUUID() {
-		return "";
+	public boolean equals(Object o) {
+		if (!(o instanceof MonthEntry))
+			return false;
+		else
+			return hashCode() == o.hashCode();
 	}
 
+	public int hashCode() {
+		return date.hashCode();
+	}
+	
 	public Property<DateTime> creationDateProperty() {
 		return new SimpleObjectProperty<DateTime>();
 	}

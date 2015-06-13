@@ -1,12 +1,21 @@
 package io.github.avatarhurden.dayonewindows.controllers;
 
+import io.github.avatarhurden.dayonewindows.models.DayOneEntry;
+import io.github.avatarhurden.dayonewindows.models.Tag;
+
 import java.util.Locale;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -26,7 +35,9 @@ public class SearchTooltipController {
 	@FXML private TextFlow textBox;
 	
 	@FXML private BorderPane tagPane;
-
+	@FXML private FlowPane tagBox;
+	private ObservableList<Tag> tags;
+	
 	@FXML private BorderPane datePane;
 	@FXML private VBox dateBox;
 	@FXML private HBox endBox;
@@ -34,19 +45,24 @@ public class SearchTooltipController {
 	
 	private Property<String> searchText;
 	
+	private Consumer<Predicate<DayOneEntry>> filterAction;
+	
 	@FXML
 	public void initialize() {
 		bindTextFilters();
 
 		endBox.managedProperty().bind(endBox.visibleProperty());
 		datePane.managedProperty().bind(datePane.visibleProperty());
+		
+		textBox.setOnMouseClicked(event -> filterAction.accept(
+				entry -> entry.getEntryText().toLowerCase().contains(searchText.getValue())));
 	}
 	
 	private void bindTextFilters() {
 		searchText = new SimpleStringProperty();
 		
 		textSearchLabel.textProperty().bind(searchText);
-	
+		
 		searchText.addListener((obs, oldValue, newValue) -> {
 			matchDates(newValue);
 			matchTags(newValue);
@@ -54,36 +70,56 @@ public class SearchTooltipController {
 		});
 	}
 	
+	/**
+	 * @param text
+	 */
 	private void matchDates(String text) {
-		try {
 			Options p = new Options(false);
 			p.setContext(PointerType.PAST);
 			p.setNow(new DateTime().withMillisOfDay(8639999).toCalendar(Locale.getDefault()));
 			p.setAmbiguousTimeRange(24);
 			
 			final Span t = Chronic.parse(text, p);
+			if (t == null)
+				datePane.setCenter(new Label("Enter a date to filter your entries"));
+			else {
+				startDate.setText(new DateTime(t.getBeginCalendar()).toString("EEEEEEEE - dd/MM/YYYY"));
+				endDate.setText(new DateTime(t.getEndCalendar()).toString("EEEEEEEE - dd/MM/YYYY"));
 			
-			startDate.setText(new DateTime(t.getBeginCalendar()).toString("EEEEEEEE - dd/MM/YYYY"));
-			endDate.setText(new DateTime(t.getEndCalendar()).toString("EEEEEEEE - dd/MM/YYYY"));
-			if (new DateTime(t.getBeginCalendar()).withMillisOfDay(0).isEqual(new DateTime(t.getEndCalendar()).withMillisOfDay(0))) {
-				endBox.setVisible(false);
-			} else {
-				endBox.setVisible(true);
-				System.out.println("hi");
-			}
+				if (new DateTime(t.getBeginCalendar()).withMillisOfDay(0).isEqual(new DateTime(t.getEndCalendar()).withMillisOfDay(0)))
+					endBox.setVisible(false);
+				else
+					endBox.setVisible(true);
 
-			datePane.setCenter(dateBox);
+				dateBox.setOnMouseClicked(event -> filterAction.accept(entry -> {
+					return entry.getCreationDate().isAfter(new DateTime(t.getBeginCalendar()).withMillisOfDay(0))
+							&& entry.getCreationDate().isBefore(new DateTime(t.getEndCalendar()).withMillisOfDay(8639999));
+				})); 
+				
+				datePane.setCenter(dateBox);
+			}
 			
 	//		setPredicate(s -> s.getCreationDate().isAfter(new DateTime(t.getBeginCalendar())) 
 	//			&& s.getCreationDate().isBefore(new DateTime(endT.getEndCalendar())));
-		} catch (NullPointerException e) {
-			datePane.setCenter(new Label("Enter a date to filter your entries"));
-//			datePane.setVisible(false);
-		}
 	}
 	
 	private void matchTags(String text) {
+		if (tags == null)
+			return;
 		
+		ObservableList<Node> children = tagBox.getChildren();
+		children.clear();
+		
+		for (Tag t : tags)
+			if (t.getName().toLowerCase().contains(text.toLowerCase())) {
+				VBox box = new VBox(new Label(t.getName()));
+				box.setPadding(new Insets(5));
+				box.getStyleClass().add("clickable");
+				
+				box.setOnMouseClicked(event -> filterAction.accept(entry -> entry.getTags().contains(t.getName())));
+				
+				children.add(box);
+			}
 	}
 	
 	private void matchText(String text) {
@@ -93,8 +129,16 @@ public class SearchTooltipController {
 			textPane.setCenter(textBox);
 	}
 	
+	public void setOnFilterSelection(Consumer<Predicate<DayOneEntry>> consumer) {
+		filterAction = consumer;
+	}
+	
 	public Property<String> searchTextProperty() {
 		return searchText;
+	}
+	
+	public void setTags(ObservableList<Tag> tags) {
+		this.tags = tags;
 	}
 	
 }

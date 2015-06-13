@@ -6,9 +6,9 @@ import org.joda.time.DateTime;
 
 public interface Entry extends Comparable<Entry> {
 
-	public DateTime getCreationDate();
-	
 	public String getUUID();
 
+	public DateTime getCreationDate();
+	
 	public Property<DateTime> creationDateProperty();
 }
