@@ -9,6 +9,7 @@
 
 <AnchorPane prefHeight="724.0" prefWidth="1054.0" stylesheets="@../style/MainWindow.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.avatarhurden.dayonewindows.controllers.MainWindowController">
    <children>
+      <AnchorPane fx:id="contentPane" layoutX="62.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="62.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
       <VBox alignment="CENTER" prefHeight="724.0" prefWidth="62.0" spacing="5.0" styleClass="buttonBar" stylesheets="@../style/MainWindow.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
             <ToggleButton fx:id="newButton" contentDisplay="CENTER" focusTraversable="false" graphicTextGap="0.0" mnemonicParsing="false" onAction="#showNewEntry" prefHeight="52.0">
@@ -23,7 +24,6 @@
             </ToggleButton>
          </children>
       </VBox>
-      <AnchorPane fx:id="contentPane" layoutX="62.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="62.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
       <Button mnemonicParsing="false" onAction="#showConfigView" text="Button" AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="4.0" />
    </children>
 </AnchorPane>

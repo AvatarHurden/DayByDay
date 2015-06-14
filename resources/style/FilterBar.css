@@ -1,0 +1,16 @@
+
+.right {
+	-fx-background-radius: 0 10 10 0;
+}
+
+.left {
+	-fx-background-radius: 10 0 0 10;
+}
+
+.unique {
+	-fx-background-radius: 10;
+}
+
+.center {
+	-fx-background-radius: 0;
+}

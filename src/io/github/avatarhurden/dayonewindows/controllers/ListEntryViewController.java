@@ -10,6 +10,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -27,16 +30,14 @@ import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Font;
+import javafx.util.Duration;
 
-import org.controlsfx.control.PopOver;
-import org.controlsfx.control.PopOver.ArrowLocation;
 
 public class ListEntryViewController {
 
@@ -65,13 +66,10 @@ public class ListEntryViewController {
 	@FXML private Label monthLabel;
 	@FXML private AnchorPane listViewPane;
 	
-	@FXML private TextField searchField;
-	private ObservableList<Predicate<Entry>> filters;
-	private SearchTooltipController tooltipController;
-	private PopOver tooltip;
+	@FXML private HBox filterPane; 
+	private FilterBar filterBox;
 	
 	private SimpleIntegerProperty listSize;
-	
 	
 	@FXML
 	private void initialize() {
@@ -149,54 +147,58 @@ public class ListEntryViewController {
     		monthLabel.setText(visibleItems.get(0).getCreationDate().toString("MMMMMMMMMMMMMMM YYYY"));
 		});
     	
-    	searchField.setOnMouseClicked(event -> tooltip.show(searchField));
-    	
-    	searchField.focusedProperty().addListener((obs, oldValue, newValue) -> {
-			if (newValue) tooltip.show(searchField);
-			else tooltip.hide();
-		});
-    	
     	createSearchToolTip();
+    	
+    	root.sceneProperty().addListener((obs, oldValue, newValue) -> {
+    		if (newValue != null)
+    			createMovers();
+		});
 	}
 	
 	private void createSearchToolTip() {
-		FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/SearchToolTip.fxml"));
-		AnchorPane content = null;
-    	try {
-    		content = loader.<AnchorPane>load();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	
+    	filterBox = new FilterBar();
     	
-    	tooltip = new PopOver(content);
-    	tooltip.setArrowLocation(ArrowLocation.TOP_CENTER);
-    	tooltip.setDetachable(false);
-
-    	tooltipController = loader.<SearchTooltipController>getController();
-    	tooltipController.searchTextProperty().bind(searchField.textProperty());
+    	filterPane.getChildren().setAll(filterBox);
+    	filterPane.prefWidthProperty().bind(filterBox.prefWidthProperty());
     	
-    	filters = FXCollections.observableArrayList();
-    	
-    	tooltipController.setOnFilterSelection(predicate -> {
-    		filters.add(entry -> entry instanceof MonthEntry ? true : predicate.test((DayOneEntry) entry));
-    		addMonths();
+    	filterBox.setOnSelected(() -> {
+    		Timeline timeline = new Timeline();
+    		timeline.getKeyFrames().add(new KeyFrame(new Duration(300), 
+    			new KeyValue(filterBox.prefWidthProperty(), 500),
+    			new KeyValue(monthLabel.opacityProperty(), 0)
+    		));
+    		
+    		timeline.play();
     	});
     	
-    	filters.addListener((ListChangeListener.Change<? extends Predicate<Entry>> event) -> {
+    	filterBox.setOnUnselected(() -> {
+    		if (!filterBox.getFilters().isEmpty())
+    			return;
+    		
+    		Timeline timeline = new Timeline();
+    		timeline.getKeyFrames().add(new KeyFrame(new Duration(300), 
+    			new KeyValue(filterBox.prefWidthProperty(), 230),
+    			new KeyValue(monthLabel.opacityProperty(), 1)
+    		));
+    		
+    		timeline.play();
+    	});
+    	
+    	filterBox.getFilters().addListener((ListChangeListener.Change<? extends Predicate<Entry>> event) -> {
+    		addMonths();
 			filteredItems.setPredicate(entry -> {
 				boolean accepted = true;
-				for (Predicate<Entry> predicate : filters)
+				for (Predicate<Entry> predicate : filterBox.getFilters())
 					accepted &= predicate.test(entry);
 				return accepted;
 			});
 		});
     	
-    	searchField.setText("");
-    	searchField.setPromptText("Search");
 	}
 
 	public void setAvailableTags(ObservableList<Tag> tags) {
-    	tooltipController.setTags(tags);
+		filterBox.setAvailableTags(tags);
 	}
 	
 	private void addMonths() {
@@ -237,13 +239,47 @@ public class ListEntryViewController {
 		monthLabel.setText(sorted.get(sorted.size() - 1).getCreationDate().toString("MMMMMMMMMMMMMMM YYYY"));
 	}
 	
+	private DoubleProperty viewAnchor;
+	
+	private void createMovers() {
+		if (viewAnchor != null) {
+			viewAnchor.setValue(root.getScene().getWidth());
+			return;
+		}
+		
+		viewAnchor = new SimpleDoubleProperty(root.getScene().getWidth());
+		
+		viewAnchor.addListener((obs, oldValue, newValue) -> {
+			AnchorPane.setLeftAnchor(singleViewPane, newValue.doubleValue());
+			AnchorPane.setRightAnchor(singleViewPane, -newValue.doubleValue());
+			
+			AnchorPane.setRightAnchor(listViewPane, root.getScene().getWidth() - newValue.doubleValue());
+			AnchorPane.setLeftAnchor(listViewPane, -root.getScene().getWidth() + newValue.doubleValue());
+		});
+		
+		root.widthProperty().addListener((obs, oldValue, newValue) -> {
+			double diff = newValue.doubleValue() - oldValue.doubleValue();
+			
+			if (AnchorPane.getRightAnchor(listViewPane) != 0)
+				AnchorPane.setRightAnchor(listViewPane, AnchorPane.getRightAnchor(listViewPane) + diff);
+			
+			if (AnchorPane.getLeftAnchor(singleViewPane) != 0)
+				AnchorPane.setLeftAnchor(singleViewPane, AnchorPane.getLeftAnchor(singleViewPane) + diff);
+		}); 
+	}
+	
 	public void showList() {
-		root.getChildren().setAll(listViewPane);
+		Timeline timeline = new Timeline();
+		timeline.getKeyFrames().add(new KeyFrame(new Duration(300),	new KeyValue(viewAnchor, root.getScene().getWidth())));
+		timeline.play();
+		
 		listView.requestFocus();
 	}
 	
 	private void showSingle() {
-		root.getChildren().setAll(singleViewPane);
+		Timeline timeline = new Timeline();
+		timeline.getKeyFrames().add(new KeyFrame(new Duration(300), new KeyValue(viewAnchor, 0d)));
+		timeline.play();
 	}
 	
 	private class EntryCell extends ListCell<Entry> {

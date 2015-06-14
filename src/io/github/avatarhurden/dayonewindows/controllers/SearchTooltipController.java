@@ -70,37 +70,36 @@ public class SearchTooltipController {
 		});
 	}
 	
-	/**
-	 * @param text
-	 */
 	private void matchDates(String text) {
-			Options p = new Options(false);
-			p.setContext(PointerType.PAST);
-			p.setNow(new DateTime().withMillisOfDay(8639999).toCalendar(Locale.getDefault()));
-			p.setAmbiguousTimeRange(24);
-			
+		Options p = new Options(false);
+		p.setContext(PointerType.PAST);
+		p.setNow(new DateTime().withMillisOfDay(8639999).toCalendar(Locale.getDefault()));
+		p.setAmbiguousTimeRange(24);
+		
+		try {
 			final Span t = Chronic.parse(text, p);
-			if (t == null)
-				datePane.setCenter(new Label("Enter a date to filter your entries"));
-			else {
-				startDate.setText(new DateTime(t.getBeginCalendar()).toString("EEEEEEEE - dd/MM/YYYY"));
-				endDate.setText(new DateTime(t.getEndCalendar()).toString("EEEEEEEE - dd/MM/YYYY"));
 			
-				if (new DateTime(t.getBeginCalendar()).withMillisOfDay(0).isEqual(new DateTime(t.getEndCalendar()).withMillisOfDay(0)))
-					endBox.setVisible(false);
-				else
-					endBox.setVisible(true);
+			startDate.setText(new DateTime(t.getBeginCalendar()).toString("EEEEEEEE - dd/MM/YYYY"));
+			endDate.setText(new DateTime(t.getEndCalendar()).toString("EEEEEEEE - dd/MM/YYYY"));
+		
+			DateTime start = new DateTime(t.getBeginCalendar());
+			DateTime end = new DateTime(t.getEndCalendar());
+			
+			if (start.withMillisOfDay(0).isEqual(end.withMillisOfDay(0))
+					|| (start.getMillisOfDay() == 0 && t.getEnd() - t.getBegin() <= 86400000)) // If the span is a single day 
+				endBox.setVisible(false);
+			else
+				endBox.setVisible(true);
 
-				dateBox.setOnMouseClicked(event -> filterAction.accept(entry -> {
-					return entry.getCreationDate().isAfter(new DateTime(t.getBeginCalendar()).withMillisOfDay(0))
-							&& entry.getCreationDate().isBefore(new DateTime(t.getEndCalendar()).withMillisOfDay(8639999));
-				})); 
-				
-				datePane.setCenter(dateBox);
-			}
+			dateBox.setOnMouseClicked(event -> filterAction.accept(entry -> {
+				return entry.getCreationDate().isAfter(new DateTime(t.getBeginCalendar()).withMillisOfDay(0))
+						&& entry.getCreationDate().isBefore(new DateTime(t.getEndCalendar()).withMillisOfDay(8639999));
+			})); 
 			
-	//		setPredicate(s -> s.getCreationDate().isAfter(new DateTime(t.getBeginCalendar())) 
-	//			&& s.getCreationDate().isBefore(new DateTime(endT.getEndCalendar())));
+			datePane.setCenter(dateBox);
+		} catch (Exception e) {
+			datePane.setCenter(new Label("Enter a date to filter your entries"));
+		}
 	}
 	
 	private void matchTags(String text) {
