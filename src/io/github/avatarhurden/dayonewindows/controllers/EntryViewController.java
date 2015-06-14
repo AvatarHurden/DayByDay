@@ -75,7 +75,7 @@ public class EntryViewController {
 	@FXML private ImageView imageView;
 	private Property<Number> zoomProperty;
 	
-	// Entry
+	// Entry Text
 	@FXML private VBox contentPane;
 	@FXML private TextArea textArea;
 	@FXML private WebView webView;
@@ -143,11 +143,9 @@ public class EntryViewController {
 				BooleanBinding.booleanExpression(newEntry.starredProperty())).then(Color.GOLD).otherwise(
 						Bindings.when(BooleanBinding.booleanExpression(favoriteIcon.hoverProperty())).then(Color.GOLD.deriveColor(0, 1, 1, 0.3)).otherwise(Color.TRANSPARENT)));
 		
-		if (entry != null)
-			imageView.imageProperty().unbind();
+		
 		imageView.imageProperty().bind(newEntry.imageProperty());
-		zoomProperty.setValue(0);
-		zoomProperty.setValue(1);
+		zoomProperty.setValue(1d);
 		
 		entry = newEntry;
 	}
@@ -301,6 +299,13 @@ public class EntryViewController {
 	        webView.getEngine().loadContent(html);
 		});
         webView.setBlendMode(BlendMode.DARKEN);
+        
+        saveButton.visibleProperty().addListener((obs, oldValue, newValue) -> {
+			if (newValue) {
+				textArea.requestFocus();
+				textArea.positionCaret(textArea.getLength());
+			}
+		});
 		
         textArea.setOnKeyPressed(event -> {
         	if (event.isControlDown() && event.getCode() == KeyCode.ENTER)
@@ -339,6 +344,11 @@ public class EntryViewController {
 			if (event.getClickCount() == 2)
 				zoomProperty.setValue(1);
 		});
+		
+		imageScroll.layoutBoundsProperty().addListener((obs, oldValue, newValue) -> {
+			imageView.setFitHeight(zoomProperty.getValue().doubleValue() * (newValue.getHeight() - 2));
+			imageView.setFitWidth(zoomProperty.getValue().doubleValue() * (newValue.getWidth() - 2));
+		});
 	}
 	
 	private void setImageViewProperties() {
@@ -347,27 +357,21 @@ public class EntryViewController {
 		imageStack.prefWidthProperty().bind(imageScroll.widthProperty().subtract(20));
 		imageStack.prefHeightProperty().bind(imageView.fitHeightProperty());
 		
-//		imageView.setFitWidth(imageScroll.getWidth() - 2);
-//		imageView.setFitHeight(imageScroll.getHeight() - 2);
-//		imageView.fitHeightProperty().bind(imageScroll.heightProperty().subtract(2));
-		
 		imageView.imageProperty().addListener((obs, oldValue, newValue) -> {
 			if (newValue == null)
 				imageScroll.setVisible(false);
-			else {
+			else 
 				imageScroll.setVisible(true);
-				System.out.println("ho");
-//				imageScroll.setPrefHeight(Math.min(800, newValue.getHeight()));
-			}
 		});
 		
-		zoomProperty = new SimpleDoubleProperty(1);
+		zoomProperty = new SimpleDoubleProperty(0);
 		
-		zoomProperty.addListener((obs, oldValue, newValue) -> {
+		zoomProperty.addListener((observable, oldValue, newValue) -> {
 			double hvalue = imageScroll.getHvalue();
 			double vvalue = imageScroll.getVvalue();
-			imageView.setFitHeight(zoomProperty.getValue().doubleValue() * (imageScroll.getHeight() - 2));
-			imageView.setFitWidth(zoomProperty.getValue().doubleValue() * (imageScroll.getWidth() - 2));
+			
+			imageView.setFitHeight(newValue.doubleValue() * (imageScroll.getHeight() - 2));
+			imageView.setFitWidth(newValue.doubleValue() * (imageScroll.getWidth() - 2));
 			
 			imageScroll.setHvalue(hvalue);
 			imageScroll.setVvalue(vvalue);
@@ -376,9 +380,9 @@ public class EntryViewController {
 		imageView.setOnScroll(value -> {
 			value.consume();
 			if (value.getDeltaY() > 0)
-				zoomProperty.setValue(Math.min(10, zoomProperty.getValue().doubleValue() *  1.1));
+				zoomProperty.setValue(Math.min(10, zoomProperty.getValue().doubleValue() *  1.08));
 			else if (value.getDeltaY() < 0)
-				zoomProperty.setValue(Math.max(1, zoomProperty.getValue().doubleValue() / 1.1));
+				zoomProperty.setValue(Math.max(1, zoomProperty.getValue().doubleValue() / 1.08));
 			});
 	}
 

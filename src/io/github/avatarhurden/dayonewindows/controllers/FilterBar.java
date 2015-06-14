@@ -36,7 +36,7 @@ public class FilterBar extends HBox {
 		getStylesheets().add("style/FilterBar.css");
 
 		setPrefWidth(230);
-		
+
 		bindPredicates();
 		initialize();
 		createToolTip();
@@ -47,16 +47,17 @@ public class FilterBar extends HBox {
 		text.getStyleClass().add("unique");
 		text.setPromptText("Search");
 		
-    	text.setOnMouseClicked(event -> popOver.show(text));
-    	
+		text.setOnMouseClicked(event -> {
+    		if (event.getClickCount() == 2)
+    			popOver.show(text);
+    	});
+		
     	text.focusedProperty().addListener((obs, oldValue, newValue) -> {
-			if (newValue) {
-				popOver.show(text);
+			if (newValue)
     			onSelected.run();
-			} else {
-				popOver.hide();
+    		else
 				onUnselected.run();
-			}
+			
 		});
     	
 		setHgrow(text, Priority.ALWAYS);
@@ -145,6 +146,14 @@ public class FilterBar extends HBox {
 	
 	public void setOnUnselected(Runnable event) {
 		this.onUnselected = event;
+	}
+
+	public void showPopup() {
+		popOver.show(text);
+	}
+
+	public void hidePopup() {
+		popOver.hide();
 	}
 	
 }

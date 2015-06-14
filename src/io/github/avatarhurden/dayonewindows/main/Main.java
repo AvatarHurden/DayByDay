@@ -36,15 +36,15 @@ public class Main extends Application {
 		NotificationPane pane = new NotificationPane(loader.load());
 		Scene scene = new Scene(pane);
 		
-		MainWindowController controller = loader.<MainWindowController>getController();
-		controller.setDiaryManager(entryManager);
-		
 		primaryStage.setTitle("LifeOrganizer");
 		primaryStage.setScene(scene);
 		primaryStage.show();
-		
+
 		setPosition(primaryStage);
-	
+		
+		MainWindowController controller = loader.<MainWindowController>getController();
+		controller.setDiaryManager(entryManager);
+		
 		primaryStage.setOnCloseRequest(event -> {
 			try {
 				savePosition(primaryStage);

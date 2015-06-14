@@ -151,7 +151,7 @@ public class ListEntryViewController {
     	
     	root.sceneProperty().addListener((obs, oldValue, newValue) -> {
     		if (newValue != null)
-    			createMovers();
+    			createViewAnchor();
 		});
 	}
 	
@@ -164,7 +164,8 @@ public class ListEntryViewController {
     	
     	filterBox.setOnSelected(() -> {
     		Timeline timeline = new Timeline();
-    		timeline.getKeyFrames().add(new KeyFrame(new Duration(300), 
+    		timeline.setOnFinished(event -> filterBox.showPopup());
+    		timeline.getKeyFrames().add(new KeyFrame(new Duration(200), 
     			new KeyValue(filterBox.prefWidthProperty(), 500),
     			new KeyValue(monthLabel.opacityProperty(), 0)
     		));
@@ -177,7 +178,8 @@ public class ListEntryViewController {
     			return;
     		
     		Timeline timeline = new Timeline();
-    		timeline.getKeyFrames().add(new KeyFrame(new Duration(300), 
+    		timeline.setOnFinished(event -> filterBox.hidePopup());
+    		timeline.getKeyFrames().add(new KeyFrame(new Duration(200), 
     			new KeyValue(filterBox.prefWidthProperty(), 230),
     			new KeyValue(monthLabel.opacityProperty(), 1)
     		));
@@ -230,8 +232,10 @@ public class ListEntryViewController {
 		
 		sorted.addListener((ListChangeListener.Change<? extends Entry> event) -> {
 			event.next();
-			if (event.wasRemoved()) 
+			if (event.wasRemoved()) {
 				listView.getSelectionModel().clearSelection();
+				showList();
+			}
 		});
 		listView.scrollTo(sorted.size() - 1);
 		listSize.bind(Bindings.size(sorted));
@@ -241,45 +245,49 @@ public class ListEntryViewController {
 	
 	private DoubleProperty viewAnchor;
 	
-	private void createMovers() {
-		if (viewAnchor != null) {
+	private void createViewAnchor() {
+		if (viewAnchor == null) {
+			viewAnchor = new SimpleDoubleProperty(root.getScene().getWidth());
+
+			viewAnchor.addListener((obs, oldValue, newValue) -> {
+				AnchorPane.setLeftAnchor(listViewPane, -newValue.doubleValue());
+				AnchorPane.setRightAnchor(listViewPane, +newValue.doubleValue());
+				
+				AnchorPane.setRightAnchor(singleViewPane, -root.getScene().getWidth() + newValue.doubleValue());
+				AnchorPane.setLeftAnchor(singleViewPane, root.getScene().getWidth() - newValue.doubleValue());
+			});
+		} else 
 			viewAnchor.setValue(root.getScene().getWidth());
-			return;
-		}
 		
-		viewAnchor = new SimpleDoubleProperty(root.getScene().getWidth());
-		
-		viewAnchor.addListener((obs, oldValue, newValue) -> {
-			AnchorPane.setLeftAnchor(singleViewPane, newValue.doubleValue());
-			AnchorPane.setRightAnchor(singleViewPane, -newValue.doubleValue());
-			
-			AnchorPane.setRightAnchor(listViewPane, root.getScene().getWidth() - newValue.doubleValue());
-			AnchorPane.setLeftAnchor(listViewPane, -root.getScene().getWidth() + newValue.doubleValue());
-		});
-		
-		root.widthProperty().addListener((obs, oldValue, newValue) -> {
+		root.getScene().widthProperty().addListener((obs, oldValue, newValue) -> {
 			double diff = newValue.doubleValue() - oldValue.doubleValue();
-			
-			if (AnchorPane.getRightAnchor(listViewPane) != 0)
-				AnchorPane.setRightAnchor(listViewPane, AnchorPane.getRightAnchor(listViewPane) + diff);
 			
 			if (AnchorPane.getLeftAnchor(singleViewPane) != 0)
 				AnchorPane.setLeftAnchor(singleViewPane, AnchorPane.getLeftAnchor(singleViewPane) + diff);
+			
+			if (AnchorPane.getRightAnchor(listViewPane) != 0)
+				AnchorPane.setRightAnchor(listViewPane, AnchorPane.getRightAnchor(listViewPane) + diff);
 		}); 
 	}
 	
-	public void showList() {
+	private void transitionTo(Node view) {
 		Timeline timeline = new Timeline();
-		timeline.getKeyFrames().add(new KeyFrame(new Duration(300),	new KeyValue(viewAnchor, root.getScene().getWidth())));
+		if (view == listViewPane)
+			timeline.getKeyFrames().add(new KeyFrame(new Duration(300),	new KeyValue(viewAnchor, 0d)));
+		else if (view == singleViewPane)
+			timeline.getKeyFrames().add(new KeyFrame(new Duration(300), new KeyValue(viewAnchor, root.getScene().getWidth())));
+
 		timeline.play();
+	}
+	
+	public void showList() {
+		transitionTo(listViewPane);
 		
 		listView.requestFocus();
 	}
 	
 	private void showSingle() {
-		Timeline timeline = new Timeline();
-		timeline.getKeyFrames().add(new KeyFrame(new Duration(300), new KeyValue(viewAnchor, 0d)));
-		timeline.play();
+		transitionTo(singleViewPane);
 	}
 	
 	private class EntryCell extends ListCell<Entry> {

@@ -8,8 +8,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
 
-
-<VBox prefHeight="389.0" prefWidth="521.0" spacing="10.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.avatarhurden.dayonewindows.controllers.ConfigViewController">
+<VBox fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="389.0" prefWidth="521.0" spacing="10.0" style="-fx-background-color: white; -fx-border-radius: 10; -fx-border-color: lightblue; -fx-background-radius: 10;" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.avatarhurden.dayonewindows.controllers.ConfigViewController">
    <children>
       <VBox prefHeight="110.0" prefWidth="441.0" spacing="10.0">
          <children>
@@ -39,6 +38,7 @@
             <Button mnemonicParsing="false" text="Use Custom Location..." />
          </children>
       </VBox>
+      <Button mnemonicParsing="false" onAction="#close" text="Close" />
    </children>
    <padding>
       <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />

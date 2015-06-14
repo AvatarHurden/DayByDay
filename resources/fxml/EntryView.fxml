@@ -12,7 +12,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.avatarhurden.dayonewindows.controllers.EntryViewController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" stylesheets="@../style/EntryView.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.avatarhurden.dayonewindows.controllers.EntryViewController">
    <children>
       <HBox alignment="CENTER_LEFT" prefHeight="52.0" prefWidth="600.0" spacing="10.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
@@ -96,13 +96,22 @@
               <content>
                   <StackPane fx:id="imageStack" prefHeight="150.0" prefWidth="596.0">
                      <children>
-                        <ImageView fx:id="imageView" fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" />
+                        <ImageView fx:id="imageView" fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true">
+                           <StackPane.margin>
+                              <Insets />
+                           </StackPane.margin></ImageView>
                      </children>
                   </StackPane>
               </content>
             </ScrollPane>
-            <TextArea fx:id="textArea" />
-            <WebView fx:id="webView" prefHeight="-1.0" prefWidth="-1.0" />
+            <TextArea fx:id="textArea">
+               <VBox.margin>
+                  <Insets bottom="10.0" left="30.0" right="30.0" top="10.0" />
+               </VBox.margin></TextArea>
+            <WebView fx:id="webView" prefHeight="-1.0" prefWidth="-1.0">
+               <VBox.margin>
+                  <Insets bottom="10.0" left="30.0" right="30.0" top="10.0" />
+               </VBox.margin></WebView>
          </children>
       </VBox>
    </children>
