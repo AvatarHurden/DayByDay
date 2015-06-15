@@ -7,17 +7,20 @@ import io.github.avatarhurden.dayonewindows.models.MonthEntry;
 import io.github.avatarhurden.dayonewindows.models.Tag;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.function.Predicate;
 
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 
 import org.controlsfx.control.PopOver;
 import org.controlsfx.control.PopOver.ArrowLocation;
@@ -28,6 +31,7 @@ public class FilterBar extends HBox {
 	private TextField text;
 	
 	private ObservableList<Predicate<Entry>> predicates;
+	private HashMap<HBox, Predicate<Entry>> boxMap;
 	
 	private PopOver popOver;
 	private SearchTooltipController tooltipController;
@@ -67,17 +71,7 @@ public class FilterBar extends HBox {
 	
 	private void bindPredicates() {
 		predicates = FXCollections.observableArrayList();
-	
-		predicates.addListener((ListChangeListener.Change<? extends Predicate<Entry>> event) -> {
-			while (event.next()) {
-				if (event.wasAdded())
-					for (Predicate<Entry> predicate : event.getAddedSubList())
-						addFilterInstance(predicate);
-				if (event.wasRemoved())
-					for (Predicate<Entry> predicate : event.getRemoved())
-						removeFilterInstance(predicate);
-			}
-		});
+		boxMap = new HashMap<HBox, Predicate<Entry>>();
 	}
 	
 	private void createToolTip() {
@@ -96,26 +90,39 @@ public class FilterBar extends HBox {
     	tooltipController = loader.<SearchTooltipController>getController();
     	tooltipController.searchTextProperty().bind(text.textProperty());
     	
-    	tooltipController.setOnFilterSelection(predicate -> {
-    		predicates.add(entry -> entry instanceof MonthEntry ? true : predicate.test((DayOneEntry) entry));
+    	tooltipController.setOnFilterSelection((predicate, string) -> {
+    		Predicate<Entry> pred = (entry -> entry instanceof MonthEntry ? true : predicate.test((DayOneEntry) entry));
+    		predicates.add(pred);
+    		addFilterInstance(pred, string);
+    		text.clear();
+    		text.requestFocus();
     	});
     	
 	}
 	
-	private void addFilterInstance(Predicate<Entry> predicate) {
+	private void addFilterInstance(Predicate<Entry> predicate, String textValue) {
+		HBox box = getFilterBox(textValue);
+		
 		if (getChildren().size() == 1) {
 			text.getStyleClass().add("right");
+			box.getStyleClass().add("left");
 			text.getStyleClass().remove("unique");
 		}
 		
-//		getChildren().add(predicates.size(), getFilterBox());
+		boxMap.put(box, predicate);
 		
+		getChildren().add(predicates.size() - 1, box);
 	}
 	
-	private void removeFilterInstance(Predicate<Entry> predicate) {
+	private void removeFilterInstance(HBox box) {
+		predicates.remove(boxMap.get(box));
+		boxMap.remove(box);
 		
+		getChildren().remove(box);
 		
-		if (getChildren().size() == 1) {
+		if (getChildren().size() > 1)
+			getChildren().get(0).getStyleClass().add("left");
+		else if (getChildren().size() == 1) {
 			text.getStyleClass().add("unique");
 			text.getStyleClass().remove("right");
 		}
@@ -126,15 +133,31 @@ public class FilterBar extends HBox {
 		itemBox.getStyleClass().add("filter-box");
 		
 		Label label = new Label(text);
-        itemBox.getChildren().add(label);
+		itemBox.getChildren().add(label);
         
+        HBox.setMargin(label, new Insets(4, 5, 4, 0));
+		
+		Region clearButton = new Region();
+        clearButton.getStyleClass().addAll("graphic");
+        
+        StackPane clearButtonPane = new StackPane(clearButton);
+        clearButtonPane.getStyleClass().addAll("clear-button");
+        clearButtonPane.visibleProperty().bind(itemBox.hoverProperty());
+
+        itemBox.getChildren().add(clearButtonPane);
+        
+		Runnable delete = () -> {
+			removeFilterInstance(itemBox);
+		};
+	
+		clearButtonPane.setOnMouseReleased(event -> delete.run());
+		
 		return itemBox;
 	}
 	
 	public ObservableList<Predicate<Entry>> getFilters() {
 		return predicates;
 	}
-	
 	
 	public void setAvailableTags(ObservableList<Tag> tags) {
 		tooltipController.setTags(tags);

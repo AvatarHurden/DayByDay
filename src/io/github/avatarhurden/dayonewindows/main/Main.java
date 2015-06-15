@@ -9,7 +9,9 @@ import java.util.List;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 
@@ -62,8 +64,8 @@ public class Main extends Application {
 		List<Double> pos = new ArrayList<Double>();
 		pos.add(window.getX());
 		pos.add(window.getY());
-		pos.add(window.getHeight());
 		pos.add(window.getWidth());
+		pos.add(window.getHeight());
 		Config.get().setListProperty("window_position", pos, d -> d.toString());
 	}
 	
@@ -72,10 +74,19 @@ public class Main extends Application {
 		if (pos == null)
 			return;
 		
-		window.setX(pos.get(0));
-		window.setY(pos.get(1));
-		window.setHeight(pos.get(2));
-		window.setWidth(pos.get(3));
+		Rectangle2D screen = Screen.getPrimary().getVisualBounds();
+
+		Rectangle2D windowRect = new Rectangle2D(pos.get(0), pos.get(1), pos.get(2), pos.get(3));
+		
+		window.setWidth(pos.get(2));
+		window.setHeight(pos.get(3));
+		
+		if (!screen.intersects(windowRect))
+			window.centerOnScreen();
+		else {
+			window.setX(pos.get(0));
+			window.setY(pos.get(1));
+		}
 	}
 	
 	public static void exit() {

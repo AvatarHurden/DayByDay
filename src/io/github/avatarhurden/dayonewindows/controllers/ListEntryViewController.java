@@ -14,7 +14,9 @@ import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
@@ -166,7 +168,7 @@ public class ListEntryViewController {
     		Timeline timeline = new Timeline();
     		timeline.setOnFinished(event -> filterBox.showPopup());
     		timeline.getKeyFrames().add(new KeyFrame(new Duration(200), 
-    			new KeyValue(filterBox.prefWidthProperty(), 500),
+    			new KeyValue(filterBox.prefWidthProperty(), root.getWidth() - 40),
     			new KeyValue(monthLabel.opacityProperty(), 0)
     		));
     		
@@ -188,13 +190,17 @@ public class ListEntryViewController {
     	});
     	
     	filterBox.getFilters().addListener((ListChangeListener.Change<? extends Predicate<Entry>> event) -> {
-    		addMonths();
 			filteredItems.setPredicate(entry -> {
-				boolean accepted = true;
-				for (Predicate<Entry> predicate : filterBox.getFilters())
-					accepted &= predicate.test(entry);
-				return accepted;
+				BooleanProperty accepted = new SimpleBooleanProperty(true);
+				
+				filterBox.getFilters().forEach(predicate -> accepted.setValue(accepted.getValue() && predicate.test(entry)));
+				
+				return accepted.getValue();
 			});
+    		addMonths();
+    		if (filterBox.getFilters().isEmpty())
+    			listView.scrollTo(filteredItems.size() - 1);
+    		listView.scrollTo(listView.getSelectionModel().getSelectedItem());
 		});
     	
 	}

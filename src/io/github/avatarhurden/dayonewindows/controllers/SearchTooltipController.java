@@ -4,7 +4,7 @@ import io.github.avatarhurden.dayonewindows.models.DayOneEntry;
 import io.github.avatarhurden.dayonewindows.models.Tag;
 
 import java.util.Locale;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
 import javafx.beans.property.Property;
@@ -45,7 +45,7 @@ public class SearchTooltipController {
 	
 	private Property<String> searchText;
 	
-	private Consumer<Predicate<DayOneEntry>> filterAction;
+	private BiConsumer<Predicate<DayOneEntry>, String> filterAction;
 	
 	@FXML
 	public void initialize() {
@@ -54,8 +54,6 @@ public class SearchTooltipController {
 		endBox.managedProperty().bind(endBox.visibleProperty());
 		datePane.managedProperty().bind(datePane.visibleProperty());
 		
-		textBox.setOnMouseClicked(event -> filterAction.accept(
-				entry -> entry.getEntryText().toLowerCase().contains(searchText.getValue())));
 	}
 	
 	private void bindTextFilters() {
@@ -81,20 +79,24 @@ public class SearchTooltipController {
 			
 			startDate.setText(new DateTime(t.getBeginCalendar()).toString("EEEEEEEE - dd/MM/YYYY"));
 			endDate.setText(new DateTime(t.getEndCalendar()).toString("EEEEEEEE - dd/MM/YYYY"));
-		
+			
 			DateTime start = new DateTime(t.getBeginCalendar());
 			DateTime end = new DateTime(t.getEndCalendar());
 			
-			if (start.withMillisOfDay(0).isEqual(end.withMillisOfDay(0))
-					|| (start.getMillisOfDay() == 0 && t.getEnd() - t.getBegin() <= 86400000)) // If the span is a single day 
+			String dateText;
+			
+			if (start.withMillisOfDay(0).isEqual(end.withMillisOfDay(0)) 
+					|| (start.getMillisOfDay() == 0 && t.getEnd() - t.getBegin() <= 86400)) { // If the span is a single day 
 				endBox.setVisible(false);
-			else
+				dateText = start.toString("dd/MM/YYYY");
+			} else {
 				endBox.setVisible(true);
-
+				dateText = start.toString("dd/MM/YYYY") + " - " + end.toString("dd/MM/YYYY");
+			}
 			dateBox.setOnMouseClicked(event -> filterAction.accept(entry -> {
-				return entry.getCreationDate().isAfter(new DateTime(t.getBeginCalendar()).withMillisOfDay(0))
-						&& entry.getCreationDate().isBefore(new DateTime(t.getEndCalendar()).withMillisOfDay(8639999));
-			})); 
+				return entry.getCreationDate().isAfter(start.withMillisOfDay(0))
+						&& entry.getCreationDate().isBefore(end.withMillisOfDay(86399999));
+			}, dateText)); 
 			
 			datePane.setCenter(dateBox);
 		} catch (Exception e) {
@@ -115,7 +117,7 @@ public class SearchTooltipController {
 				box.setPadding(new Insets(5));
 				box.getStyleClass().add("clickable");
 				
-				box.setOnMouseClicked(event -> filterAction.accept(entry -> entry.getTags().contains(t.getName())));
+				box.setOnMouseClicked(event -> filterAction.accept(entry -> entry.getTags().contains(t.getName()), "Tag: " + t.getName()));
 				
 				children.add(box);
 			}
@@ -126,9 +128,12 @@ public class SearchTooltipController {
 			textPane.setCenter(new Label("Enter a search term to filter your entries"));
 		else
 			textPane.setCenter(textBox);
+		
+		textBox.setOnMouseClicked(event -> filterAction.accept(
+				entry -> entry.getEntryText().toLowerCase().contains(text.toLowerCase()), text));
 	}
 	
-	public void setOnFilterSelection(Consumer<Predicate<DayOneEntry>> consumer) {
+	public void setOnFilterSelection(BiConsumer<Predicate<DayOneEntry>, String> consumer) {
 		filterAction = consumer;
 	}
 	

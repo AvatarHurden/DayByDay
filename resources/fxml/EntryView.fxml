@@ -92,7 +92,7 @@
       </HBox>
       <VBox fx:id="contentPane" alignment="TOP_CENTER" layoutY="52.0" prefWidth="598.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="52.0">
          <children>
-            <ScrollPane fx:id="imageScroll" pannable="true" prefHeight="800.0" prefWidth="200.0">
+            <ScrollPane fx:id="imageScroll" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" pannable="true" prefHeight="800.0" prefWidth="200.0">
               <content>
                   <StackPane fx:id="imageStack" prefHeight="150.0" prefWidth="596.0">
                      <children>

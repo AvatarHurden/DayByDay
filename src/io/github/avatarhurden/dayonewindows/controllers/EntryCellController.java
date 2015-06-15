@@ -52,18 +52,14 @@ public class EntryCellController {
 	}
 	
 	public void setContent(DayOneEntry entry) {
-//		root.backgroundProperty().bind(Bindings.when(
-//				BooleanBinding.booleanExpression(entry.starredProperty())).then(
-//						new Background(new BackgroundFill(Color.valueOf("FFF5A0"), CornerRadii.EMPTY, Insets.EMPTY))).otherwise(
-//								new Background(new BackgroundFill(Color.TRANSPARENT, CornerRadii.EMPTY, Insets.EMPTY))));
 
 		textLabel.textProperty().bind(entry.entryTextProperty());
 		if (entry.getImage() == null) {
 			AnchorPane.setLeftAnchor(textLabel, 90d);
 			textLabel.prefWidthProperty().bind(width.subtract(90));
 		} else {
-			AnchorPane.setLeftAnchor(textLabel, 180d);
-			textLabel.prefWidthProperty().bind(width.subtract(180));
+			AnchorPane.setLeftAnchor(textLabel, 190d);
+			textLabel.prefWidthProperty().bind(width.subtract(190));
 		}
 			
 		favoriteIcon.visibleProperty().bind(Bindings.when(dayOfMonthLabel.visibleProperty().not()).then(entry.isStarred()).otherwise(false));

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.effect.*?>
 <?import javafx.scene.paint.*?>
 <?import javafx.scene.shape.*?>
 <?import javafx.scene.*?>
@@ -38,7 +39,11 @@
             </Text>
          </children>
       </AnchorPane>
-      <ImageView fx:id="imageView" fitHeight="90.0" fitWidth="90.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="90.0" AnchorPane.topAnchor="0.0" />
-      <Label fx:id="textLabel" layoutX="90.0" layoutY="6.0" AnchorPane.leftAnchor="180.0" AnchorPane.topAnchor="0.0" />
+      <StackPane prefHeight="150.0" prefWidth="90.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="90.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <ImageView fx:id="imageView" fitHeight="90.0" fitWidth="90.0" nodeOrientation="INHERIT" pickOnBounds="true" preserveRatio="true" />
+         </children>
+      </StackPane>
+      <Label fx:id="textLabel" layoutX="90.0" layoutY="6.0" AnchorPane.leftAnchor="190.0" AnchorPane.topAnchor="0.0" />
    </children>
 </AnchorPane>
