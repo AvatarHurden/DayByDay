@@ -234,6 +234,7 @@ public class MainWindowController {
 	
 	@FXML
 	private void showNewEntry() {
+		entryListViewController.showList();
 		transitionTo(newEntryView);
 		
 		if (entryViewController.getEntry() != null && entryViewController.getEntry().isEmpty())

@@ -7,6 +7,7 @@ import java.util.function.Predicate;
 import javafx.animation.FadeTransition;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -58,6 +59,8 @@ public class ObjectListView<T> extends StackPane {
 		this.layout = layout;
 		itemHeight = new SimpleIntegerProperty(25);
 		
+		objectList = FXCollections.observableArrayList();
+		
 		getStylesheets().add("/style/objectListView.css");
 	
 		if (layout == ObjectLayout.VERTICAL) {
@@ -88,6 +91,10 @@ public class ObjectListView<T> extends StackPane {
 		textField.setPromptText(text);
 	}
 	
+	public ObservableList<T> getList() {
+		return objectList;
+	}
+	
 	public void setList(ObservableList<T> objects) {
 		// Clears the list of labels. If editable, maintains the textField. If not, remove everything
 		ObservableList<Node> children = box.getChildren();
@@ -114,7 +121,8 @@ public class ObjectListView<T> extends StackPane {
 		for (T object : objects)
 			addLabel(object);
 		
-		this.objectList = objects;
+		this.objectList.clear();
+		this.objectList.addAll(objects);
 	}
 
 	public void setSuggestions(ObservableList<T> suggestions) {

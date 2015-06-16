@@ -29,13 +29,18 @@
       <Separator prefWidth="200.0" />
       <VBox prefHeight="200.0" prefWidth="100.0" spacing="10.0">
          <children>
-            <Label text="File Sync">
+            <Label text="File Location">
                <font>
                   <Font name="System Bold" size="16.0" />
                </font>
             </Label>
-            <Button mnemonicParsing="false" text="Use Dropbox..." />
-            <Button mnemonicParsing="false" text="Use Custom Location..." />
+            <HBox alignment="CENTER_LEFT" prefHeight="30.0" prefWidth="439.0" spacing="20.0">
+               <children>
+                  <Label text="Label" />
+                  <Button mnemonicParsing="false" text="Change Location..." />
+               </children>
+            </HBox>
+            <Hyperlink text="About syncing" />
          </children>
       </VBox>
       <Button mnemonicParsing="false" onAction="#close" text="Close" />

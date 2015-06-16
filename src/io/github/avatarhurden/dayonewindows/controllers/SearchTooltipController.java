@@ -3,7 +3,7 @@ package io.github.avatarhurden.dayonewindows.controllers;
 import io.github.avatarhurden.dayonewindows.models.DayOneEntry;
 import io.github.avatarhurden.dayonewindows.models.Tag;
 
-import java.util.Locale;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
@@ -23,25 +23,29 @@ import javafx.scene.text.TextFlow;
 
 import org.joda.time.DateTime;
 
-import com.mdimension.jchronic.Chronic;
-import com.mdimension.jchronic.Options;
-import com.mdimension.jchronic.tags.Pointer.PointerType;
-import com.mdimension.jchronic.utils.Span;
+import com.joestelmach.natty.DateGroup;
+import com.joestelmach.natty.Parser;
 
 public class SearchTooltipController {
 
 	@FXML private BorderPane textPane;
+	
+	// Text
 	@FXML private Text textSearchLabel;
 	@FXML private TextFlow textBox;
 	
+	// Tag
 	@FXML private BorderPane tagPane;
 	@FXML private FlowPane tagBox;
 	private ObservableList<Tag> tags;
 	
+	// Date
 	@FXML private BorderPane datePane;
 	@FXML private VBox dateBox;
-	@FXML private HBox endBox;
-	@FXML private Label startDate, endDate;
+	@FXML private HBox onDateBox, beforeDateBox, afterDateBox;
+	@FXML private Label onDateLabel, beforeDateLabel, afterDateLabel;
+	
+	private Parser parser;
 	
 	private Property<String> searchText;
 	
@@ -50,10 +54,8 @@ public class SearchTooltipController {
 	@FXML
 	public void initialize() {
 		bindTextFilters();
-
-		endBox.managedProperty().bind(endBox.visibleProperty());
-		datePane.managedProperty().bind(datePane.visibleProperty());
 		
+		createDateParser();
 	}
 	
 	private void bindTextFilters() {
@@ -68,35 +70,36 @@ public class SearchTooltipController {
 		});
 	}
 	
+	private void createDateParser() {
+		parser = new Parser();
+
+		onDateLabel.textProperty().bindBidirectional(beforeDateLabel.textProperty());
+		beforeDateLabel.textProperty().bindBidirectional(afterDateLabel.textProperty());
+	}
+	
 	private void matchDates(String text) {
-		Options p = new Options(false);
-		p.setContext(PointerType.PAST);
-		p.setNow(new DateTime().withMillisOfDay(8639999).toCalendar(Locale.getDefault()));
-		p.setAmbiguousTimeRange(24);
 		
 		try {
-			final Span t = Chronic.parse(text, p);
+			List<DateGroup> matches = parser.parse(text);
 			
-			startDate.setText(new DateTime(t.getBeginCalendar()).toString("EEEEEEEE - dd/MM/YYYY"));
-			endDate.setText(new DateTime(t.getEndCalendar()).toString("EEEEEEEE - dd/MM/YYYY"));
+			DateTime date = new DateTime(matches.get(0).getDates().get(0));
 			
-			DateTime start = new DateTime(t.getBeginCalendar());
-			DateTime end = new DateTime(t.getEndCalendar());
+			onDateLabel.setText(date.toString("EEEEEEEE - dd/MM/YYYY"));
 			
-			String dateText;
+			String dateText = date.toString("dd/MM/YYYY");
 			
-			if (start.withMillisOfDay(0).isEqual(end.withMillisOfDay(0)) 
-					|| (start.getMillisOfDay() == 0 && t.getEnd() - t.getBegin() <= 86400)) { // If the span is a single day 
-				endBox.setVisible(false);
-				dateText = start.toString("dd/MM/YYYY");
-			} else {
-				endBox.setVisible(true);
-				dateText = start.toString("dd/MM/YYYY") + " - " + end.toString("dd/MM/YYYY");
-			}
-			dateBox.setOnMouseClicked(event -> filterAction.accept(entry -> {
-				return entry.getCreationDate().isAfter(start.withMillisOfDay(0))
-						&& entry.getCreationDate().isBefore(end.withMillisOfDay(86399999));
-			}, dateText)); 
+			onDateBox.setOnMouseClicked(event -> filterAction.accept(entry -> {
+				return entry.getCreationDate().isAfter(date.withMillisOfDay(0))
+						&& entry.getCreationDate().isBefore(date.withMillisOfDay(86399999));
+			}, "On: " + dateText)); 
+			
+			beforeDateBox.setOnMouseClicked(event -> filterAction.accept(entry -> {
+				return entry.getCreationDate().isBefore(date.withMillisOfDay(86399999));
+			}, "Before: " + dateText)); 
+			
+			afterDateBox.setOnMouseClicked(event -> filterAction.accept(entry -> {
+				return entry.getCreationDate().isAfter(date.withMillisOfDay(0));
+			}, "After: " + dateText)); 
 			
 			datePane.setCenter(dateBox);
 		} catch (Exception e) {
@@ -143,6 +146,7 @@ public class SearchTooltipController {
 	
 	public void setTags(ObservableList<Tag> tags) {
 		this.tags = tags;
+		matchTags(searchText.getValue());
 	}
 	
 }
