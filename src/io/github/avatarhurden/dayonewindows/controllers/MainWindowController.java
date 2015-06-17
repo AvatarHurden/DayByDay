@@ -127,6 +127,19 @@ public class MainWindowController {
 		}
     	configViewController = loader.<ConfigViewController>getController();
     	
+    	configViewController.setOnClose(() -> {
+    		if (Config.get().getBoolean("enable_animations")) {
+    			Timeline time2 = new Timeline();
+    			time2.setOnFinished(event2 -> blurView.setVisible(false));
+    			time2.getKeyFrames().add(new KeyFrame(new Duration(100), 
+    					new KeyValue(blurView.opacityProperty(), 0),
+    					new KeyValue(configAnchors, 0)));
+    			time2.play();
+    		} else {
+    			configAnchors.setValue(0);
+    			blurView.setVisible(false);
+    		}
+		});
     	
     	blurView = new ImageView();
     	AnchorPane.setTopAnchor(blurView, 0d);	
@@ -135,7 +148,6 @@ public class MainWindowController {
     	AnchorPane.setLeftAnchor(blurView, 0d);
     	root.getChildren().add(blurView);
     	root.getChildren().add(configView);
-    	configView.setVisible(false);
     	blurView.setVisible(false);
     	
     	initializeViewProperty();
@@ -179,57 +191,64 @@ public class MainWindowController {
 			
 			AnchorPane.setLeftAnchor(configView, (newValue.getWidth() - configView.getPrefWidth()) / 2);
 	    	AnchorPane.setRightAnchor(configView, (newValue.getWidth() - configView.getPrefWidth()) / 2);
-	    	
-			snapshotParameters.setViewport(new Rectangle2D(0, 0, newValue.getWidth(), newValue.getHeight()));
-			
-			blurView.setOpacity(0d);
-			
-			Image frostImage = root.snapshot(snapshotParameters, null);
-			blurView.setImage(frostImage);
 
-			blurView.setOpacity(1d);
+    		snapshotParameters.setViewport(new Rectangle2D(0, 0, newValue.getWidth(), newValue.getHeight()));
+	    	if (Config.get().getBoolean("enable_animations")) {
+				blurView.setOpacity(0d);
+			
+				Image frostImage = root.snapshot(snapshotParameters, null);
+				blurView.setImage(frostImage);
+
+				blurView.setOpacity(1d);
+	    	}
 		});
 
 		frostEffect = new BoxBlur(7, 7, 3);
     	blurView.setEffect(frostEffect);
 		
 		snapshotParameters = new SnapshotParameters();
+		snapshotParameters.setViewport(new Rectangle2D(0, 0, root.getLayoutBounds().getWidth(), root.getLayoutBounds().getHeight()));
 	}
 	
 	private void transitionTo(Node view) {
-		Timeline timeline = new Timeline();
-		if (view == newEntryView)
-			timeline.getKeyFrames().add(new KeyFrame(new Duration(300),	new KeyValue(viewAnchors, 0)));
-		else if (view == entryListView)
-			timeline.getKeyFrames().add(new KeyFrame(new Duration(300), new KeyValue(viewAnchors, contentPane.getHeight())));
-		
-		timeline.play();
+		if (!Config.get().getBoolean("enable_animations")) {
+			
+			if (view == newEntryView)
+				viewAnchors.setValue(0);
+			else if (view == entryListView)
+				viewAnchors.setValue(contentPane.getHeight());
+			
+		} else {
+			Timeline timeline = new Timeline();
+			
+			if (view == newEntryView)
+				timeline.getKeyFrames().add(new KeyFrame(new Duration(200),	new KeyValue(viewAnchors, 0)));
+			else if (view == entryListView)
+				timeline.getKeyFrames().add(new KeyFrame(new Duration(200), new KeyValue(viewAnchors, contentPane.getHeight())));
+			
+			timeline.play();
+		}
 	}
 
 	@FXML
 	private void showConfigView() {
 		configView.setVisible(true);
-		blurView.setOpacity(0d);
-		blurView.setVisible(true);
+		if (!Config.get().getBoolean("enable_animations")) 
+			configAnchors.setValue(configView.getPrefHeight() + 25);
+		else {
+			blurView.setOpacity(0d);
+			blurView.setVisible(true);
 		
-		Image frostImage = root.snapshot(snapshotParameters, null);
-    	blurView.setImage(frostImage);
-    	blurView.setEffect(frostEffect);
+			Image frostImage = root.snapshot(snapshotParameters, null);
+    		blurView.setImage(frostImage);
+    		blurView.setEffect(frostEffect);
     	
-		Timeline time = new Timeline();
-		time.getKeyFrames().add(new KeyFrame(new Duration(100),	
-				new KeyValue(blurView.opacityProperty(), 1),
-				new KeyValue(configAnchors, configView.getPrefHeight() + 25)));
-		time.play();
-		
-    	configViewController.setOnClose(() -> {
-    		Timeline time2 = new Timeline();
-    		time2.setOnFinished(event2 -> blurView.setVisible(false));
-			time2.getKeyFrames().add(new KeyFrame(new Duration(100), 
-					new KeyValue(blurView.opacityProperty(), 0),
-					new KeyValue(configAnchors, 0)));
-			time2.play();
-    	});
+    		Timeline time = new Timeline();
+    		time.getKeyFrames().add(new KeyFrame(new Duration(100),	
+    				new KeyValue(blurView.opacityProperty(), 1),
+    				new KeyValue(configAnchors, configView.getPrefHeight() + 25)));
+			time.play();
+		}
 	}
 	
 	@FXML

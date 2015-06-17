@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.function.Predicate;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
@@ -19,8 +20,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
 
 import org.controlsfx.control.PopOver;
 import org.controlsfx.control.PopOver.ArrowLocation;
@@ -61,7 +60,6 @@ public class FilterBar extends HBox {
     			onSelected.run();
     		else
 				onUnselected.run();
-			
 		});
     	
 		setHgrow(text, Priority.ALWAYS);
@@ -137,21 +135,15 @@ public class FilterBar extends HBox {
         
         HBox.setMargin(label, new Insets(4, 5, 4, 0));
 		
-		Region clearButton = new Region();
-        clearButton.getStyleClass().addAll("graphic");
-        
-        StackPane clearButtonPane = new StackPane(clearButton);
-        clearButtonPane.getStyleClass().addAll("clear-button");
-        clearButtonPane.visibleProperty().bind(itemBox.hoverProperty());
-
-        itemBox.getChildren().add(clearButtonPane);
-        
-		Runnable delete = () -> {
-			removeFilterInstance(itemBox);
-		};
-	
-		clearButtonPane.setOnMouseReleased(event -> delete.run());
+		CloseButton deleteButton = new CloseButton();
+		deleteButton.visibleProperty().bind(itemBox.hoverProperty());
 		
+		deleteButton.setOnAction(() -> {
+			removeFilterInstance(itemBox);
+			this.text.requestFocus();
+		});
+
+        itemBox.getChildren().add(deleteButton);
 		return itemBox;
 	}
 	
@@ -173,6 +165,15 @@ public class FilterBar extends HBox {
 
 	public void showPopup() {
 		popOver.show(text);
+	}
+	
+	public void showPopup(int millis) {
+		new Thread(() -> {
+			try {
+				Thread.sleep(millis);
+			} catch (Exception e) {}
+			Platform.runLater(() -> popOver.show(text));
+		}).start();
 	}
 
 	public void hidePopup() {

@@ -35,11 +35,11 @@ public class EntryManager {
 	private DirectoryWatcher imageWatcher;
 	
 	public static boolean isInitiliazed() {
-		return Config.get().getProperty("diary_folder") != null;
+		return Config.get().getProperty("data_folder") != null;
 	}
 	
 	public EntryManager() {
-		Path rootFolder = Paths.get(Config.get().getProperty("diary_folder"));
+		Path rootFolder = Paths.get(Config.get().getProperty("data_folder"));
 		entryFolder = rootFolder.resolve("entries");
 		imageFolder = rootFolder.resolve("photos");
 		

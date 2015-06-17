@@ -8,8 +8,9 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<VBox fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="389.0" prefWidth="521.0" spacing="10.0" style="-fx-background-color: white; -fx-border-radius: 10; -fx-border-color: lightblue; -fx-background-radius: 10;" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.avatarhurden.dayonewindows.controllers.ConfigViewController">
+<VBox fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="389.0" prefWidth="521.0" spacing="10.0" style="-fx-background-color: white; -fx-border-radius: 10; -fx-border-color: lightblue; -fx-background-radius: 10;" stylesheets="@../style/ConfigView.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.avatarhurden.dayonewindows.controllers.ConfigViewController">
    <children>
+      <HBox fx:id="menuBar" alignment="CENTER_RIGHT" prefHeight="57.0" prefWidth="439.0" />
       <VBox prefHeight="110.0" prefWidth="441.0" spacing="10.0">
          <children>
             <Label text="General">
@@ -24,6 +25,7 @@
                </children>
             </HBox>
             <CheckBox fx:id="launchOnStartupCheckBox" mnemonicParsing="false" text="Launch on Windows login" />
+            <CheckBox fx:id="animationCheckBox" mnemonicParsing="false" onAction="#enableAnimations" selected="true" text="Enable Animations" />
          </children>
       </VBox>
       <Separator prefWidth="200.0" />
@@ -36,16 +38,25 @@
             </Label>
             <HBox alignment="CENTER_LEFT" prefHeight="30.0" prefWidth="439.0" spacing="20.0">
                <children>
-                  <Label text="Label" />
-                  <Button mnemonicParsing="false" text="Change Location..." />
+                  <Label fx:id="folderPathLabel" styleClass="file-path-label" text="Label">
+                     <opaqueInsets>
+                        <Insets />
+                     </opaqueInsets>
+                     <padding>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                     </padding>
+                     <graphic>
+                        <ImageView fx:id="folderIcon" fitHeight="21.0" fitWidth="27.0" pickOnBounds="true" preserveRatio="true" />
+                     </graphic></Label>
+                  <Button mnemonicParsing="false" onAction="#changeFolderLocation" text="Change Location..." />
                </children>
             </HBox>
             <Hyperlink text="About syncing" />
          </children>
       </VBox>
-      <Button mnemonicParsing="false" onAction="#close" text="Close" />
+      <Separator prefWidth="200.0" />
    </children>
    <padding>
-      <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+      <Insets bottom="40.0" left="40.0" right="40.0" top="10.0" />
    </padding>
 </VBox>

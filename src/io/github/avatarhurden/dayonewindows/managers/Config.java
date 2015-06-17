@@ -72,8 +72,24 @@ public class Config {
 		return prop.getProperty(name);
 	}
 	
+	public boolean getBoolean(String name) {
+		return Boolean.valueOf(prop.getProperty(name));
+	}
+	
+	public double getDouble(String name) {
+		return Double.valueOf(prop.getProperty(name));
+	}
+	
 	public String getProperty(String name, String defaultValue) {
 		return prop.getProperty(name, defaultValue);
+	}
+	
+	public boolean getBoolean(String name, boolean defaultValue) {
+		return prop.getProperty(name) == null ? defaultValue : Boolean.valueOf(prop.getProperty(name));
+	}
+	
+	public double getBoolean(String name, double defaultValue) {
+		return prop.getProperty(name) == null ? defaultValue : Double.valueOf(prop.getProperty(name));
 	}
 	
 	public String getPropertyAndSave(String name, String defaultValue) {
@@ -179,62 +195,4 @@ public class Config {
 	public void saveConfig() throws FileNotFoundException, IOException {
 		prop.store(new FileOutputStream(configFile), "LifeOrganizer Properties");
 	}
-	
-	//	public void setDataFolder(String path) {
-	//		prop.setProperty("default_folder", new File(path).getAbsolutePath());	
-	//	}
-	//	
-	//	public File getDataFolder() {
-	//		return new File(prop.getProperty("default_folder"));
-	//	}
-	//	
-	//	public void setFile(String name, String path) {
-	//		name += "_file";
-	//		if (!new File(path).isAbsolute())
-	//			path = new File("$default$", path).getPath();
-	//		prop.setProperty(name, path);
-	//	}
-	//	
-	//	public File getFile(String name) {
-	//		name += "_file";
-	//		String path = prop.getProperty(name);
-	//		if (path.startsWith("$default$"))
-	//			path = path.replace("$default$", prop.getProperty("default_folder"));
-	//			
-	//		return new File(path);
-	//	}
-
-//	public Properties getAPIProperties(String provider) {
-//		Properties p = new Properties();
-//		
-//		Iterator<Entry<String, String>> set = apiIni.get(provider).entrySet().iterator();
-//		while (set.hasNext()) {
-//			Entry<String, String> e = set.next();
-//			if (!e.getKey().startsWith("user_"))
-//				p.put(e.getKey(), e.getValue());
-//		}
-//		return p;
-//	}
-//	
-//	public void setAPIUserProperty(String provider, String key, String value) {
-//		key = "user_" + key;
-//		apiIni.get(provider).put(key, value);
-//		try {
-//			apiIni.store();
-//		} catch (IOException e) {
-//			System.out.println("Unable to save");
-//		}
-//	}
-//	
-//	public Properties getAPIUserProperties(String provider) {
-//		Properties p = new Properties();
-//		
-//		Iterator<Entry<String, String>> set = apiIni.get(provider).entrySet().iterator();
-//		while (set.hasNext()) {
-//			Entry<String, String> e = set.next();
-//			if (e.getKey().startsWith("user_"))
-//				p.put(e.getKey().replace("user_", ""), e.getValue());
-//		}
-//		return p;
-//	}
 }

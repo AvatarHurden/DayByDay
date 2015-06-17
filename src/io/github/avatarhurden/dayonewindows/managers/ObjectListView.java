@@ -1,5 +1,7 @@
 package io.github.avatarhurden.dayonewindows.managers;
 
+import io.github.avatarhurden.dayonewindows.controllers.CloseButton;
+
 import java.util.HashMap;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -19,7 +21,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
@@ -207,15 +208,10 @@ public class ObjectListView<T> extends StackPane {
         if (editable) {
     		HBox.setMargin(label, new Insets(0, 5, 0, 0));
     		
-			Region clearButton = new Region();
-	        clearButton.getStyleClass().addAll("graphic");
-	        
-	        StackPane clearButtonPane = new StackPane(clearButton);
-	        clearButtonPane.getStyleClass().addAll("clear-button");
-	        clearButtonPane.visibleProperty().bind(itemBox.hoverProperty());
+    		CloseButton clearButton = new CloseButton();
+    		clearButton.visibleProperty().bind(itemBox.hoverProperty());
 	
-	        itemBox.getChildren().add(clearButtonPane);
-			itemBox.hoverProperty().addListener((obs, oldValue, newValue) -> fadeObject(clearButtonPane, newValue));
+			itemBox.hoverProperty().addListener((obs, oldValue, newValue) -> fadeObject(clearButton, newValue));
 	        
 			Runnable delete = () -> {
 				fadeObject(itemBox, false).setOnFinished(finished -> getChildren().remove(itemBox));
@@ -223,8 +219,10 @@ public class ObjectListView<T> extends StackPane {
 				deletionPolicy.accept(object);
 			};
 		
+			clearButton.setOnAction(() -> delete.run());
 			itemBox.setOnKeyPressed(event -> { if (event.getCode().equals(KeyCode.DELETE)) delete.run(); });
-			clearButtonPane.setOnMouseReleased(event -> delete.run());
+			
+	        itemBox.getChildren().add(clearButton);
         }
         
         objectNodes.put(object, itemBox);

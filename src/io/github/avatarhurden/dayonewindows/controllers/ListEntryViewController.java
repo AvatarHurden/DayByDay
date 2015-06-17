@@ -1,5 +1,6 @@
 package io.github.avatarhurden.dayonewindows.controllers;
 
+import io.github.avatarhurden.dayonewindows.managers.Config;
 import io.github.avatarhurden.dayonewindows.models.DayOneEntry;
 import io.github.avatarhurden.dayonewindows.models.Entry;
 import io.github.avatarhurden.dayonewindows.models.MonthEntry;
@@ -158,35 +159,18 @@ public class ListEntryViewController {
 	}
 	
 	private void createSearchToolTip() {
-	
     	filterBox = new FilterBar();
     	
     	filterPane.getChildren().setAll(filterBox);
     	filterPane.prefWidthProperty().bind(filterBox.prefWidthProperty());
     	
-    	filterBox.setOnSelected(() -> {
-    		Timeline timeline = new Timeline();
-    		timeline.setOnFinished(event -> filterBox.showPopup());
-    		timeline.getKeyFrames().add(new KeyFrame(new Duration(200), 
-    			new KeyValue(filterBox.prefWidthProperty(), root.getWidth() - 40),
-    			new KeyValue(monthLabel.opacityProperty(), 0)
-    		));
-    		
-    		timeline.play();
-    	});
+    	filterBox.setOnSelected(() -> setFilterBoxExpanded(true));
     	
     	filterBox.setOnUnselected(() -> {
     		if (!filterBox.getFilters().isEmpty())
     			return;
     		
-    		Timeline timeline = new Timeline();
-    		timeline.setOnFinished(event -> filterBox.hidePopup());
-    		timeline.getKeyFrames().add(new KeyFrame(new Duration(200), 
-    			new KeyValue(filterBox.prefWidthProperty(), 230),
-    			new KeyValue(monthLabel.opacityProperty(), 1)
-    		));
-    		
-    		timeline.play();
+    		setFilterBoxExpanded(false);
     	});
     	
     	filterBox.getFilters().addListener((ListChangeListener.Change<? extends Predicate<Entry>> event) -> {
@@ -203,6 +187,38 @@ public class ListEntryViewController {
     		listView.scrollTo(listView.getSelectionModel().getSelectedItem());
 		});
     	
+	}
+	
+	private void setFilterBoxExpanded(boolean expand) {
+		double opacity = expand ? 0 : 1;
+		double width = expand ? root.getWidth() - 40 : 230;
+		
+		if (!Config.get().getBoolean("enable_animations")) {
+			filterBox.setPrefWidth(width);
+			monthLabel.setOpacity(opacity);
+			
+			if (expand)
+				filterBox.showPopup(50);
+			else 
+				filterBox.hidePopup();
+			
+		} else {
+			Timeline timeline = new Timeline();
+			timeline.getKeyFrames().add(new KeyFrame(new Duration(200), 
+				new KeyValue(filterBox.prefWidthProperty(), width),
+				new KeyValue(monthLabel.opacityProperty(), opacity)
+			));
+
+			timeline.setOnFinished(event -> {
+				if (expand)
+					filterBox.showPopup();
+				else 
+					filterBox.hidePopup();
+			});
+			
+					
+			timeline.play();
+		}
 	}
 
 	public void setAvailableTags(ObservableList<Tag> tags) {
@@ -230,7 +246,6 @@ public class ListEntryViewController {
 		
 		filteredItems = sorted.filtered(entry -> true);
 		filteredItems.predicateProperty().addListener((obs, oldValue, newValue) ->  visibleItems.clear());
-		
 		
 		addMonths();
 		
@@ -277,13 +292,22 @@ public class ListEntryViewController {
 	}
 	
 	private void transitionTo(Node view) {
-		Timeline timeline = new Timeline();
-		if (view == listViewPane)
-			timeline.getKeyFrames().add(new KeyFrame(new Duration(300),	new KeyValue(viewAnchor, 0d)));
-		else if (view == singleViewPane)
-			timeline.getKeyFrames().add(new KeyFrame(new Duration(300), new KeyValue(viewAnchor, root.getScene().getWidth())));
+		if (!Config.get().getBoolean("enable_animations")) {
+				
+			if (view == listViewPane)
+				viewAnchor.setValue(0);
+			else if (view == singleViewPane)
+				viewAnchor.setValue(root.getScene().getWidth());
+				
+		} else {
+			Timeline timeline = new Timeline();
+			if (view == listViewPane)
+				timeline.getKeyFrames().add(new KeyFrame(new Duration(200),	new KeyValue(viewAnchor, 0d)));
+			else if (view == singleViewPane)
+				timeline.getKeyFrames().add(new KeyFrame(new Duration(200), new KeyValue(viewAnchor, root.getScene().getWidth())));
 
-		timeline.play();
+			timeline.play();
+		}
 	}
 	
 	public void showList() {
