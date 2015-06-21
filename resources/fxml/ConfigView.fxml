@@ -36,21 +36,15 @@
                   <Font name="System Bold" size="16.0" />
                </font>
             </Label>
-            <HBox alignment="CENTER_LEFT" prefHeight="30.0" prefWidth="439.0" spacing="20.0">
-               <children>
-                  <Label fx:id="folderPathLabel" styleClass="file-path-label" text="Label">
-                     <opaqueInsets>
-                        <Insets />
-                     </opaqueInsets>
-                     <padding>
-                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                     </padding>
-                     <graphic>
-                        <ImageView fx:id="folderIcon" fitHeight="21.0" fitWidth="27.0" pickOnBounds="true" preserveRatio="true" />
-                     </graphic></Label>
-                  <Button mnemonicParsing="false" onAction="#changeFolderLocation" text="Change Location..." />
-               </children>
-            </HBox>
+            <Label fx:id="folderPathLabel" styleClass="file-path-label" text="Label">
+               <opaqueInsets>
+                  <Insets />
+               </opaqueInsets>
+               <padding>
+                  <Insets bottom="5.0" left="10.0" right="10.0" top="5.0" />
+               </padding>
+            </Label>
+            <Button mnemonicParsing="false" onAction="#changeFolderLocation" text="Change..." />
             <Hyperlink text="About syncing" />
          </children>
       </VBox>

@@ -1,7 +1,5 @@
 package io.github.avatarhurden.dayonewindows.controllers;
 
-import io.github.avatarhurden.dayonewindows.managers.ObjectListView;
-import io.github.avatarhurden.dayonewindows.managers.ObjectListView.ObjectLayout;
 import io.github.avatarhurden.dayonewindows.models.DayOneEntry;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
@@ -11,17 +9,23 @@ import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
 
 import org.joda.time.DateTime;
+
+
 
 public class EntryCellController {
 
@@ -30,8 +34,8 @@ public class EntryCellController {
 	@FXML private Text timeLabel, dayOfWeekLabel, dayOfMonthLabel;
 	private Property<DateTime> date;
 	
-	@FXML private AnchorPane tagPane;
-	private ObjectListView<String> tagView;
+	@FXML private HBox tagPane;
+	private ObservableList<String> tags;
 	
 	@FXML private ImageView imageView;
 	
@@ -61,7 +65,7 @@ public class EntryCellController {
 	public void setContent(DayOneEntry entry) {
 		textLabel.textProperty().bind(entry.entryTextProperty());
 		
-		tagView.setList(entry.getObservableTags());
+		tags.setAll(entry.getObservableTags());
 		
 		isStarred.bind(entry.starredProperty());
 		
@@ -96,13 +100,28 @@ public class EntryCellController {
 	}
 	
 	private void bindTagPane() {
-		tagView = new ObjectListView<String>(s -> new SimpleStringProperty(s), false, ObjectLayout.HORIZONTAL);
-		tagView.setItemHeight(0);
-		tagView.getList().addListener((ListChangeListener.Change<? extends String> event) -> {
-			tagPane.setPrefHeight(tagView.getList().isEmpty() ? 0 : 31);
-			AnchorPane.setBottomAnchor(textLabel, tagView.getList().isEmpty() ? 10d : 31d);
+		tags = FXCollections.observableArrayList();
+		
+		tags.addListener((ListChangeListener.Change<? extends String> event) -> {
+			ObservableList<Node> panes = tagPane.getChildren();
+			panes.clear();
+			for (String t : tags) {
+				HBox tagBox = new HBox(new Label(t));
+				tagBox.setPadding(new Insets(3, 6, 3, 6));
+				tagBox.getStyleClass().add("tag");
+				panes.add(tagBox);
+			}
+
+			tagPane.setPrefHeight(tags.isEmpty() ? 0 : 31);
+			AnchorPane.setBottomAnchor(textLabel, tags.isEmpty() ? 10d : 31d);
 		});
-		tagPane.getChildren().add(tagView);
+//		tagView = new ObjectListView<String>(s -> new SimpleStringProperty(s), false, ObjectLayout.HORIZONTAL);
+//		tagView.setItemHeight(0);
+//		tagView.getList().addListener((ListChangeListener.Change<? extends String> event) -> {
+//			tagPane.setPrefHeight(tagView.getList().isEmpty() ? 0 : 31);
+//			AnchorPane.setBottomAnchor(textLabel, tagView.getList().isEmpty() ? 10d : 31d);
+//		});
+//		tagPane.getChildren().add(tagView);
 		
 		tagPane.prefWidthProperty().bindBidirectional(textLabel.prefWidthProperty());
 		

@@ -1,4 +1,4 @@
-.clickable {
+.tag {
 	-fx-color: #b4dafa;
 	-fx-background-color: -fx-body-color;
     
@@ -6,18 +6,18 @@
 	-fx-background-radius: 10;
 }
 
-.clickable:disabled {
+.tag:disabled {
 	-fx-color: #B1BDC6;
 }
 
-.clickable:focused {
+.tag:focused {
     -fx-color: #b4dafa;
     -fx-background-color: -fx-focus-color, -fx-outer-border, -fx-inner-border, -fx-body-color;
     -fx-background-insets: -1.4, 0, 0.5, 1;
     -fx-background-radius:  6.4, 5, 4, 3;
 }
 
-.clickable:hover {
+.tag:hover {
 	-fx-color: #D9EBF9;
 	-fx-cursor: hand;
 }

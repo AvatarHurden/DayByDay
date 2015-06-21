@@ -203,6 +203,11 @@ public class MainWindowController {
 	    	}
 		});
 
+		blurView.setOnMouseClicked(event -> {
+			if (event.getClickCount() == 2)
+				configViewController.close();
+		});
+		
 		frostEffect = new BoxBlur(7, 7, 3);
     	blurView.setEffect(frostEffect);
 		

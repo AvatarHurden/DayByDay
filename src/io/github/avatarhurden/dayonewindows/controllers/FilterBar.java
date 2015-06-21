@@ -6,9 +6,11 @@ import io.github.avatarhurden.dayonewindows.models.Entry;
 import io.github.avatarhurden.dayonewindows.models.MonthEntry;
 import io.github.avatarhurden.dayonewindows.models.Tag;
 
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.function.Predicate;
+
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -17,9 +19,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+
 
 import org.controlsfx.control.PopOver;
 import org.controlsfx.control.PopOver.ArrowLocation;
@@ -49,6 +53,11 @@ public class FilterBar extends HBox {
 		text = new TextField();
 		text.getStyleClass().add("unique");
 		text.setPromptText("Search");
+		
+		text.setOnKeyPressed(event -> {
+			if (event.getCode() == KeyCode.DOWN && !tooltipController.hasFocus())
+				tooltipController.requestFocus();
+		});
 		
 		text.setOnMouseClicked(event -> {
     		if (event.getClickCount() == 2)
@@ -165,6 +174,10 @@ public class FilterBar extends HBox {
 
 	public void showPopup() {
 		popOver.show(text);
+		text.setOnMouseClicked(event -> {
+			if (!popOver.isShowing())
+				popOver.show(text);
+		});
 	}
 	
 	public void showPopup(int millis) {
@@ -178,6 +191,7 @@ public class FilterBar extends HBox {
 
 	public void hidePopup() {
 		popOver.hide();
+		text.setOnMouseClicked(null);
 	}
 	
 }

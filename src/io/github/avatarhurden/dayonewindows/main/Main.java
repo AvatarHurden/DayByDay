@@ -1,5 +1,6 @@
 package io.github.avatarhurden.dayonewindows.main;
 
+import io.github.avatarhurden.dayonewindows.controllers.DayOneTray;
 import io.github.avatarhurden.dayonewindows.controllers.MainWindowController;
 import io.github.avatarhurden.dayonewindows.managers.Config;
 import io.github.avatarhurden.dayonewindows.managers.EntryManager;
@@ -8,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
@@ -20,7 +22,9 @@ import org.controlsfx.control.NotificationPane;
 public class Main extends Application {
 
 	private EntryManager entryManager;
-	private static Stage primaryStage;
+	private Stage primaryStage;
+	
+	private DayOneTray trayIcon;
 	
 	public static void main(String[] args) {
 		launch(args);
@@ -28,9 +32,9 @@ public class Main extends Application {
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-		Main.primaryStage = primaryStage;
+		this.primaryStage = primaryStage;
 		
-		entryManager = new EntryManager();
+		entryManager = new EntryManager(Config.get().getProperty("data_folder"));
 		entryManager.loadAndWatch();
 
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainWindow.fxml"));
@@ -47,17 +51,13 @@ public class Main extends Application {
 		MainWindowController controller = loader.<MainWindowController>getController();
 		controller.setDiaryManager(entryManager);
 		
-		primaryStage.setOnCloseRequest(event -> {
-			try {
-				savePosition(primaryStage);
-				entryManager.close();
-				Config.save();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		});	
+		primaryStage.setOnCloseRequest(event -> exit());
 		
-//		((AnchorPane) loader.getRoot()).setDisable(true);
+//		trayIcon = new DayOneTray(primaryStage);
+//		SystemTray.getSystemTray().add(trayIcon.getTrayIcon());
+//		trayIcon.setExitAction(this::exit);
+		
+//		Platform.setImplicitExit(false);
 	}
 	
 	private void savePosition(Window window) {
@@ -89,8 +89,16 @@ public class Main extends Application {
 		}
 	}
 	
-	public static void exit() {
-		primaryStage.close();
+	public void exit() {
+		try {
+			savePosition(primaryStage);
+//			SystemTray.getSystemTray().remove(trayIcon.getTrayIcon());
+			Config.save();
+			entryManager.close();
+			Platform.exit();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	

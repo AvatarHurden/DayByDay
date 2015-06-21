@@ -12,9 +12,9 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane fx:id="root" prefHeight="90.0" prefWidth="481.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.avatarhurden.dayonewindows.controllers.EntryCellController">
+<AnchorPane fx:id="root" prefHeight="90.0" prefWidth="481.0" stylesheets="@../style/EntryCell.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.avatarhurden.dayonewindows.controllers.EntryCellController">
    <children>
-      <AnchorPane fx:id="tagPane" layoutX="190.0" layoutY="61.0" prefHeight="0.0" prefWidth="291.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="90.0" AnchorPane.rightAnchor="0.0" />
+      <HBox fx:id="tagPane" alignment="CENTER_LEFT" fillHeight="false" layoutX="90.0" layoutY="90.0" spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="90.0" AnchorPane.rightAnchor="0.0" />
       <AnchorPane layoutY="7.0" prefHeight="85.0" prefWidth="90.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
             <SVGPath fx:id="favoriteIcon" content="m 249.28571,264.38445 17.18822,9.03565 -3.28237,-19.13863 13.90438,-13.55348 -19.21612,-2.79257 -8.59411,-17.41338 -8.5941,17.41338 -19.21612,2.79257 13.90438,13.55348 -3.28237,19.13863 17.18821,-9.03565" fill="#fff5a0" layoutX="-205.0" layoutY="-214.0" stroke="BLACK" strokeLineJoin="BEVEL">

@@ -38,8 +38,8 @@ public class EntryManager {
 		return Config.get().getProperty("data_folder") != null;
 	}
 	
-	public EntryManager() {
-		Path rootFolder = Paths.get(Config.get().getProperty("data_folder"));
+	public EntryManager(String folder) {
+		Path rootFolder = Paths.get(folder);
 		entryFolder = rootFolder.resolve("entries");
 		imageFolder = rootFolder.resolve("photos");
 		
@@ -84,6 +84,15 @@ public class EntryManager {
 		}
 		
 		listenToFolder();
+	}
+	
+	public void changeFolder(String folder) {
+		Path rootFolder = Paths.get(folder);
+		entryFolder = rootFolder.resolve("entries");
+		imageFolder = rootFolder.resolve("photos");
+		
+		close();
+		loadAndWatch();
 	}
 	
 	public void close() {
