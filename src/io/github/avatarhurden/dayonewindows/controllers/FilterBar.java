@@ -174,6 +174,7 @@ public class FilterBar extends HBox {
 
 	public void showPopup() {
 		popOver.show(text);
+		text.setText("");
 		text.setOnMouseClicked(event -> {
 			if (!popOver.isShowing())
 				popOver.show(text);

@@ -85,10 +85,10 @@ public class SearchTooltipController {
 		
 		textSearchLabel.textProperty().bind(searchText);
 		
-		searchText.addListener((obs, oldValue, newValue) -> {
-			matchText(newValue);
-			matchDates(newValue);
-			matchTags(newValue);
+		searchText.addListener(event -> {
+			matchText(searchText.getValue());
+			matchDates(searchText.getValue());
+			matchTags(searchText.getValue());
 		});
 	}
 	

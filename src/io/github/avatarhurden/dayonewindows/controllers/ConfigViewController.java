@@ -1,6 +1,7 @@
 package io.github.avatarhurden.dayonewindows.controllers;
 
 import io.github.avatarhurden.dayonewindows.managers.Config;
+import io.github.avatarhurden.dayonewindows.managers.EntryManager;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -29,6 +30,9 @@ public class ConfigViewController {
 	
 	private Runnable onClose;
 	
+	private EntryManager manager;
+	private MainWindowController parent;
+	
 	@FXML
 	private void initialize() throws FileNotFoundException {
 		CloseButton closeButton = new CloseButton();
@@ -45,17 +49,6 @@ public class ConfigViewController {
 		animationCheckBox.setSelected(Boolean.valueOf(animation));
 		
 		String folder = Config.get().getProperty("data_folder");
-//		File file = new File(folder);
-		
-//		while (file != null && !file.getName().equals("Dropbox"))
-//			file = file.getParentFile();
-//		
-//		if (file != null) {
-//			System.out.println(file.getPath() + File.separator);
-//			folder = folder.replace(file.getPath() + File.separator, "");
-//			
-//			folderIcon.setImage(new Image(getClass().getResourceAsStream("/style/dropbox.png")));
-//		}
 		folderPathLabel.setText(folder);
 	}
 
@@ -83,12 +76,16 @@ public class ConfigViewController {
 	@FXML
 	private void changeFolderLocation() {
 		DirectoryChooser chooser = new DirectoryChooser();
-		chooser.setInitialDirectory(new File(Config.get().getProperty("data_folder")));
+		chooser.setInitialDirectory(new File(Config.get().getProperty("data_folder")).getParentFile());
 			
 		File chosen = chooser.showDialog(root.getScene().getWindow());
 		
-		if (chosen != null)
+		if (chosen != null && chosen.getAbsolutePath() != Config.get().getProperty("data_folder")) {
 			Config.get().setProperty("data_folder", chosen.getAbsolutePath());
+			manager.changeFolder(chosen.getAbsolutePath());
+			parent.takeScreenShot();
+			folderPathLabel.setText(chosen.getAbsolutePath());
+		}
 	}
 	
 	public void setOnClose(Runnable onClose) {
@@ -98,6 +95,14 @@ public class ConfigViewController {
 	@FXML
 	public void close() {
 		onClose.run();
+	}
+
+	public void setEntryManager(EntryManager manager) {
+		this.manager = manager;
+	}
+	
+	public void setParent(MainWindowController parent) {
+		this.parent = parent;
 	}
 	
 }

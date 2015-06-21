@@ -54,6 +54,8 @@ public class MainWindowController {
 	public void setDiaryManager(EntryManager manager) {
 		this.manager = manager;
 		
+		configViewController.setEntryManager(manager);
+		
 		entryListViewController.setItems(manager.getEntries());
 		entryListViewController.setAvailableTags(manager.getTags());
 		
@@ -85,8 +87,6 @@ public class MainWindowController {
 				group.selectToggle(oldValue);
 		});
 		
-		
-    	
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/EntryView.fxml"));
     	try {
     		newEntryView = loader.<AnchorPane>load();
@@ -126,6 +126,7 @@ public class MainWindowController {
 			e.printStackTrace();
 		}
     	configViewController = loader.<ConfigViewController>getController();
+    	configViewController.setParent(this);
     	
     	configViewController.setOnClose(() -> {
     		if (Config.get().getBoolean("enable_animations")) {
@@ -193,14 +194,8 @@ public class MainWindowController {
 	    	AnchorPane.setRightAnchor(configView, (newValue.getWidth() - configView.getPrefWidth()) / 2);
 
     		snapshotParameters.setViewport(new Rectangle2D(0, 0, newValue.getWidth(), newValue.getHeight()));
-	    	if (Config.get().getBoolean("enable_animations")) {
-				blurView.setOpacity(0d);
-			
-				Image frostImage = root.snapshot(snapshotParameters, null);
-				blurView.setImage(frostImage);
-
-				blurView.setOpacity(1d);
-	    	}
+	    	if (Config.get().getBoolean("enable_animations"))
+				takeScreenShot();
 		});
 
 		blurView.setOnMouseClicked(event -> {
@@ -215,6 +210,15 @@ public class MainWindowController {
 		snapshotParameters.setViewport(new Rectangle2D(0, 0, root.getLayoutBounds().getWidth(), root.getLayoutBounds().getHeight()));
 	}
 	
+	public void takeScreenShot() {
+		blurView.setOpacity(0d);
+		
+		Image frostImage = root.snapshot(snapshotParameters, null);
+		blurView.setImage(frostImage);
+
+		blurView.setOpacity(1d);
+	}
+
 	private void transitionTo(Node view) {
 		if (!Config.get().getBoolean("enable_animations")) {
 			

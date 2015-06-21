@@ -65,7 +65,7 @@ public class EntryCellController {
 	public void setContent(DayOneEntry entry) {
 		textLabel.textProperty().bind(entry.entryTextProperty());
 		
-		tags.setAll(entry.getObservableTags());
+		Bindings.bindContent(tags, entry.getObservableTags());
 		
 		isStarred.bind(entry.starredProperty());
 		
@@ -115,13 +115,6 @@ public class EntryCellController {
 			tagPane.setPrefHeight(tags.isEmpty() ? 0 : 31);
 			AnchorPane.setBottomAnchor(textLabel, tags.isEmpty() ? 10d : 31d);
 		});
-//		tagView = new ObjectListView<String>(s -> new SimpleStringProperty(s), false, ObjectLayout.HORIZONTAL);
-//		tagView.setItemHeight(0);
-//		tagView.getList().addListener((ListChangeListener.Change<? extends String> event) -> {
-//			tagPane.setPrefHeight(tagView.getList().isEmpty() ? 0 : 31);
-//			AnchorPane.setBottomAnchor(textLabel, tagView.getList().isEmpty() ? 10d : 31d);
-//		});
-//		tagPane.getChildren().add(tagView);
 		
 		tagPane.prefWidthProperty().bindBidirectional(textLabel.prefWidthProperty());
 		

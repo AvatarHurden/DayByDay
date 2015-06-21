@@ -77,7 +77,11 @@ public class EntryManager {
 	
 	public void loadAndWatch() {
 		try {
+			entryList.clear();
+			tagsList.clear();
+			
 			readFolder();
+			
 			loadImages();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -124,11 +128,12 @@ public class EntryManager {
 	}
 	
 	public void addTag(String tag, DayOneEntry entry) {
-		for (Tag t : tagsList)
+		for (Tag t : tagsList) {
 			if (t.getName().equals(tag)) {
 				t.getEntries().add(entry);
 				return;
 			}
+		}
 		Tag t = new Tag(tag);
 		t.getEntries().add(entry);
 		tagsList.add(t);
@@ -199,8 +204,8 @@ public class EntryManager {
 				path -> Pattern.matches("^[0-9abcdefABCDEF]{32}\\.doentry", path.getFileName().toString()));
 		for (Path file: stream) {
 			DayOneEntry entry = DayOneEntry.loadFromFile(this, file.toFile());
-		   	entryList.add(entry);
-		   	for (String tag : entry.getTags())
+			entryList.add(entry);
+		   	for (String tag : entry.getTags()) 
 		   		addTag(tag, entry);
 		}
 	}
@@ -219,17 +224,13 @@ public class EntryManager {
 		new Thread(() -> {
 			try {
 				watcher.startWatching();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}	
+			} catch (Exception e) {}	
 		}).start();
 		
 		new Thread(() -> {
 			try {
 				imageWatcher.startWatching();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}	
+			} catch (Exception e) {}	
 		}).start();
 	}
 	
