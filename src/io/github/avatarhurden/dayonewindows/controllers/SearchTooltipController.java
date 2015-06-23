@@ -8,6 +8,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
 import javafx.beans.property.Property;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -55,12 +56,13 @@ public class SearchTooltipController {
 	private Parser parser;
 	
 	private Property<String> searchText;
+	private Property<DateTime> date;
 	
 	private BiConsumer<Predicate<DayOneEntry>, String> filterAction;
 	
 	@FXML
 	public void initialize() {
-		bindTextFilters();
+		bindFilters();
 		
 		createDateParser();
 		
@@ -80,15 +82,66 @@ public class SearchTooltipController {
 		});
 	}
 	
-	private void bindTextFilters() {
+	private void bindFilters() {
 		searchText = new SimpleStringProperty();
+		date = new SimpleObjectProperty<DateTime>();
 		
-		textSearchLabel.textProperty().bind(searchText);
+		bindText();
+		bindDates();
 		
 		searchText.addListener(event -> {
 			matchText(searchText.getValue());
 			matchDates(searchText.getValue());
 			matchTags(searchText.getValue());
+		});
+	}
+	
+	private void bindText() {
+		textBox.setOnMouseClicked(event -> filterAction.accept(
+				entry -> entry.getEntryText().toLowerCase().contains(searchText.getValue().toLowerCase()), searchText.getValue()));
+		textBox.setOnKeyPressed(event -> {
+			if (event.getCode() == KeyCode.ENTER) {
+				filterAction.accept(entry -> entry.getEntryText().toLowerCase().contains(searchText.getValue().toLowerCase()), searchText.getValue());
+				event.consume();
+			}
+		});
+		
+		textSearchLabel.textProperty().bind(searchText);
+	}
+
+	private void bindDates() {
+		Runnable onDateAction = () -> filterAction.accept(entry -> {
+			return entry.getCreationDate().isAfter(date.getValue().withMillisOfDay(0))
+					&& entry.getCreationDate().isBefore(date.getValue().withMillisOfDay(86399999));
+		}, "On: " + date.getValue().toString("dd/MM/YYYY"));
+		
+		onDateBox.setOnMouseClicked(event -> onDateAction.run()); 
+		
+		onDateBox.setOnKeyPressed(event -> {
+			if (event.getCode() == KeyCode.ENTER)
+				onDateAction.run();
+		});
+		
+		Runnable beforeDateAction = () -> filterAction.accept(entry -> {
+			return entry.getCreationDate().isBefore(date.getValue().withMillisOfDay(86399999));
+		}, "Before: " + date.getValue().toString("dd/MM/YYYY"));
+		
+		beforeDateBox.setOnMouseClicked(event -> beforeDateAction.run()); 
+		
+		beforeDateBox.setOnKeyPressed(event -> {
+			if (event.getCode() == KeyCode.ENTER)
+				beforeDateAction.run();
+		});
+		
+		Runnable afterDateAction = () -> filterAction.accept(entry -> {
+			return entry.getCreationDate().isAfter(date.getValue().withMillisOfDay(0));
+		}, "After: " + date.getValue().toString("dd/MM/YYYY"));
+		
+		afterDateBox.setOnMouseClicked(event -> afterDateAction.run()); 
+		
+		afterDateBox.setOnKeyPressed(event -> {
+			if (event.getCode() == KeyCode.ENTER)
+				afterDateAction.run();
 		});
 	}
 	
@@ -107,52 +160,9 @@ public class SearchTooltipController {
 		try {
 			List<DateGroup> matches = parser.parse(text);
 			
-			DateTime date = new DateTime(matches.get(0).getDates().get(0));
+			date.setValue(new DateTime(matches.get(0).getDates().get(0)));
 			
-			onDateLabel.setText(date.toString("EEEEEEEE - dd/MM/YYYY"));
-			
-			String dateText = date.toString("dd/MM/YYYY");
-			
-			onDateBox.setOnMouseClicked(event -> filterAction.accept(entry -> {
-				return entry.getCreationDate().isAfter(date.withMillisOfDay(0))
-						&& entry.getCreationDate().isBefore(date.withMillisOfDay(86399999));
-			}, "On: " + dateText)); 
-			
-			onDateBox.setOnKeyPressed(event -> {
-				if (event.getCode() == KeyCode.ENTER) {
-					filterAction.accept(entry -> {
-						return entry.getCreationDate().isAfter(date.withMillisOfDay(0))
-								&& entry.getCreationDate().isBefore(date.withMillisOfDay(86399999));
-					}, "On: " + dateText);
-					event.consume();
-				}
-			});
-			
-			beforeDateBox.setOnMouseClicked(event -> filterAction.accept(entry -> {
-				return entry.getCreationDate().isBefore(date.withMillisOfDay(86399999));
-			}, "Before: " + dateText)); 
-			
-			beforeDateBox.setOnKeyPressed(event -> {
-				if (event.getCode() == KeyCode.ENTER) {
-					filterAction.accept(entry -> {
-						return entry.getCreationDate().isBefore(date.withMillisOfDay(86399999));
-					}, "Before: " + dateText);
-					event.consume();
-				}
-			});
-			
-			afterDateBox.setOnMouseClicked(event -> filterAction.accept(entry -> {
-				return entry.getCreationDate().isAfter(date.withMillisOfDay(0));
-			}, "After: " + dateText)); 
-			
-			afterDateBox.setOnKeyPressed(event -> {
-				if (event.getCode() == KeyCode.ENTER) {
-					filterAction.accept(entry -> {
-						return entry.getCreationDate().isAfter(date.withMillisOfDay(0));
-					}, "After: " + dateText); 
-					event.consume();
-				}
-			});
+			onDateLabel.setText(date.getValue().toString("dd/MM/YYYY"));
 			
 			datePane.setCenter(dateBox);
 			
@@ -163,8 +173,8 @@ public class SearchTooltipController {
 				tabOrder.set(2, beforeDateBox);
 				tabOrder.set(3, afterDateBox);
 			}
-		
 		} catch (Exception e) {
+			date.setValue(null);
 			datePane.setCenter(new Label("Enter a date to filter your entries"));
 			tabOrder.remove(onDateBox);
 			tabOrder.remove(beforeDateBox);
@@ -206,15 +216,6 @@ public class SearchTooltipController {
 			textPane.setCenter(textBox);
 			tabOrder.set(0, textBox);
 		}
-		
-		textBox.setOnMouseClicked(event -> filterAction.accept(
-				entry -> entry.getEntryText().toLowerCase().contains(text.toLowerCase()), text));
-		textBox.setOnKeyPressed(event -> {
-			if (event.getCode() == KeyCode.ENTER) {
-				filterAction.accept(entry -> entry.getEntryText().toLowerCase().contains(text.toLowerCase()), text);
-				event.consume();
-			}
-		});
 	}
 	
 	public void setOnFilterSelection(BiConsumer<Predicate<DayOneEntry>, String> consumer) {

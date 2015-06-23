@@ -1,5 +1,6 @@
 package io.github.avatarhurden.dayonewindows.controllers;
 
+import io.github.avatarhurden.dayonewindows.controllers.MultiPane.MultiPaneOrientation;
 import io.github.avatarhurden.dayonewindows.managers.Config;
 import io.github.avatarhurden.dayonewindows.models.DayOneEntry;
 import io.github.avatarhurden.dayonewindows.models.Entry;
@@ -7,8 +8,8 @@ import io.github.avatarhurden.dayonewindows.models.MonthEntry;
 import io.github.avatarhurden.dayonewindows.models.Tag;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Predicate;
 
 import javafx.animation.KeyFrame;
@@ -46,37 +47,38 @@ public class ListEntryViewController {
 
 	@FXML private AnchorPane root;
 	
-	@FXML
-	private SVGPath previousButton, homeButton, nextButton;
-	@FXML
-	private HBox buttonBar;
-	@FXML private AnchorPane contentPane;
-	@FXML private AnchorPane singleViewPane;
+	private MultiPane multiPane;
 	
+	// Single View Pane
+	@FXML private AnchorPane singleViewPane;
+	@FXML private HBox buttonBar;
+	@FXML private SVGPath previousButton, homeButton, nextButton;
+		// Entry View
+	@FXML private AnchorPane contentPane;
 	private EntryViewController entryViewController;
 	private AnchorPane entryView;
 	
+	// List View Pane
+	@FXML private AnchorPane listViewPane;
 	@FXML private ListView<Entry> listView;
-
+	@FXML private Label monthLabel;
+		// Filter Pane
+	@FXML private HBox filterPane; 
+	private FilterBar filterBox;
+	
 	private ObservableList<Entry> visibleItems;
 	private DoubleProperty visibleSize;
 	
-	private Set<MonthEntry> months;
+	private List<MonthEntry> months;
 	
 	private ObservableList<Entry> items;
 	private FilteredList<Entry> filteredItems;
-	
-	@FXML private Label monthLabel;
-	@FXML private AnchorPane listViewPane;
-	
-	@FXML private HBox filterPane; 
-	private FilterBar filterBox;
 	
 	private SimpleIntegerProperty listSize;
 	
 	@FXML
 	private void initialize() {
-		months = new HashSet<MonthEntry>();
+		months = new ArrayList<MonthEntry>();
 		
 		listSize = new SimpleIntegerProperty();
 		
@@ -126,6 +128,14 @@ public class ListEntryViewController {
     	entryViewController = loader.<EntryViewController>getController();
     	contentPane.getChildren().setAll(entryView);
     	
+    	multiPane = new MultiPane(MultiPaneOrientation.HORIZONTAL);
+    	multiPane.getChildren().addAll(listViewPane, singleViewPane);
+    	root.getChildren().add(multiPane);
+    	AnchorPane.setTopAnchor(multiPane, 0d);	
+    	AnchorPane.setRightAnchor(multiPane, 0d);
+    	AnchorPane.setBottomAnchor(multiPane, 0d);
+    	AnchorPane.setLeftAnchor(multiPane, 0d);
+    	
     	listView.setOnKeyPressed(event -> {
 			if (event.getCode() == KeyCode.ENTER)
 				showSingle();
@@ -142,20 +152,14 @@ public class ListEntryViewController {
 				showList();
     	});
     	
-    	
     	visibleItems.addListener((ListChangeListener.Change<? extends Entry> event) -> {
     		if (visibleItems.isEmpty())
     			return;
-    		
+
     		monthLabel.setText(visibleItems.get(0).getCreationDate().toString("MMMMMMMMMMMMMMM YYYY"));
 		});
     	
     	createSearchToolTip();
-    	
-    	root.sceneProperty().addListener((obs, oldValue, newValue) -> {
-    		if (newValue != null)
-    			createViewAnchor();
-		});
 	}
 	
 	private void createSearchToolTip() {
@@ -174,6 +178,8 @@ public class ListEntryViewController {
     	});
     	
     	filterBox.getFilters().addListener((ListChangeListener.Change<? extends Predicate<Entry>> event) -> {
+    		Entry selected = listView.getSelectionModel().getSelectedItem();
+    		
 			filteredItems.setPredicate(entry -> {
 				BooleanProperty accepted = new SimpleBooleanProperty(true);
 				
@@ -181,10 +187,10 @@ public class ListEntryViewController {
 				
 				return accepted.getValue();
 			});
+			
     		addMonths();
-    		if (filterBox.getFilters().isEmpty())
-    			listView.scrollTo(filteredItems.size() - 1);
-    		listView.scrollTo(listView.getSelectionModel().getSelectedItem());
+    		listView.getSelectionModel().select(selected);
+    		listView.scrollTo(selected);
 		});
     	
 	}
@@ -235,6 +241,8 @@ public class ListEntryViewController {
 			if (!months.contains(month))
 				months.add(month);
 		}
+		if (filteredItems.containsAll(items))
+			months.remove(0);
 		items.addAll(months);
 	}
 	
@@ -242,7 +250,7 @@ public class ListEntryViewController {
 		this.items = items;
 		SortedList<Entry> sorted = new SortedList<Entry>(items);
 		// Compares opposite so that later entries are on top
-		sorted.setComparator((entry1, entry2) -> entry1.compareTo(entry2));
+		sorted.setComparator((entry1, entry2) -> entry2.compareTo(entry1));
 		
 		filteredItems = sorted.filtered(entry -> true);
 		filteredItems.predicateProperty().addListener((obs, oldValue, newValue) ->  visibleItems.clear());
@@ -258,56 +266,30 @@ public class ListEntryViewController {
 				showList();
 			}
 		});
-		listView.scrollTo(sorted.size() - 1);
+//		listView.scrollTo(sorted.size() - 1);
 		listSize.bind(Bindings.size(sorted));
 		
-		monthLabel.setText(sorted.get(sorted.size() - 1).getCreationDate().toString("MMMMMMMMMMMMMMM YYYY"));
-	}
-	
-	private DoubleProperty viewAnchor;
-	
-	private void createViewAnchor() {
-		if (viewAnchor == null) {
-			viewAnchor = new SimpleDoubleProperty(root.getScene().getWidth());
-
-			viewAnchor.addListener((obs, oldValue, newValue) -> {
-				AnchorPane.setLeftAnchor(listViewPane, -newValue.doubleValue());
-				AnchorPane.setRightAnchor(listViewPane, +newValue.doubleValue());
-				
-				AnchorPane.setRightAnchor(singleViewPane, -root.getScene().getWidth() + newValue.doubleValue());
-				AnchorPane.setLeftAnchor(singleViewPane, root.getScene().getWidth() - newValue.doubleValue());
-			});
-		} else 
-			viewAnchor.setValue(root.getScene().getWidth());
-		
-		root.getScene().widthProperty().addListener((obs, oldValue, newValue) -> {
-			double diff = newValue.doubleValue() - oldValue.doubleValue();
-			
-			if (AnchorPane.getLeftAnchor(singleViewPane) != 0)
-				AnchorPane.setLeftAnchor(singleViewPane, AnchorPane.getLeftAnchor(singleViewPane) + diff);
-			
-			if (AnchorPane.getRightAnchor(listViewPane) != 0)
-				AnchorPane.setRightAnchor(listViewPane, AnchorPane.getRightAnchor(listViewPane) + diff);
-		}); 
+		monthLabel.setText(sorted.get(0).getCreationDate().toString("MMMMMMMMMMMMMMM YYYY"));
 	}
 	
 	private void transitionTo(Node view) {
-		if (!Config.get().getBoolean("enable_animations")) {
-				
-			if (view == listViewPane)
-				viewAnchor.setValue(0);
-			else if (view == singleViewPane)
-				viewAnchor.setValue(root.getScene().getWidth());
-				
-		} else {
-			Timeline timeline = new Timeline();
-			if (view == listViewPane)
-				timeline.getKeyFrames().add(new KeyFrame(new Duration(200),	new KeyValue(viewAnchor, 0d)));
-			else if (view == singleViewPane)
-				timeline.getKeyFrames().add(new KeyFrame(new Duration(200), new KeyValue(viewAnchor, root.getScene().getWidth())));
-
-			timeline.play();
-		}
+		multiPane.show(view, Config.get().getBoolean("enable_animations"));
+//		if (!Config.get().getBoolean("enable_animations")) {
+//				
+//			if (view == listViewPane)
+//				viewAnchor.setValue(0);
+//			else if (view == singleViewPane)
+//				viewAnchor.setValue(root.getScene().getWidth());
+//				
+//		} else {
+//			Timeline timeline = new Timeline();
+//			if (view == listViewPane)
+//				timeline.getKeyFrames().add(new KeyFrame(new Duration(200),	new KeyValue(viewAnchor, 0d)));
+//			else if (view == singleViewPane)
+//				timeline.getKeyFrames().add(new KeyFrame(new Duration(200), new KeyValue(viewAnchor, root.getScene().getWidth())));
+//
+//			timeline.play();
+//		}
 	}
 	
 	public void showList() {
@@ -352,9 +334,9 @@ public class ListEntryViewController {
 	        	
 	        	if (visibleItems.isEmpty())
 	        		visibleItems.add(item);
-	        	else if (item.getCreationDate().isBefore(visibleItems.get(0).getCreationDate()))
+	        	else if (item.getCreationDate().isAfter(visibleItems.get(0).getCreationDate()))
 	        		visibleItems.add(0, item);
-	        	else if (item.getCreationDate().isAfter(visibleItems.get(visibleItems.size() - 1).getCreationDate())) {
+	        	else if (item.getCreationDate().isBefore(visibleItems.get(visibleItems.size() - 1).getCreationDate())) {
 	        		visibleItems.add(item);
 	        		addedBeggining = false;
 	        	}
@@ -375,10 +357,10 @@ public class ListEntryViewController {
 					controller.setContent((DayOneEntry) item);
 					
 					int index = listView.getItems().indexOf(item);
-					if (index == 0 || listView.getItems().get(index - 1) instanceof MonthEntry) 
+					if (index == listView.getItems().size() - 1 || listView.getItems().get(index + 1) instanceof MonthEntry) 
 						controller.setDateEnabled(true); // First item, and items after monthEntries, must always have the date
 					else {
-						Entry previous = listView.getItems().get(index - 1);
+						Entry previous = listView.getItems().get(index + 1);
 						controller.setDateEnabled(previous.getCreationDate().getDayOfYear() != item.getCreationDate().getDayOfYear());
 					}
 				

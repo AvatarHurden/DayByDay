@@ -10,11 +10,11 @@ public class MonthEntry implements Entry {
 	private DateTime date;
 	
 	public MonthEntry(int year, int month) {
-		date = new DateTime(year, month, 1, 0, 0);
+		this(new DateTime(year, month, 1, 0, 0));
 	}
 	
 	public MonthEntry(DateTime date) {
-		this.date = date.withMillisOfDay(0).withDayOfMonth(1);
+		this.date = date.millisOfDay().withMaximumValue().dayOfMonth().withMaximumValue();
 	}
 
 	public String getUUID() {
@@ -26,11 +26,6 @@ public class MonthEntry implements Entry {
 	}
 
 	public int compareTo(Entry o) {
-		if (o instanceof DayOneEntry 
-				&& o.getCreationDate().getYear() == date.getYear()
-				&& o.getCreationDate().getMonthOfYear() == date.getMonthOfYear())
-			return -1;
-		else
 		return getCreationDate().compareTo(o.getCreationDate());
 	}
 

@@ -1,5 +1,6 @@
 package io.github.avatarhurden.dayonewindows.controllers;
 
+import io.github.avatarhurden.dayonewindows.controllers.MultiPane.MultiPaneOrientation;
 import io.github.avatarhurden.dayonewindows.managers.Config;
 import io.github.avatarhurden.dayonewindows.managers.EntryManager;
 
@@ -32,7 +33,9 @@ public class MainWindowController {
 	@FXML private ToggleButton newButton, listButton;
 	private ToggleGroup group;
 	
-	private DoubleProperty viewAnchors, configAnchors;
+	private DoubleProperty configAnchors;
+	
+	private MultiPane multiPane;
 	
 	// Creation view
 	private AnchorPane newEntryView;
@@ -66,11 +69,11 @@ public class MainWindowController {
     	
     	switch (startScreen) {
 		case "Open New Entry View":
-			viewAnchors.setValue(0);
+			multiPane.show(0, false);
 			newButton.fire();
 			break;
 		case "Open Entry List View":
-			viewAnchors.setValue(contentPane.getHeight());
+			multiPane.show(1, false);
 			listButton.fire();
 			break;
 		}
@@ -90,31 +93,24 @@ public class MainWindowController {
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/EntryView.fxml"));
     	try {
     		newEntryView = loader.<AnchorPane>load();
-	    	AnchorPane.setTopAnchor(newEntryView, 0d);
-	    	AnchorPane.setRightAnchor(newEntryView, 0d);
-	    	AnchorPane.setBottomAnchor(newEntryView, 0d);
-	    	AnchorPane.setLeftAnchor(newEntryView, 0d);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-    	contentPane.getChildren().add(newEntryView);
+		} catch (IOException e) {}
     	
     	entryViewController = loader.<EntryViewController>getController();
     	
     	loader = new FXMLLoader(getClass().getResource("/fxml/ListEntryView.fxml"));
     	try {
     		entryListView = loader.<AnchorPane>load();
-	    	AnchorPane.setTopAnchor(entryListView, 0d);	
-	    	AnchorPane.setRightAnchor(entryListView, 0d);
-	    	AnchorPane.setBottomAnchor(entryListView, 0d);
-	    	AnchorPane.setLeftAnchor(entryListView, 0d);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-    	contentPane.getChildren().add(entryListView);
-    	
+		} catch (IOException e) {}
     	entryListViewController = loader.<ListEntryViewController>getController();
 
+    	multiPane = new MultiPane(MultiPaneOrientation.VERTICAL);
+    	contentPane.getChildren().add(multiPane);
+    	AnchorPane.setTopAnchor(multiPane, 0d);	
+    	AnchorPane.setRightAnchor(multiPane, 0d);
+    	AnchorPane.setBottomAnchor(multiPane, 0d);
+    	AnchorPane.setLeftAnchor(multiPane, 0d);
+    	
+    	
     	loader = new FXMLLoader(getClass().getResource("/fxml/ConfigView.fxml"));
     	try {
 			configView = loader.load();
@@ -127,6 +123,8 @@ public class MainWindowController {
 		}
     	configViewController = loader.<ConfigViewController>getController();
     	configViewController.setParent(this);
+
+    	multiPane.getChildren().addAll(newEntryView, entryListView);
     	
     	configViewController.setOnClose(() -> {
     		if (Config.get().getBoolean("enable_animations")) {
@@ -151,30 +149,7 @@ public class MainWindowController {
     	root.getChildren().add(configView);
     	blurView.setVisible(false);
     	
-    	initializeViewProperty();
     	initializeConfigAnimations();
-	}
-	
-	private void initializeViewProperty() {
-		viewAnchors = new SimpleDoubleProperty(0);
-		
-		viewAnchors.addListener((obs, oldValue, newValue) -> {
-			AnchorPane.setTopAnchor(newEntryView, -newValue.doubleValue());
-			AnchorPane.setBottomAnchor(newEntryView, newValue.doubleValue());
-			
-			AnchorPane.setTopAnchor(entryListView, contentPane.getHeight() - newValue.doubleValue());
-			AnchorPane.setBottomAnchor(entryListView, -contentPane.getHeight() + newValue.doubleValue());
-		});
-	
-		contentPane.heightProperty().addListener((obs, oldValue, newValue) -> {
-			double diff = newValue.doubleValue() - oldValue.doubleValue();
-			
-			if (viewAnchors.get() != 0)
-				AnchorPane.setBottomAnchor(newEntryView, AnchorPane.getBottomAnchor(newEntryView) + diff);
-			
-			if (AnchorPane.getTopAnchor(entryListView) != 0)
-				AnchorPane.setTopAnchor(entryListView, AnchorPane.getTopAnchor(entryListView) + diff);
-		});
 	}
 	
 	private void initializeConfigAnimations() {
@@ -220,23 +195,7 @@ public class MainWindowController {
 	}
 
 	private void transitionTo(Node view) {
-		if (!Config.get().getBoolean("enable_animations")) {
-			
-			if (view == newEntryView)
-				viewAnchors.setValue(0);
-			else if (view == entryListView)
-				viewAnchors.setValue(contentPane.getHeight());
-			
-		} else {
-			Timeline timeline = new Timeline();
-			
-			if (view == newEntryView)
-				timeline.getKeyFrames().add(new KeyFrame(new Duration(200),	new KeyValue(viewAnchors, 0)));
-			else if (view == entryListView)
-				timeline.getKeyFrames().add(new KeyFrame(new Duration(200), new KeyValue(viewAnchors, contentPane.getHeight())));
-			
-			timeline.play();
-		}
+		multiPane.show(view, Config.get().getBoolean("enable_animations"));
 	}
 
 	@FXML
