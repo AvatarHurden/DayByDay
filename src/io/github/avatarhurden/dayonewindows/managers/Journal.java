@@ -22,7 +22,7 @@ import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.util.Callback;
 
-public class EntryManager {
+public class Journal {
 	
 	private Path entryFolder, imageFolder;
 	
@@ -38,7 +38,7 @@ public class EntryManager {
 		return Config.get().getProperty("data_folder") != null;
 	}
 	
-	public EntryManager(String folder) {
+	public Journal(String folder) {
 		Path rootFolder = Paths.get(folder);
 		entryFolder = rootFolder.resolve("entries");
 		imageFolder = rootFolder.resolve("photos");
@@ -79,6 +79,7 @@ public class EntryManager {
 		try {
 			entryList.clear();
 			tagsList.clear();
+			entryMap.clear();
 			
 			readFolder();
 			

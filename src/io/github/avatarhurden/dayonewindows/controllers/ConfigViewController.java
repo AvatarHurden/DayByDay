@@ -1,7 +1,7 @@
 package io.github.avatarhurden.dayonewindows.controllers;
 
 import io.github.avatarhurden.dayonewindows.managers.Config;
-import io.github.avatarhurden.dayonewindows.managers.EntryManager;
+import io.github.avatarhurden.dayonewindows.managers.Journal;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -30,7 +30,7 @@ public class ConfigViewController {
 	
 	private Runnable onClose;
 	
-	private EntryManager manager;
+	private Journal manager;
 	private MainWindowController parent;
 	
 	@FXML
@@ -82,8 +82,11 @@ public class ConfigViewController {
 		
 		if (chosen != null && chosen.getAbsolutePath() != Config.get().getProperty("data_folder")) {
 			Config.get().setProperty("data_folder", chosen.getAbsolutePath());
-			manager.changeFolder(chosen.getAbsolutePath());
-			parent.takeScreenShot();
+			Journal oldJournal = manager;
+			manager = new Journal(chosen.getAbsolutePath());
+			manager.loadAndWatch();
+			parent.setJournal(manager);
+			oldJournal.close();
 			folderPathLabel.setText(chosen.getAbsolutePath());
 		}
 	}
@@ -97,7 +100,7 @@ public class ConfigViewController {
 		onClose.run();
 	}
 
-	public void setEntryManager(EntryManager manager) {
+	public void setJournal(Journal manager) {
 		this.manager = manager;
 	}
 	

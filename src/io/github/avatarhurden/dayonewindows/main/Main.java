@@ -3,7 +3,7 @@ package io.github.avatarhurden.dayonewindows.main;
 import io.github.avatarhurden.dayonewindows.controllers.DayOneTray;
 import io.github.avatarhurden.dayonewindows.controllers.MainWindowController;
 import io.github.avatarhurden.dayonewindows.managers.Config;
-import io.github.avatarhurden.dayonewindows.managers.EntryManager;
+import io.github.avatarhurden.dayonewindows.managers.Journal;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,8 +21,8 @@ import org.controlsfx.control.NotificationPane;
 
 public class Main extends Application {
 
-	private EntryManager entryManager;
 	private Stage primaryStage;
+	MainWindowController controller;
 	
 	private DayOneTray trayIcon;
 	
@@ -34,7 +34,7 @@ public class Main extends Application {
 	public void start(Stage primaryStage) throws Exception {
 		this.primaryStage = primaryStage;
 		
-		entryManager = new EntryManager(Config.get().getProperty("data_folder"));
+		Journal entryManager = new Journal(Config.get().getProperty("data_folder"));
 		entryManager.loadAndWatch();
 
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainWindow.fxml"));
@@ -48,8 +48,8 @@ public class Main extends Application {
 
 		setPosition(primaryStage);
 		
-		MainWindowController controller = loader.<MainWindowController>getController();
-		controller.setDiaryManager(entryManager);
+		controller = loader.<MainWindowController>getController();
+		controller.setJournal(entryManager);
 		
 		primaryStage.setOnCloseRequest(event -> exit());
 		
@@ -94,7 +94,7 @@ public class Main extends Application {
 			savePosition(primaryStage);
 //			SystemTray.getSystemTray().remove(trayIcon.getTrayIcon());
 			Config.save();
-			entryManager.close();
+			controller.getJournal().close();
 			Platform.exit();
 		} catch (Exception e) {
 			e.printStackTrace();

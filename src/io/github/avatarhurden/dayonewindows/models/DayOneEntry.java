@@ -1,6 +1,6 @@
 package io.github.avatarhurden.dayonewindows.models;
 
-import io.github.avatarhurden.dayonewindows.managers.EntryManager;
+import io.github.avatarhurden.dayonewindows.managers.Journal;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,11 +30,11 @@ import com.dd.plist.PropertyListParser;
 
 public class DayOneEntry implements Entry {
 
-	public static DayOneEntry loadFromFile(EntryManager manager, File file) throws Exception {
+	public static DayOneEntry loadFromFile(Journal manager, File file) throws Exception {
 		return new DayOneEntry(manager, (NSDictionary) PropertyListParser.parse(file), file);
 	}
 	
-	public static DayOneEntry createNewEntry(EntryManager manager) {
+	public static DayOneEntry createNewEntry(Journal manager) {
 		NSDictionary dict = new NSDictionary();
 		
 		dict.put("UUID", UUID.randomUUID().toString().replace("-", "").toUpperCase());
@@ -64,7 +64,7 @@ public class DayOneEntry implements Entry {
 
 	private NSDictionary dictionary;
 	
-	private EntryManager manager;
+	private Journal manager;
 	private File file, imageFile;
 	private Property<Image> image;
 	
@@ -73,7 +73,7 @@ public class DayOneEntry implements Entry {
 	/** Is true only when created. After any changes to any field (i.e. after a save), is set to false **/
 	private boolean isEmpty = true;
 	
-	private DayOneEntry(EntryManager manager, NSDictionary dictionary, File file) {
+	private DayOneEntry(Journal manager, NSDictionary dictionary, File file) {
 		this.manager = manager;
 		this.dictionary = dictionary;
 		this.file = file;
@@ -131,7 +131,7 @@ public class DayOneEntry implements Entry {
 		return imageFile;
 	}
 
-	public EntryManager getManager() {
+	public Journal getManager() {
 		return manager;
 	}
 	

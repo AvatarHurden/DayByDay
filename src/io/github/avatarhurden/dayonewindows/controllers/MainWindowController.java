@@ -2,38 +2,24 @@ package io.github.avatarhurden.dayonewindows.controllers;
 
 import io.github.avatarhurden.dayonewindows.controllers.MultiPane.MultiPaneOrientation;
 import io.github.avatarhurden.dayonewindows.managers.Config;
-import io.github.avatarhurden.dayonewindows.managers.EntryManager;
+import io.github.avatarhurden.dayonewindows.managers.Journal;
 
 import java.io.IOException;
 
-import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
-import javafx.animation.Timeline;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
-import javafx.scene.SnapshotParameters;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
-import javafx.scene.effect.BoxBlur;
-import javafx.scene.effect.Effect;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
-import javafx.util.Duration;
 
 public class MainWindowController {
 
-	@FXML private AnchorPane contentPane, root;
+	@FXML private AnchorPane contentPane, root, parent;
 	
 	@FXML private ToggleButton newButton, listButton;
 	private ToggleGroup group;
-	
-	private DoubleProperty configAnchors;
 	
 	private MultiPane multiPane;
 	
@@ -48,16 +34,14 @@ public class MainWindowController {
 	// Config View
 	private VBox configView;
 	private ConfigViewController configViewController;
-	private ImageView blurView;
-	private Effect frostEffect;
-	private SnapshotParameters snapshotParameters;
+	private DropdownWrapper wrapper;
 	
-	private EntryManager manager;
+	private Journal journal;
 
-	public void setDiaryManager(EntryManager manager) {
-		this.manager = manager;
+	public void setJournal(Journal manager) {
+		this.journal = manager;
 		
-		configViewController.setEntryManager(manager);
+		configViewController.setJournal(manager);
 		
 		entryListViewController.setItems(manager.getEntries());
 		entryListViewController.setAvailableTags(manager.getTags());
@@ -90,7 +74,26 @@ public class MainWindowController {
 				group.selectToggle(oldValue);
 		});
 		
-		FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/EntryView.fxml"));
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ConfigView.fxml"));
+    	try {
+			configView = loader.load();
+		} catch (IOException e) {}
+    	
+    	configViewController = loader.<ConfigViewController>getController();
+    	configViewController.setParent(this);
+		
+    	wrapper = new DropdownWrapper(parent, configView);
+    	wrapper.setSpacing(25);
+    	
+    	root.getChildren().setAll(wrapper);
+    	AnchorPane.setTopAnchor(wrapper, 0d);	
+    	AnchorPane.setRightAnchor(wrapper, 0d);
+    	AnchorPane.setBottomAnchor(wrapper, 0d);
+    	AnchorPane.setLeftAnchor(wrapper, 0d);
+    	
+    	configViewController.setOnClose(() -> wrapper.hide(Config.get().getBoolean("enable_animations")));
+		
+		loader = new FXMLLoader(getClass().getResource("/fxml/EntryView.fxml"));
     	try {
     		newEntryView = loader.<AnchorPane>load();
 		} catch (IOException e) {}
@@ -110,113 +113,16 @@ public class MainWindowController {
     	AnchorPane.setBottomAnchor(multiPane, 0d);
     	AnchorPane.setLeftAnchor(multiPane, 0d);
     	
-    	
-    	loader = new FXMLLoader(getClass().getResource("/fxml/ConfigView.fxml"));
-    	try {
-			configView = loader.load();
-	    	AnchorPane.setTopAnchor(configView, -configView.getPrefHeight());	
-	    	AnchorPane.setRightAnchor(configView, (root.getPrefWidth() - configView.getPrefWidth()) / 2);
-	    	AnchorPane.setBottomAnchor(configView, root.getHeight());
-	    	AnchorPane.setLeftAnchor(configView, (root.getPrefWidth() - configView.getPrefWidth()) / 2);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-    	configViewController = loader.<ConfigViewController>getController();
-    	configViewController.setParent(this);
-
     	multiPane.getChildren().addAll(newEntryView, entryListView);
-    	
-    	configViewController.setOnClose(() -> {
-    		if (Config.get().getBoolean("enable_animations")) {
-    			Timeline time2 = new Timeline();
-    			time2.setOnFinished(event2 -> blurView.setVisible(false));
-    			time2.getKeyFrames().add(new KeyFrame(new Duration(100), 
-    					new KeyValue(blurView.opacityProperty(), 0),
-    					new KeyValue(configAnchors, 0)));
-    			time2.play();
-    		} else {
-    			configAnchors.setValue(0);
-    			blurView.setVisible(false);
-    		}
-		});
-    	
-    	blurView = new ImageView();
-    	AnchorPane.setTopAnchor(blurView, 0d);	
-    	AnchorPane.setRightAnchor(blurView, 0d);
-    	AnchorPane.setBottomAnchor(blurView, 0d);
-    	AnchorPane.setLeftAnchor(blurView, 0d);
-    	root.getChildren().add(blurView);
-    	root.getChildren().add(configView);
-    	blurView.setVisible(false);
-    	
-    	initializeConfigAnimations();
 	}
 	
-	private void initializeConfigAnimations() {
-		configAnchors = new SimpleDoubleProperty(-1);
-		
-		configAnchors.addListener((obs, oldValue, newValue) -> {
-			AnchorPane.setTopAnchor(configView, - configView.getPrefHeight() + newValue.doubleValue());
-			AnchorPane.setBottomAnchor(configView, root.getHeight() - newValue.doubleValue());
-		});
-		
-		root.layoutBoundsProperty().addListener((obs, oldValue, newValue) -> {
-			double diffHeight = newValue.getHeight() - oldValue.getHeight();
-			
-			AnchorPane.setBottomAnchor(configView, AnchorPane.getBottomAnchor(configView) + diffHeight);
-			
-			AnchorPane.setLeftAnchor(configView, (newValue.getWidth() - configView.getPrefWidth()) / 2);
-	    	AnchorPane.setRightAnchor(configView, (newValue.getWidth() - configView.getPrefWidth()) / 2);
-
-    		snapshotParameters.setViewport(new Rectangle2D(0, 0, newValue.getWidth(), newValue.getHeight()));
-	    	if (Config.get().getBoolean("enable_animations"))
-				takeScreenShot();
-		});
-
-		blurView.setOnMouseClicked(event -> {
-			if (event.getClickCount() == 2)
-				configViewController.close();
-		});
-		
-		frostEffect = new BoxBlur(7, 7, 3);
-    	blurView.setEffect(frostEffect);
-		
-		snapshotParameters = new SnapshotParameters();
-		snapshotParameters.setViewport(new Rectangle2D(0, 0, root.getLayoutBounds().getWidth(), root.getLayoutBounds().getHeight()));
-	}
-	
-	public void takeScreenShot() {
-		blurView.setOpacity(0d);
-		
-		Image frostImage = root.snapshot(snapshotParameters, null);
-		blurView.setImage(frostImage);
-
-		blurView.setOpacity(1d);
-	}
-
 	private void transitionTo(Node view) {
 		multiPane.show(view, Config.get().getBoolean("enable_animations"));
 	}
 
 	@FXML
 	private void showConfigView() {
-		configView.setVisible(true);
-		if (!Config.get().getBoolean("enable_animations")) 
-			configAnchors.setValue(configView.getPrefHeight() + 25);
-		else {
-			blurView.setOpacity(0d);
-			blurView.setVisible(true);
-		
-			Image frostImage = root.snapshot(snapshotParameters, null);
-    		blurView.setImage(frostImage);
-    		blurView.setEffect(frostEffect);
-    	
-    		Timeline time = new Timeline();
-    		time.getKeyFrames().add(new KeyFrame(new Duration(100),	
-    				new KeyValue(blurView.opacityProperty(), 1),
-    				new KeyValue(configAnchors, configView.getPrefHeight() + 25)));
-			time.play();
-		}
+		wrapper.show(Config.get().getBoolean("enable_animations"));
 	}
 	
 	@FXML
@@ -225,8 +131,8 @@ public class MainWindowController {
 		transitionTo(newEntryView);
 		
 		if (entryViewController.getEntry() != null && entryViewController.getEntry().isEmpty())
-			manager.deleteEntry(entryViewController.getEntry());
-		entryViewController.setEntry(manager.addEntry());
+			journal.deleteEntry(entryViewController.getEntry());
+		entryViewController.setEntry(journal.addEntry());
 		
 		Config.get().setProperty("last_screen", "New Entry");
 	}
@@ -237,8 +143,12 @@ public class MainWindowController {
 		transitionTo(entryListView);
 		
 		if (entryViewController.getEntry() != null && entryViewController.getEntry().isEmpty())
-			manager.deleteEntry(entryViewController.getEntry());
+			journal.deleteEntry(entryViewController.getEntry());
 		
 		Config.get().setProperty("last_screen", "Entry List");
+	}
+
+	public Journal getJournal() {
+		return journal;
 	}
 }

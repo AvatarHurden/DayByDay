@@ -24,11 +24,7 @@
                         </Label>
                      </center>
                   </BorderPane>
-                  <HBox fx:id="filterPane" layoutX="543.0" layoutY="10.0" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
-                     <children>
-                        <TextField fx:id="searchField" prefHeight="25.0" prefWidth="222.0" styleClass="search-field" />
-                     </children>
-                  </HBox>
+                  <HBox fx:id="filterPane" layoutX="543.0" layoutY="10.0" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0" />
                </children>
             </AnchorPane>
             <ListView fx:id="listView" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="45.0" />

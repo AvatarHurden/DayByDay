@@ -46,6 +46,8 @@ public class EntryCellController {
 	
 	private DoubleProperty width;
 	
+	private DayOneEntry current;
+	
 	@FXML
 	private void initialize() {
 		bindImagePane();
@@ -65,6 +67,8 @@ public class EntryCellController {
 	public void setContent(DayOneEntry entry) {
 		textLabel.textProperty().bind(entry.entryTextProperty());
 		
+		if (current != null)
+			Bindings.unbindContent(tags, current.getObservableTags());
 		Bindings.bindContent(tags, entry.getObservableTags());
 		
 		isStarred.bind(entry.starredProperty());
@@ -72,6 +76,8 @@ public class EntryCellController {
 		date.bind(entry.creationDateProperty());
 		
 		imageView.imageProperty().bind(entry.imageProperty());
+		
+		current = entry;
 	}
 	
 	private void bindDateTexts() {

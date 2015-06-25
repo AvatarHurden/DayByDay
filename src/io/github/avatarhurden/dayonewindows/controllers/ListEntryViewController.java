@@ -129,12 +129,12 @@ public class ListEntryViewController {
     	contentPane.getChildren().setAll(entryView);
     	
     	multiPane = new MultiPane(MultiPaneOrientation.HORIZONTAL);
-    	multiPane.getChildren().addAll(listViewPane, singleViewPane);
     	root.getChildren().add(multiPane);
     	AnchorPane.setTopAnchor(multiPane, 0d);	
     	AnchorPane.setRightAnchor(multiPane, 0d);
     	AnchorPane.setBottomAnchor(multiPane, 0d);
     	AnchorPane.setLeftAnchor(multiPane, 0d);
+    	multiPane.getChildren().addAll(listViewPane, singleViewPane);
     	
     	listView.setOnKeyPressed(event -> {
 			if (event.getCode() == KeyCode.ENTER)
@@ -241,7 +241,7 @@ public class ListEntryViewController {
 			if (!months.contains(month))
 				months.add(month);
 		}
-		if (filteredItems.containsAll(items))
+		if (filteredItems.containsAll(items) && months.size() > 0)
 			months.remove(0);
 		items.addAll(months);
 	}
