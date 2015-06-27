@@ -1,15 +1,20 @@
-package io.github.avatarhurden.dayonewindows.controllers;
+package io.github.avatarhurden.dayonewindows.components;
 
 
+import io.github.avatarhurden.dayonewindows.controllers.SearchTooltipController;
 import io.github.avatarhurden.dayonewindows.models.DayOneEntry;
 import io.github.avatarhurden.dayonewindows.models.Entry;
 import io.github.avatarhurden.dayonewindows.models.MonthEntry;
 import io.github.avatarhurden.dayonewindows.models.Tag;
 
 
+
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.function.Predicate;
+
+
 
 
 import javafx.application.Platform;
@@ -23,6 +28,8 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+
+
 
 
 import org.controlsfx.control.PopOver;

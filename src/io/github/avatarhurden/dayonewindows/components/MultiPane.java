@@ -1,4 +1,4 @@
-package io.github.avatarhurden.dayonewindows.controllers;
+package io.github.avatarhurden.dayonewindows.components;
 
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
@@ -13,7 +13,6 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.ListChangeListener;
 import javafx.scene.Node;
 import javafx.scene.layout.AnchorPane;
-import javafx.util.Callback;
 import javafx.util.Duration;
 
 public class MultiPane extends AnchorPane {
@@ -29,7 +28,6 @@ public class MultiPane extends AnchorPane {
 	private Supplier<Double> getLength;
 	private Supplier<ReadOnlyDoubleProperty> lenghtProperty;
 	private BiConsumer<Node, Double> directAnchor, inverseAnchor, emptyAnchor;
-	private Callback<Node, Double> getDirectAnchor;
 	
 	public MultiPane(MultiPaneOrientation orientation) {
 		this(orientation, new Node[]{});
@@ -59,7 +57,6 @@ public class MultiPane extends AnchorPane {
 				AnchorPane.setRightAnchor(node, value);
 			};
 			
-			getDirectAnchor = AnchorPane::getTopAnchor;
 			lenghtProperty = this::heightProperty;
 			getLength = this::getHeight;
 		} else if (orientation == MultiPaneOrientation.HORIZONTAL) {
@@ -70,7 +67,6 @@ public class MultiPane extends AnchorPane {
 				AnchorPane.setBottomAnchor(node, value);
 			};
 
-			getDirectAnchor = AnchorPane::getLeftAnchor;
 			lenghtProperty = this::widthProperty;
 			getLength = this::getWidth;
 		}
@@ -97,11 +93,11 @@ public class MultiPane extends AnchorPane {
 		});
 		
 		lenghtProperty.get().addListener((obs, oldValue, newValue) -> {
-			double diff = newValue.doubleValue() - oldValue.doubleValue();
-			
 			for (int i = 0; i < getChildren().size(); i++)
-				if (shownChild.getValue().intValue() != i)
-					directAnchor.accept(getChildren().get(i), getDirectAnchor.call(getChildren().get(i)) + diff);
+				if (shownChild.getValue().intValue() != i) {
+					directAnchor.accept(getChildren().get(i), i*getLength.get() - shownHeight.doubleValue());
+					inverseAnchor.accept(getChildren().get(i), -i*getLength.get() + shownHeight.doubleValue());
+				}
 		});
 	}
 	

@@ -1,6 +1,4 @@
-package io.github.avatarhurden.dayonewindows.managers;
-
-import io.github.avatarhurden.dayonewindows.controllers.CloseButton;
+package io.github.avatarhurden.dayonewindows.components;
 
 import java.util.HashMap;
 import java.util.function.Consumer;

@@ -1,7 +1,8 @@
 package io.github.avatarhurden.dayonewindows.controllers;
 
+import io.github.avatarhurden.dayonewindows.components.CloseButton;
 import io.github.avatarhurden.dayonewindows.managers.Config;
-import io.github.avatarhurden.dayonewindows.managers.Journal;
+import io.github.avatarhurden.dayonewindows.models.Journal;
 
 import java.io.File;
 import java.io.FileNotFoundException;

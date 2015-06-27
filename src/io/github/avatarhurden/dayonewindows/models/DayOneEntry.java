@@ -1,7 +1,5 @@
 package io.github.avatarhurden.dayonewindows.models;
 
-import io.github.avatarhurden.dayonewindows.managers.Journal;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;

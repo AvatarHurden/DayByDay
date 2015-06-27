@@ -1,9 +1,9 @@
 package io.github.avatarhurden.dayonewindows.main;
 
-import io.github.avatarhurden.dayonewindows.controllers.DayOneTray;
+import io.github.avatarhurden.dayonewindows.components.DayOneTray;
 import io.github.avatarhurden.dayonewindows.controllers.MainWindowController;
 import io.github.avatarhurden.dayonewindows.managers.Config;
-import io.github.avatarhurden.dayonewindows.managers.Journal;
+import io.github.avatarhurden.dayonewindows.models.Journal;
 
 import java.util.ArrayList;
 import java.util.List;

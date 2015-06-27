@@ -1,8 +1,7 @@
-package io.github.avatarhurden.dayonewindows.managers;
+package io.github.avatarhurden.dayonewindows.models;
 
-import io.github.avatarhurden.dayonewindows.models.DayOneEntry;
-import io.github.avatarhurden.dayonewindows.models.Entry;
-import io.github.avatarhurden.dayonewindows.models.Tag;
+import io.github.avatarhurden.dayonewindows.managers.Config;
+import io.github.avatarhurden.dayonewindows.managers.DirectoryWatcher;
 
 import java.io.File;
 import java.io.IOException;
@@ -162,17 +161,19 @@ public class Journal {
 	}
 	
 	public void ignoreForAction(String uuid, Runnable action) {
-		ignoreEntry(uuid);
+		try {
+			ignoreEntry(uuid);
+		} catch (Exception e) {}
 		
 		action.run();
 		
 		new Thread(() -> {
 			try {
 				Thread.sleep(100);
+				removeIgnore(uuid);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			removeIgnore(uuid);
 		}).run();
 	}
 	

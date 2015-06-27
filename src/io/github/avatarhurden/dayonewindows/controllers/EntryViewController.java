@@ -1,7 +1,7 @@
 package io.github.avatarhurden.dayonewindows.controllers;
 
-import io.github.avatarhurden.dayonewindows.managers.ObjectListView;
-import io.github.avatarhurden.dayonewindows.managers.ObjectListView.ObjectLayout;
+import io.github.avatarhurden.dayonewindows.components.ObjectListView;
+import io.github.avatarhurden.dayonewindows.components.ObjectListView.ObjectLayout;
 import io.github.avatarhurden.dayonewindows.models.DayOneEntry;
 
 import java.awt.Desktop;

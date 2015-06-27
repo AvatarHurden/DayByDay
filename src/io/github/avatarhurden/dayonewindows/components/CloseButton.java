@@ -1,4 +1,4 @@
-package io.github.avatarhurden.dayonewindows.controllers;
+package io.github.avatarhurden.dayonewindows.components;
 
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;

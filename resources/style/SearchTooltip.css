@@ -21,3 +21,7 @@
 	-fx-color: #D9EBF9;
 	-fx-cursor: hand;
 }
+
+.scroll-pane {
+	-fx-border-color: transparent;
+}

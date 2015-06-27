@@ -1,8 +1,10 @@
 package io.github.avatarhurden.dayonewindows.controllers;
 
-import io.github.avatarhurden.dayonewindows.controllers.MultiPane.MultiPaneOrientation;
+import io.github.avatarhurden.dayonewindows.components.DropdownPane;
+import io.github.avatarhurden.dayonewindows.components.MultiPane;
+import io.github.avatarhurden.dayonewindows.components.MultiPane.MultiPaneOrientation;
 import io.github.avatarhurden.dayonewindows.managers.Config;
-import io.github.avatarhurden.dayonewindows.managers.Journal;
+import io.github.avatarhurden.dayonewindows.models.Journal;
 
 import java.io.IOException;
 
@@ -34,7 +36,7 @@ public class MainWindowController {
 	// Config View
 	private VBox configView;
 	private ConfigViewController configViewController;
-	private DropdownWrapper wrapper;
+	private DropdownPane wrapper;
 	
 	private Journal journal;
 
@@ -82,7 +84,7 @@ public class MainWindowController {
     	configViewController = loader.<ConfigViewController>getController();
     	configViewController.setParent(this);
 		
-    	wrapper = new DropdownWrapper(parent, configView);
+    	wrapper = new DropdownPane(parent, configView);
     	wrapper.setSpacing(25);
     	
     	root.getChildren().setAll(wrapper);

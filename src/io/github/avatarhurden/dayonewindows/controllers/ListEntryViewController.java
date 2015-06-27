@@ -1,6 +1,8 @@
 package io.github.avatarhurden.dayonewindows.controllers;
 
-import io.github.avatarhurden.dayonewindows.controllers.MultiPane.MultiPaneOrientation;
+import io.github.avatarhurden.dayonewindows.components.FilterBar;
+import io.github.avatarhurden.dayonewindows.components.MultiPane;
+import io.github.avatarhurden.dayonewindows.components.MultiPane.MultiPaneOrientation;
 import io.github.avatarhurden.dayonewindows.managers.Config;
 import io.github.avatarhurden.dayonewindows.models.DayOneEntry;
 import io.github.avatarhurden.dayonewindows.models.Entry;
@@ -129,7 +131,7 @@ public class ListEntryViewController {
     	contentPane.getChildren().setAll(entryView);
     	
     	multiPane = new MultiPane(MultiPaneOrientation.HORIZONTAL);
-    	root.getChildren().add(multiPane);
+    	root.getChildren().setAll(multiPane);
     	AnchorPane.setTopAnchor(multiPane, 0d);	
     	AnchorPane.setRightAnchor(multiPane, 0d);
     	AnchorPane.setBottomAnchor(multiPane, 0d);
@@ -274,22 +276,6 @@ public class ListEntryViewController {
 	
 	private void transitionTo(Node view) {
 		multiPane.show(view, Config.get().getBoolean("enable_animations"));
-//		if (!Config.get().getBoolean("enable_animations")) {
-//				
-//			if (view == listViewPane)
-//				viewAnchor.setValue(0);
-//			else if (view == singleViewPane)
-//				viewAnchor.setValue(root.getScene().getWidth());
-//				
-//		} else {
-//			Timeline timeline = new Timeline();
-//			if (view == listViewPane)
-//				timeline.getKeyFrames().add(new KeyFrame(new Duration(200),	new KeyValue(viewAnchor, 0d)));
-//			else if (view == singleViewPane)
-//				timeline.getKeyFrames().add(new KeyFrame(new Duration(200), new KeyValue(viewAnchor, root.getScene().getWidth())));
-//
-//			timeline.play();
-//		}
 	}
 	
 	public void showList() {
