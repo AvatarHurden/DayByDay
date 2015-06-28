@@ -25,7 +25,7 @@ public class Journal {
 	
 	private Path entryFolder, imageFolder;
 	
-	private ObservableMap<String, DayOneEntry> entryMap;
+	private ObservableMap<String, JournalEntry> entryMap;
 	private ObservableList<Entry> entryList;
 	
 	private ObservableList<Tag> tagsList;
@@ -60,8 +60,8 @@ public class Journal {
 						entryMap.remove(entry.getUUID());
 				if (event.wasAdded())
 					for (Entry entry : event.getAddedSubList())
-						if (entry instanceof DayOneEntry)
-							entryMap.put(entry.getUUID(), (DayOneEntry) entry);
+						if (entry instanceof JournalEntry)
+							entryMap.put(entry.getUUID(), (JournalEntry) entry);
 			}
 		});
 		
@@ -70,7 +70,7 @@ public class Journal {
 		tagsList = FXCollections.observableArrayList();
 	}
 	
-	public DayOneEntry getEntry(String id) {
+	public JournalEntry getEntry(String id) {
 		return entryMap.get(id);
 	}
 	
@@ -114,12 +114,12 @@ public class Journal {
 	
 	public void loadImages() throws IOException {
 		for (Entry entry : entryList) {
-			if (!(entry instanceof DayOneEntry))
+			if (!(entry instanceof JournalEntry))
 					continue;
 			String id = entry.getUUID() + ".jpg";
 		  	File file = new File(imageFolder.toFile(), id);
 		  	if (file.exists())
-		  		((DayOneEntry) entry).setImageFile(file);
+		  		((JournalEntry) entry).setImageFile(file);
 		}
 	}
 	
@@ -127,7 +127,7 @@ public class Journal {
 		return entryList;
 	}
 	
-	public void addTag(String tag, DayOneEntry entry) {
+	public void addTag(String tag, JournalEntry entry) {
 		for (Tag t : tagsList) {
 			if (t.getName().equals(tag)) {
 				t.getEntries().add(entry);
@@ -139,7 +139,7 @@ public class Journal {
 		tagsList.add(t);
 	}
 	
-	public void removeTag(String tag, DayOneEntry entry) {
+	public void removeTag(String tag, JournalEntry entry) {
 		for (Tag t : tagsList)
 			if (t.getName().equals(tag)) {
 				t.getEntries().remove(entry);
@@ -178,26 +178,26 @@ public class Journal {
 	}
 	
 	public void ignoreEntry(String uuid) {
-		DayOneEntry entry = getEntry(uuid);
+		JournalEntry entry = getEntry(uuid);
 		watcher.ignorePath(entry.getFile().toPath());
 		if (entry.getImageFile() != null)
 			imageWatcher.ignorePath(entry.getImageFile().toPath());
 	}
 	
 	public void removeIgnore(String uuid) {
-		DayOneEntry entry = getEntry(uuid);
+		JournalEntry entry = getEntry(uuid);
 		watcher.watchPath(entry.getFile().toPath());
 		if (entry.getImageFile() != null)
 			imageWatcher.watchPath(entry.getImageFile().toPath());
 	}
 
-	public DayOneEntry addEntry() {
-		DayOneEntry t = DayOneEntry.createNewEntry(this);
+	public JournalEntry addEntry() {
+		JournalEntry t = JournalEntry.createNewEntry(this);
 		entryList.add(t);
 		return t;
 	}
 	
-	public void deleteEntry(DayOneEntry entry) {
+	public void deleteEntry(JournalEntry entry) {
 		entryList.remove(entry);
 	}
 	
@@ -205,7 +205,7 @@ public class Journal {
 		DirectoryStream<Path> stream = Files.newDirectoryStream(entryFolder, 
 				path -> Pattern.matches("^[0-9abcdefABCDEF]{32}\\.doentry", path.getFileName().toString()));
 		for (Path file: stream) {
-			DayOneEntry entry = DayOneEntry.loadFromFile(this, file.toFile());
+			JournalEntry entry = JournalEntry.loadFromFile(this, file.toFile());
 			entryList.add(entry);
 		   	for (String tag : entry.getTags()) 
 		   		addTag(tag, entry);
@@ -238,19 +238,19 @@ public class Journal {
 	
 	private void readImageFile(Path path,  WatchEvent.Kind<?> kind) {
 		String id = path.getFileName().toString().replace(".jpg", "");
-		DayOneEntry entry = getEntry(id);
+		JournalEntry entry = getEntry(id);
 		
 		Platform.runLater(() -> entry.setImageFile(path.toFile()));
 	}
 	
 	private void readFile(Path path, WatchEvent.Kind<?> kind) {
 		String id = path.getFileName().toString().replace(".doentry", "");
-		DayOneEntry entry = getEntry(id);
+		JournalEntry entry = getEntry(id);
 		
 		Platform.runLater(() -> {
 			if (kind == StandardWatchEventKinds.ENTRY_CREATE)
 				try {
-					entryList.add(DayOneEntry.loadFromFile(this, path.toFile()));
+					entryList.add(JournalEntry.loadFromFile(this, path.toFile()));
 				} catch (Exception e) {	
 					e.printStackTrace();
 				}
@@ -259,7 +259,7 @@ public class Journal {
 			else if (kind == StandardWatchEventKinds.ENTRY_MODIFY)
 				try { // It can happen that a file is created and modified before being read, so test if it is in the map
 					if (entry == null)
-						entryList.add(DayOneEntry.loadFromFile(this, path.toFile()));
+						entryList.add(JournalEntry.loadFromFile(this, path.toFile()));
 					else
 						entry.readFile();
 				} catch (Exception e) {

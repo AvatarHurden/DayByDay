@@ -26,13 +26,13 @@ import com.dd.plist.NSDictionary;
 import com.dd.plist.NSObject;
 import com.dd.plist.PropertyListParser;
 
-public class DayOneEntry implements Entry {
+public class JournalEntry implements Entry {
 
-	public static DayOneEntry loadFromFile(Journal manager, File file) throws Exception {
-		return new DayOneEntry(manager, (NSDictionary) PropertyListParser.parse(file), file);
+	public static JournalEntry loadFromFile(Journal manager, File file) throws Exception {
+		return new JournalEntry(manager, (NSDictionary) PropertyListParser.parse(file), file);
 	}
 	
-	public static DayOneEntry createNewEntry(Journal manager) {
+	public static JournalEntry createNewEntry(Journal manager) {
 		NSDictionary dict = new NSDictionary();
 		
 		dict.put("UUID", UUID.randomUUID().toString().replace("-", "").toUpperCase());
@@ -57,7 +57,7 @@ public class DayOneEntry implements Entry {
 	    
 	    File file = new File(manager.getEntryFolder(), dict.get("UUID").toString() + ".doentry");
 	    
-		return new DayOneEntry(manager, dict, file);
+		return new JournalEntry(manager, dict, file);
 	}
 
 	private NSDictionary dictionary;
@@ -71,7 +71,7 @@ public class DayOneEntry implements Entry {
 	/** Is true only when created. After any changes to any field (i.e. after a save), is set to false **/
 	private boolean isEmpty = true;
 	
-	private DayOneEntry(Journal manager, NSDictionary dictionary, File file) {
+	private JournalEntry(Journal manager, NSDictionary dictionary, File file) {
 		this.manager = manager;
 		this.dictionary = dictionary;
 		this.file = file;

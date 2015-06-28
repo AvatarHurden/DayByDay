@@ -1,6 +1,6 @@
 package io.github.avatarhurden.dayonewindows.components;
 
-import io.github.avatarhurden.dayonewindows.models.DayOneEntry;
+import io.github.avatarhurden.dayonewindows.models.JournalEntry;
 import io.github.avatarhurden.dayonewindows.models.Tag;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
@@ -23,7 +23,7 @@ import org.controlsfx.control.textfield.TextFields;
 
 public class TagEditor extends VBox {
 
-	private DayOneEntry entry;
+	private JournalEntry entry;
 	
 	private ObservableList<String> addedTags;
 	private ObservableList<Tag> possibleTags;
@@ -47,7 +47,7 @@ public class TagEditor extends VBox {
 		initialize();
 	}
 	
-	public TagEditor(DayOneEntry entry) {
+	public TagEditor(JournalEntry entry) {
 		this();
 		
 		setEntry(entry);
@@ -95,7 +95,7 @@ public class TagEditor extends VBox {
 		Bindings.bindContent(possibleTags, possible);
 	}
 	
-	public void setEntry(DayOneEntry entry) {
+	public void setEntry(JournalEntry entry) {
 		this.entry = entry;
 		Bindings.bindContent(addedTags, entry.getObservableTags());
 	}

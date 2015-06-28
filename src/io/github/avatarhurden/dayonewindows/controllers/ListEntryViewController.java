@@ -4,7 +4,7 @@ import io.github.avatarhurden.dayonewindows.components.FilterBar;
 import io.github.avatarhurden.dayonewindows.components.MultiPane;
 import io.github.avatarhurden.dayonewindows.components.MultiPane.MultiPaneOrientation;
 import io.github.avatarhurden.dayonewindows.managers.Config;
-import io.github.avatarhurden.dayonewindows.models.DayOneEntry;
+import io.github.avatarhurden.dayonewindows.models.JournalEntry;
 import io.github.avatarhurden.dayonewindows.models.Entry;
 import io.github.avatarhurden.dayonewindows.models.MonthEntry;
 import io.github.avatarhurden.dayonewindows.models.Tag;
@@ -90,8 +90,8 @@ public class ListEntryViewController {
 		listSize = new SimpleIntegerProperty();
 		
 		listView.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) -> {
-			if (newValue instanceof DayOneEntry)
-				entryViewController.setEntry((DayOneEntry) newValue);
+			if (newValue instanceof JournalEntry)
+				entryViewController.setEntry((JournalEntry) newValue);
 		});
 		
 		visibleItems = FXCollections.<Entry>observableArrayList();
@@ -99,9 +99,9 @@ public class ListEntryViewController {
 		visibleItems.addListener((ListChangeListener.Change<? extends Entry> event) -> {
 			while (event.next()) {
 				for (Entry t : event.getRemoved())
-					visibleSize.setValue(visibleSize.getValue() - (t instanceof DayOneEntry ? 90 : 23));
+					visibleSize.setValue(visibleSize.getValue() - (t instanceof JournalEntry ? 90 : 23));
 				for (Entry t : event.getAddedSubList())
-					visibleSize.setValue(visibleSize.getValue() + (t instanceof DayOneEntry ? 90 : 23));
+					visibleSize.setValue(visibleSize.getValue() + (t instanceof JournalEntry ? 90 : 23));
 			}
 		});
 		
@@ -381,7 +381,7 @@ public class ListEntryViewController {
 	        		setGraphic(n);
 					setPadding(Insets.EMPTY);
 
-					controller.setContent((DayOneEntry) item);
+					controller.setContent((JournalEntry) item);
 					
 					int index = listView.getItems().indexOf(item);
 					if (index == 0 || listView.getItems().get(index - 1) instanceof MonthEntry) 

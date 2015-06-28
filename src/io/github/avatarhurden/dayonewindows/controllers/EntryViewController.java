@@ -1,7 +1,7 @@
 package io.github.avatarhurden.dayonewindows.controllers;
 
 import io.github.avatarhurden.dayonewindows.components.TagEditor;
-import io.github.avatarhurden.dayonewindows.models.DayOneEntry;
+import io.github.avatarhurden.dayonewindows.models.JournalEntry;
 
 import java.awt.Desktop;
 import java.io.File;
@@ -81,7 +81,7 @@ public class EntryViewController {
 	@FXML private WebView webView;
 	@FXML private Button editButton, saveButton;
 
-	private DayOneEntry entry;
+	private JournalEntry entry;
 	
 	@FXML
 	private void initialize() {
@@ -119,11 +119,11 @@ public class EntryViewController {
 		photoIcon.fillProperty().bind(Bindings.when(photoPane.hoverProperty()).then(Color.ALICEBLUE.saturate()).otherwise(Color.TRANSPARENT));
 	}
 	
-	public DayOneEntry getEntry() {
+	public JournalEntry getEntry() {
 		return entry;
 	}
 	
-	public void setEntry(DayOneEntry newEntry) {
+	public void setEntry(JournalEntry newEntry) {
 		if (entry != null)
 			dateProperty.unbindBidirectional(entry.creationDateProperty());
 		dateProperty.bindBidirectional(newEntry.creationDateProperty());

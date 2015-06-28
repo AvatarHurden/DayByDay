@@ -1,6 +1,6 @@
 package io.github.avatarhurden.dayonewindows.controllers;
 
-import io.github.avatarhurden.dayonewindows.models.DayOneEntry;
+import io.github.avatarhurden.dayonewindows.models.JournalEntry;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
@@ -46,7 +46,7 @@ public class EntryCellController {
 	
 	private DoubleProperty width;
 	
-	private DayOneEntry current;
+	private JournalEntry current;
 	
 	@FXML
 	private void initialize() {
@@ -64,7 +64,7 @@ public class EntryCellController {
 		root.prefWidthProperty().bind(width);
 	}
 	
-	public void setContent(DayOneEntry entry) {
+	public void setContent(JournalEntry entry) {
 		textLabel.textProperty().bind(entry.entryTextProperty());
 		
 		if (current != null)

@@ -1,6 +1,6 @@
 package io.github.avatarhurden.dayonewindows.controllers;
 
-import io.github.avatarhurden.dayonewindows.models.DayOneEntry;
+import io.github.avatarhurden.dayonewindows.models.JournalEntry;
 import io.github.avatarhurden.dayonewindows.models.Tag;
 
 import java.util.List;
@@ -62,7 +62,7 @@ public class SearchTooltipController {
 	private Property<String> searchText;
 	private Property<DateTime> date;
 	
-	private BiConsumer<Predicate<DayOneEntry>, String> filterAction;
+	private BiConsumer<Predicate<JournalEntry>, String> filterAction;
 	
 	@FXML
 	public void initialize() {
@@ -234,7 +234,7 @@ public class SearchTooltipController {
 		}
 	}
 	
-	public void setOnFilterSelection(BiConsumer<Predicate<DayOneEntry>, String> consumer) {
+	public void setOnFilterSelection(BiConsumer<Predicate<JournalEntry>, String> consumer) {
 		filterAction = consumer;
 	}
 	

@@ -5,7 +5,7 @@ import javafx.collections.ObservableList;
 
 public class Tag {
 
-	private ObservableList<DayOneEntry> entries;
+	private ObservableList<JournalEntry> entries;
 	private final String name;
 	
 	public Tag(String name) {
@@ -17,7 +17,7 @@ public class Tag {
 		return name;
 	}
 	
-	public ObservableList<DayOneEntry> getEntries() {
+	public ObservableList<JournalEntry> getEntries() {
 		return entries;
 	}
 

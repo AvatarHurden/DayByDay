@@ -1,21 +1,14 @@
 package io.github.avatarhurden.dayonewindows.components;
 
-
 import io.github.avatarhurden.dayonewindows.controllers.SearchTooltipController;
-import io.github.avatarhurden.dayonewindows.models.DayOneEntry;
 import io.github.avatarhurden.dayonewindows.models.Entry;
 import io.github.avatarhurden.dayonewindows.models.MonthEntry;
+import io.github.avatarhurden.dayonewindows.models.JournalEntry;
 import io.github.avatarhurden.dayonewindows.models.Tag;
-
-
-
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.function.Predicate;
-
-
-
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -28,9 +21,6 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-
-
-
 
 import org.controlsfx.control.PopOver;
 import org.controlsfx.control.PopOver.ArrowLocation;
@@ -103,7 +93,7 @@ public class FilterBar extends HBox {
     	tooltipController.searchTextProperty().bind(text.textProperty());
     	
     	tooltipController.setOnFilterSelection((predicate, string) -> {
-    		Predicate<Entry> pred = (entry -> entry instanceof MonthEntry ? true : predicate.test((DayOneEntry) entry));
+    		Predicate<Entry> pred = (entry -> entry instanceof MonthEntry ? true : predicate.test((JournalEntry) entry));
     		predicates.add(pred);
     		addFilterInstance(pred, string);
     		text.clear();
