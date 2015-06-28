@@ -213,6 +213,7 @@ public class DayOneEntry implements Entry {
 		if (tags.contains(tag))
 			return false;
 		
+		System.out.println("added tag " + tag);
 		tags.add(tag);
 		observableTags.add(tag);
 		manager.addTag(tag, this);

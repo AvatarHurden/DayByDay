@@ -9,9 +9,9 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane fx:id="root" prefHeight="375.0" prefWidth="294.0" stylesheets="@../style/SearchTooltip.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.avatarhurden.dayonewindows.controllers.SearchTooltipController">
+<AnchorPane fx:id="root" prefHeight="427.0" prefWidth="294.0" stylesheets="@../style/SearchTooltip.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.avatarhurden.dayonewindows.controllers.SearchTooltipController">
    <children>
-      <VBox alignment="TOP_CENTER" prefHeight="397.0" prefWidth="294.0" AnchorPane.bottomAnchor="-22.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <VBox alignment="TOP_CENTER" prefHeight="418.0" prefWidth="294.0" AnchorPane.bottomAnchor="-43.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
             <BorderPane fx:id="textPane" minHeight="85.0" prefHeight="85.0" prefWidth="200.0">
                <top>
@@ -83,7 +83,7 @@
                   <Insets bottom="10.0" />
                </VBox.margin>
             </BorderPane>
-            <BorderPane fx:id="tagPane" prefHeight="106.0" prefWidth="294.0">
+            <BorderPane fx:id="tagPane" prefHeight="141.0" prefWidth="294.0">
                <top>
                   <Label text="Tags" BorderPane.alignment="CENTER_LEFT">
                      <BorderPane.margin>
@@ -94,7 +94,7 @@
                   <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                </padding>
                <center>
-                  <FlowPane fx:id="tagBox" hgap="7.0" prefHeight="63.0" prefWidth="274.0" vgap="7.0" />
+                  <ListView fx:id="tagsView" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
                </center>
             </BorderPane>
          </children>

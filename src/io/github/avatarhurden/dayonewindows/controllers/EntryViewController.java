@@ -1,7 +1,6 @@
 package io.github.avatarhurden.dayonewindows.controllers;
 
-import io.github.avatarhurden.dayonewindows.components.ObjectListView;
-import io.github.avatarhurden.dayonewindows.components.ObjectListView.ObjectLayout;
+import io.github.avatarhurden.dayonewindows.components.TagEditor;
 import io.github.avatarhurden.dayonewindows.models.DayOneEntry;
 
 import java.awt.Desktop;
@@ -57,6 +56,7 @@ public class EntryViewController {
 	@FXML private SVGPath tagIcon;
 	@FXML private Label tagsLabel;
 	@FXML private StackPane tagPane;
+	private TagEditor tagEditor;
 	
 	// Star
 	@FXML private SVGPath favoriteIcon;
@@ -89,7 +89,8 @@ public class EntryViewController {
 		
 		dateProperty = new SimpleObjectProperty<DateTime>(new DateTime());
 		bindDateLabels();
-		
+
+		tagEditor = new TagEditor();
 		tagIcon.fillProperty().bind(Bindings.when(tagsLabel.textProperty().isNotEmpty()).then(Color.LIGHTCYAN).otherwise(
 				Bindings.when(BooleanBinding.booleanExpression(tagIcon.hoverProperty())).then(Color.ALICEBLUE.saturate()).otherwise(Color.TRANSPARENT)));
 		
@@ -132,18 +133,23 @@ public class EntryViewController {
 		textArea.textProperty().bindBidirectional(newEntry.entryTextProperty());
 		editButton.setVisible(true);
 		
+		tagsLabel.textProperty().unbind();
 		tagsLabel.textProperty().bind(Bindings.createStringBinding(() -> {
 				if (newEntry.getTags().size() > 0)
 					return newEntry.getTags().size()+"";
 				else
 					return "";
 		}, newEntry.getObservableTags()));
+		tagEditor.setEntry(newEntry);
+		tagEditor.setPossibleTags(newEntry.getManager().getTags());
 		
+		favoriteIcon.fillProperty().unbind();
 		favoriteIcon.fillProperty().bind(Bindings.when(
 				BooleanBinding.booleanExpression(newEntry.starredProperty())).then(Color.GOLD).otherwise(
 						Bindings.when(BooleanBinding.booleanExpression(favoriteIcon.hoverProperty())).then(Color.GOLD.deriveColor(0, 1, 1, 0.3)).otherwise(Color.TRANSPARENT)));
 		
-		
+
+		imageView.imageProperty().unbind();
 		imageView.imageProperty().bind(newEntry.imageProperty());
 		zoomProperty.setValue(1d);
 		
@@ -210,16 +216,8 @@ public class EntryViewController {
 		over.setAutoHide(true);
 		over.setArrowLocation(ArrowLocation.TOP_CENTER);
 		
-		ObjectListView<String> tagView = new ObjectListView<String>(s -> new SimpleStringProperty(s), true, ObjectLayout.VERTICAL);
-		tagView.setList(entry.getObservableTags());
-		tagView.setCreationPolicy(s -> entry.addTag(s) ? s : null);
-		tagView.setDeletionPolicy(s -> entry.removeTag(s));
-		
-		tagView.setSuggestions(entry.getManager().getTags(), 
-				t -> t.getKey().toString().toLowerCase().startsWith(t.getValue().toLowerCase()));
-		
-		StackPane pane = new StackPane(tagView);
-		pane.setPadding(new Insets(5));
+		StackPane pane = new StackPane(tagEditor);
+		pane.setPadding(new Insets(5, 0, 5, 0));
 		
 		over.setContentNode(pane);
 		over.show(tagPane);

@@ -8,19 +8,20 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -42,8 +43,9 @@ public class SearchTooltipController {
 	
 	// Tag
 	@FXML private BorderPane tagPane;
-	@FXML private FlowPane tagBox;
+	@FXML private ListView<Tag> tagsView;
 	private ObservableList<Tag> tags;
+	private FilteredList<Tag> filteredTags;
 	
 	
 	// Date
@@ -82,6 +84,7 @@ public class SearchTooltipController {
 				event.consume();
 			}
 		});
+
 	}
 	
 	private void bindFilters() {
@@ -90,6 +93,7 @@ public class SearchTooltipController {
 		
 		bindText();
 		bindDates();
+		bindTags();
 		
 		searchText.addListener(event -> {
 			matchText(searchText.getValue());
@@ -98,6 +102,8 @@ public class SearchTooltipController {
 		});
 	}
 	
+	
+
 	private void bindText() {
 		textBox.setOnMouseClicked(event -> filterAction.accept(
 				entry -> entry.getEntryText().toLowerCase().contains(searchText.getValue().toLowerCase()), searchText.getValue()));
@@ -147,6 +153,30 @@ public class SearchTooltipController {
 		});
 	}
 	
+	private void bindTags() {
+		tags = FXCollections.observableArrayList();
+		filteredTags = tags.filtered(tag -> true);
+		
+		tagsView.setItems(filteredTags);
+		tagsView.setFocusTraversable(false);
+		tagsView.getSelectionModel().select(0);
+		
+		tagsView.setOnMouseClicked(event -> {
+			if (event.getClickCount() == 2) {
+				Tag tag = tagsView.getSelectionModel().getSelectedItem();
+				filterAction.accept(entry -> entry.getTags().contains(tag.getName()), "Tag: " + tag.getName());
+			}
+		});
+		
+		tagsView.setOnKeyPressed(event -> {
+			if (event.getCode() == KeyCode.ENTER) {
+				Tag tag = tagsView.getSelectionModel().getSelectedItem();
+				filterAction.accept(entry -> entry.getTags().contains(tag.getName()), "Tag: " + tag.getName());
+			} else if (event.getCode() == KeyCode.UP && tagsView.getSelectionModel().getSelectedIndex() == 0)
+				root.fireEvent(event);
+		});
+	}
+	
 	private void createDateParser() {
 		parser = new Parser();
 		new Thread(() -> { // First parse on natty takes longer, so this will make the program smoother when first searching
@@ -183,31 +213,15 @@ public class SearchTooltipController {
 			tabOrder.remove(afterDateBox);
 		}
 	}
-	
+
 	private void matchTags(String text) {
-		if (tags == null)
-			return;
-		
-		ObservableList<Node> children = tagBox.getChildren();
-		tabOrder.removeAll(children);
-		children.clear();
-		
-		for (Tag t : tags)
-			if (t.getName().toLowerCase().contains(text.toLowerCase())) {
-				VBox box = new VBox(new Label(t.getName()));
-				box.setPadding(new Insets(5));
-				box.getStyleClass().add("clickable");
-				
-				box.setOnMouseClicked(event -> filterAction.accept(entry -> entry.getTags().contains(t.getName()), "Tag: " + t.getName()));
-				box.setOnKeyPressed(event -> {
-					if (event.getCode() == KeyCode.ENTER) {
-						filterAction.accept(entry -> entry.getTags().contains(t.getName()), "Tag: " + t.getName());
-						event.consume();
-					}
-				});
-				children.add(box);
-				tabOrder.add(box);
-			}
+		filteredTags.setPredicate(tag -> tag.getName().toLowerCase().contains(text.toLowerCase()));
+
+		if (filteredTags.size() > 0)
+			if (!tabOrder.contains(tagsView))
+				tabOrder.add(tagsView);
+		else
+			tabOrder.remove(tagsView);
 	}
 	
 	private void matchText(String text) {
@@ -229,8 +243,7 @@ public class SearchTooltipController {
 	}
 	
 	public void setTags(ObservableList<Tag> tags) {
-		this.tags = tags;
-		matchTags(searchText.getValue());
+		Bindings.bindContent(this.tags, tags);
 	}
 
 	public void requestFocus() {

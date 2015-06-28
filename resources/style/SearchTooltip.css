@@ -23,5 +23,9 @@
 }
 
 .scroll-pane {
-	-fx-border-color: transparent;
+    -fx-background-color: transparent;
+}
+
+.scroll-pane > .viewport {
+   -fx-background-color: transparent;
 }
