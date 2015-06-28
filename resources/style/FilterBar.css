@@ -28,7 +28,7 @@
 	-fx-color: #B1BDC6;
 }
 
-.filter-boxv:focused {
+.filter-box:focused {
     -fx-color: #b4dafa;
     -fx-background-color: -fx-focus-color, -fx-outer-border, -fx-inner-border, -fx-body-color;
     -fx-background-insets: -1.4, 0, 0.5, 1;

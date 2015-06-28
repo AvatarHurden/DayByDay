@@ -47,7 +47,6 @@ public class SearchTooltipController {
 	private ObservableList<Tag> tags;
 	private FilteredList<Tag> filteredTags;
 	
-	
 	// Date
 	@FXML private BorderPane datePane;
 	@FXML private VBox dateBox;
@@ -188,7 +187,6 @@ public class SearchTooltipController {
 	}
 	
 	private void matchDates(String text) {
-		
 		try {
 			List<DateGroup> matches = parser.parse(text);
 			
@@ -198,7 +196,7 @@ public class SearchTooltipController {
 			
 			datePane.setCenter(dateBox);
 			
-			if (tabOrder.size() == 1)
+			if (tabOrder.size() <= 1)
 				tabOrder.addAll(onDateBox, beforeDateBox, afterDateBox);
 			else {
 				tabOrder.set(1, onDateBox);
@@ -217,9 +215,8 @@ public class SearchTooltipController {
 	private void matchTags(String text) {
 		filteredTags.setPredicate(tag -> tag.getName().toLowerCase().contains(text.toLowerCase()));
 
-		if (filteredTags.size() > 0)
-			if (!tabOrder.contains(tagsView))
-				tabOrder.add(tagsView);
+		if (filteredTags.size() > 0 && !tabOrder.contains(tagsView)) 
+			tabOrder.add(tagsView);
 		else
 			tabOrder.remove(tagsView);
 	}
@@ -230,7 +227,8 @@ public class SearchTooltipController {
 			tabOrder.remove(textBox);
 		} else {
 			textPane.setCenter(textBox);
-			tabOrder.set(0, textBox);
+			if (!tabOrder.contains(textBox))
+				tabOrder.add(0, textBox);
 		}
 	}
 	

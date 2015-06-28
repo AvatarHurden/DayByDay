@@ -68,13 +68,13 @@ public class TagEditor extends VBox {
 		
 		addedTagsView = new ListView<String>(addedTags);
 		addedTagsView.visibleProperty().bind(Bindings.size(addedTags).greaterThan(0));
-		addedTagsView.setCellFactory(view -> new TagCell());
+		addedTagsView.setCellFactory(view -> new AddedTagCell());
 		addedTagsView.prefHeightProperty().bind(Bindings.size(addedTagsView.getItems()).multiply(23).add(4));
 		addedTagsView.maxHeightProperty().set(6 * 23 + 4);
 		
 		existingTagsView = new ListView<Tag>(existingTags);
 		existingTagsView.visibleProperty().bind(Bindings.size(existingTags).greaterThan(0));
-		existingTagsView.setCellFactory(view -> new TagCell2());
+		existingTagsView.setCellFactory(view -> new PossibleTagCell());
 		existingTagsView.prefHeightProperty().bind(Bindings.size(existingTagsView.getItems()).multiply(23).add(2));
 		existingTagsView.maxHeightProperty().set(6 * 23 + 2);
 		
@@ -100,7 +100,7 @@ public class TagEditor extends VBox {
 		Bindings.bindContent(addedTags, entry.getObservableTags());
 	}
 	
-	private class TagCell extends ListCell<String> {
+	private class AddedTagCell extends ListCell<String> {
 		
 		@Override public void updateItem(String item, boolean empty) {
 	        super.updateItem(item, empty);
@@ -122,7 +122,7 @@ public class TagEditor extends VBox {
 		}
 	}
 	
-	private class TagCell2 extends ListCell<Tag> {
+	private class PossibleTagCell extends ListCell<Tag> {
 		
 		@Override public void updateItem(Tag item, boolean empty) {
 	        super.updateItem(item, empty);
@@ -138,9 +138,6 @@ public class TagEditor extends VBox {
 				BorderPane.setAlignment(label, Pos.CENTER_LEFT);
 				pane.setCenter(label);
 				
-//				CloseButton button = new CloseButton();
-//				button.setOnAction(() -> addedTags.remove(item));
-//				pane.setRight(button);
 				setGraphic(pane);
 			}
 			

@@ -2,8 +2,8 @@ package io.github.avatarhurden.dayonewindows.components;
 
 import io.github.avatarhurden.dayonewindows.controllers.SearchTooltipController;
 import io.github.avatarhurden.dayonewindows.models.Entry;
-import io.github.avatarhurden.dayonewindows.models.MonthEntry;
 import io.github.avatarhurden.dayonewindows.models.JournalEntry;
+import io.github.avatarhurden.dayonewindows.models.MonthEntry;
 import io.github.avatarhurden.dayonewindows.models.Tag;
 
 import java.io.IOException;
@@ -11,16 +11,26 @@ import java.util.HashMap;
 import java.util.function.Predicate;
 
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.text.Text;
+import javafx.util.Pair;
+import jfxtras.scene.control.ListView;
 
 import org.controlsfx.control.PopOver;
 import org.controlsfx.control.PopOver.ArrowLocation;
@@ -32,6 +42,8 @@ public class FilterBar extends HBox {
 	
 	private ObservableList<Predicate<Entry>> predicates;
 	private HashMap<HBox, Predicate<Entry>> boxMap;
+	private ListView<Pair<String, Predicate<Entry>>> overflowPredicates;
+	private Button overflowButton;
 	
 	private PopOver popOver;
 	private SearchTooltipController tooltipController;
@@ -74,6 +86,26 @@ public class FilterBar extends HBox {
 	private void bindPredicates() {
 		predicates = FXCollections.observableArrayList();
 		boxMap = new HashMap<HBox, Predicate<Entry>>();
+		
+		overflowPredicates = new ListView<>();
+		overflowPredicates.setCellFactory(list -> new OverflowFilterCell());
+
+		overflowPredicates.prefHeightProperty().bind(Bindings.size(overflowPredicates.getItems()).multiply(23).add(2));
+		overflowPredicates.maxHeightProperty().set(10 * 23 + 2);
+		
+		overflowButton = new Button("V");
+		overflowButton.visibleProperty().bind(Bindings.size(overflowPredicates.getItems()).greaterThan(0));
+		overflowButton.managedProperty().bind(overflowButton.visibleProperty());
+		
+		overflowButton.setOnAction(event -> {
+			PopOver over = new PopOver(overflowPredicates);
+			over.setArrowLocation(ArrowLocation.TOP_CENTER);
+			over.setDetachable(false);
+			
+			over.show(overflowButton);
+		});
+		
+		getChildren().add(overflowButton);
 	}
 	
 	private void createToolTip() {
@@ -105,15 +137,23 @@ public class FilterBar extends HBox {
 	private void addFilterInstance(Predicate<Entry> predicate, String textValue) {
 		HBox box = getFilterBox(textValue);
 		
-		if (getChildren().size() == 1) {
+		if (getChildren().size() == 2) {
 			text.getStyleClass().add("right");
 			box.getStyleClass().add("left");
 			text.getStyleClass().remove("unique");
 		}
 		
-		boxMap.put(box, predicate);
+		double estimatedWidth = new Text(textValue).getLayoutBounds().getWidth() + 31;
 		
-		getChildren().add(predicates.size() - 1, box);
+		for (HBox b : boxMap.keySet())
+			estimatedWidth += b.getWidth();
+		
+		if (estimatedWidth > getPrefWidth() - 150)
+			overflowPredicates.getItems().add(new Pair<String, Predicate<Entry>>(textValue, predicate));
+		else {
+			getChildren().add(getChildren().size() - 2, box);
+			boxMap.put(box, predicate);
+		}
 	}
 	
 	private void removeFilterInstance(HBox box) {
@@ -122,11 +162,21 @@ public class FilterBar extends HBox {
 		
 		getChildren().remove(box);
 		
-		if (getChildren().size() > 1)
+		if (getChildren().size() > 2)
 			getChildren().get(0).getStyleClass().add("left");
-		else if (getChildren().size() == 1) {
+		else if (getChildren().size() == 2) {
 			text.getStyleClass().add("unique");
 			text.getStyleClass().remove("right");
+		}
+		
+		DoubleProperty width = new SimpleDoubleProperty();
+		for (HBox b : boxMap.keySet())
+			width.setValue(width.getValue() + b.getWidth());
+		
+		if (width.getValue() < getPrefWidth() - 150 && !overflowPredicates.getItems().isEmpty()) {
+			Pair<String, Predicate<Entry>> pair = overflowPredicates.getItems().get(0);
+			overflowPredicates.getItems().remove(pair);
+			addFilterInstance(pair.getValue(), pair.getKey());
 		}
 	}
 	
@@ -148,6 +198,7 @@ public class FilterBar extends HBox {
 		});
 
         itemBox.getChildren().add(deleteButton);
+
 		return itemBox;
 	}
 	
@@ -188,6 +239,31 @@ public class FilterBar extends HBox {
 	public void hidePopup() {
 		popOver.hide();
 		text.setOnMouseClicked(null);
+	}
+	
+	private class OverflowFilterCell extends ListCell<Pair<String, Predicate<Entry>>> {
+		
+		@Override public void updateItem(Pair<String, Predicate<Entry>> item, boolean empty) {
+	        super.updateItem(item, empty);
+			if (empty || item == null) {
+				setGraphic(null);
+			} else {
+				BorderPane pane = new BorderPane();
+				
+				Label label = new Label(item.getKey());
+				BorderPane.setAlignment(label, Pos.CENTER_LEFT);
+				pane.setCenter(label);
+				
+				CloseButton button = new CloseButton();
+				button.setOnAction(() -> {
+					predicates.remove(item.getKey());
+					overflowPredicates.getItems().remove(item);
+				});
+				pane.setRight(button);
+				setGraphic(pane);
+			}
+			
+		}
 	}
 	
 }

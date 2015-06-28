@@ -1,0 +1,7 @@
+.list-view {
+	-fx-background-insets: 0;
+}
+
+.text-field {
+	-fx-background-radius: 10;
+}
