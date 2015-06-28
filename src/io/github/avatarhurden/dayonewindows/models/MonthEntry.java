@@ -14,7 +14,7 @@ public class MonthEntry implements Entry {
 	}
 	
 	public MonthEntry(DateTime date) {
-		this.date = date.millisOfDay().withMaximumValue().dayOfMonth().withMaximumValue();
+		this.date = date.millisOfDay().withMinimumValue().dayOfMonth().withMinimumValue();
 	}
 
 	public String getUUID() {

@@ -49,8 +49,6 @@ public class FilterBar extends HBox {
 	public FilterBar() {
 		getStylesheets().add("style/FilterBar.css");
 
-		setPrefWidth(230);
-
 		bindPredicates();
 		initialize();
 		createToolTip();

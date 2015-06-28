@@ -36,9 +36,11 @@ import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.SplitPane;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Font;
@@ -63,10 +65,13 @@ public class ListEntryViewController {
 	// List View Pane
 	@FXML private AnchorPane listViewPane;
 	@FXML private ListView<Entry> listView;
+	@FXML private StackPane monthPane;
 	@FXML private Label monthLabel;
 		// Filter Pane
 	@FXML private HBox filterPane; 
 	private FilterBar filterBox;
+	
+	private BooleanProperty wideView;
 	
 	private ObservableList<Entry> visibleItems;
 	private DoubleProperty visibleSize;
@@ -112,10 +117,11 @@ public class ListEntryViewController {
 		previousButton.disableProperty().bind(listView.getSelectionModel().selectedIndexProperty().isEqualTo(0));
 		nextButton.disableProperty().bind(listView.getSelectionModel().selectedIndexProperty().isEqualTo(listSize.subtract(1)));
 		
-		homeButton.setOnMouseClicked(event -> showList());
+		homeButton.setOnMouseClicked(event -> showList(true));
     	previousButton.setOnMouseClicked(event -> listView.getSelectionModel().selectPrevious());
     	nextButton.setOnMouseClicked(event -> listView.getSelectionModel().selectNext());
 		
+    	
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/EntryView.fxml"));
     	try {
     		entryView = loader.<AnchorPane>load();
@@ -151,7 +157,7 @@ public class ListEntryViewController {
 				listView.getSelectionModel().selectNext();
 				event.consume();
     		} else if (event.getCode() == KeyCode.BACK_SPACE || event.getCode() == KeyCode.ESCAPE)
-				showList();
+				showList(true);
     	});
     	
     	visibleItems.addListener((ListChangeListener.Change<? extends Entry> event) -> {
@@ -162,10 +168,35 @@ public class ListEntryViewController {
 		});
     	
     	createSearchToolTip();
+    	
+    	setupWideView();
+    	homeButton.visibleProperty().bind(wideView.not());
+    	homeButton.managedProperty().bind(homeButton.visibleProperty());
+	}
+	
+	private void setupWideView() {
+		wideView = new SimpleBooleanProperty();
+		
+		wideView.bind(root.widthProperty().greaterThan(1050));
+		wideView.addListener((obs, oldValue, newValue) -> {
+			if (newValue) {
+				SplitPane pane = new SplitPane(listViewPane, singleViewPane);
+		    	AnchorPane.setTopAnchor(pane, 0d);
+		    	AnchorPane.setRightAnchor(pane, 0d);
+		    	AnchorPane.setBottomAnchor(pane, 0d);
+		    	AnchorPane.setLeftAnchor(pane, 0d);
+				root.getChildren().setAll(pane);
+			} else {
+				multiPane.getChildren().setAll(listViewPane, singleViewPane);
+				root.getChildren().setAll(multiPane);
+			}
+		});
+		
 	}
 	
 	private void createSearchToolTip() {
     	filterBox = new FilterBar();
+		filterBox.setPrefWidth(120);
     	
     	filterPane.getChildren().setAll(filterBox);
     	filterPane.prefWidthProperty().bind(filterBox.prefWidthProperty());
@@ -199,9 +230,13 @@ public class ListEntryViewController {
 	
 	private void setFilterBoxExpanded(boolean expand) {
 		double opacity = expand ? 0 : 1;
-		double width = expand ? root.getWidth() - 40 : 230;
+		double width = expand ? listViewPane.getWidth() - 40 : 120;
+
+		if (expand)
+	    	monthPane.setManaged(false);
 		
 		if (!Config.get().getBoolean("enable_animations")) {
+	    	monthPane.setManaged(!expand);
 			filterBox.setPrefWidth(width);
 			monthLabel.setOpacity(opacity);
 			
@@ -222,6 +257,7 @@ public class ListEntryViewController {
 					filterBox.showPopup();
 				else 
 					filterBox.hidePopup();
+		    	monthPane.setManaged(!expand);
 			});
 			
 					
@@ -252,7 +288,7 @@ public class ListEntryViewController {
 		this.items = items;
 		SortedList<Entry> sorted = new SortedList<Entry>(items);
 		// Compares opposite so that later entries are on top
-		sorted.setComparator((entry1, entry2) -> entry2.compareTo(entry1));
+		sorted.setComparator((entry1, entry2) -> entry1.compareTo(entry2));
 		
 		filteredItems = sorted.filtered(entry -> true);
 		filteredItems.predicateProperty().addListener((obs, oldValue, newValue) ->  visibleItems.clear());
@@ -265,10 +301,10 @@ public class ListEntryViewController {
 			event.next();
 			if (event.wasRemoved()) {
 				listView.getSelectionModel().clearSelection();
-				showList();
+				showList(true);
 			}
 		});
-//		listView.scrollTo(sorted.size() - 1);
+		listView.scrollTo(sorted.size() - 1);
 		listSize.bind(Bindings.size(sorted));
 		
 		monthLabel.setText(sorted.get(0).getCreationDate().toString("MMMMMMMMMMMMMMM YYYY"));
@@ -278,13 +314,18 @@ public class ListEntryViewController {
 		multiPane.show(view, Config.get().getBoolean("enable_animations"));
 	}
 	
-	public void showList() {
-		transitionTo(listViewPane);
+	public void showList(boolean transition) {
+		if (wideView.get()) return;
+		if (!transition)
+			multiPane.show(listViewPane, false);
+		else
+			transitionTo(listViewPane);
 		
 		listView.requestFocus();
 	}
 	
 	private void showSingle() {
+		if (wideView.get()) return;
 		transitionTo(singleViewPane);
 	}
 	
@@ -320,9 +361,9 @@ public class ListEntryViewController {
 	        	
 	        	if (visibleItems.isEmpty())
 	        		visibleItems.add(item);
-	        	else if (item.getCreationDate().isAfter(visibleItems.get(0).getCreationDate()))
+	        	else if (item.getCreationDate().isBefore(visibleItems.get(0).getCreationDate()))
 	        		visibleItems.add(0, item);
-	        	else if (item.getCreationDate().isBefore(visibleItems.get(visibleItems.size() - 1).getCreationDate())) {
+	        	else if (item.getCreationDate().isAfter(visibleItems.get(visibleItems.size() - 1).getCreationDate())) {
 	        		visibleItems.add(item);
 	        		addedBeggining = false;
 	        	}
@@ -343,10 +384,10 @@ public class ListEntryViewController {
 					controller.setContent((DayOneEntry) item);
 					
 					int index = listView.getItems().indexOf(item);
-					if (index == listView.getItems().size() - 1 || listView.getItems().get(index + 1) instanceof MonthEntry) 
+					if (index == 0 || listView.getItems().get(index - 1) instanceof MonthEntry) 
 						controller.setDateEnabled(true); // First item, and items after monthEntries, must always have the date
 					else {
-						Entry previous = listView.getItems().get(index + 1);
+						Entry previous = listView.getItems().get(index - 1);
 						controller.setDateEnabled(previous.getCreationDate().getDayOfYear() != item.getCreationDate().getDayOfYear());
 					}
 				

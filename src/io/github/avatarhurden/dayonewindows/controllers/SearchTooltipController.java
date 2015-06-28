@@ -5,6 +5,7 @@ import io.github.avatarhurden.dayonewindows.models.Tag;
 
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import javafx.beans.property.Property;
@@ -43,6 +44,7 @@ public class SearchTooltipController {
 	@FXML private BorderPane tagPane;
 	@FXML private FlowPane tagBox;
 	private ObservableList<Tag> tags;
+	
 	
 	// Date
 	@FXML private BorderPane datePane;
@@ -110,38 +112,38 @@ public class SearchTooltipController {
 	}
 
 	private void bindDates() {
-		Runnable onDateAction = () -> filterAction.accept(entry -> {
-			return entry.getCreationDate().isAfter(date.getValue().withMillisOfDay(0))
-					&& entry.getCreationDate().isBefore(date.getValue().withMillisOfDay(86399999));
-		}, "On: " + date.getValue().toString("dd/MM/YYYY"));
+		Consumer<DateTime> onDateAction = date -> filterAction.accept(entry -> {
+			return entry.getCreationDate().isAfter(date.withMillisOfDay(0))
+					&& entry.getCreationDate().isBefore(date.withMillisOfDay(86399999));
+		}, "On: " + date.toString("dd/MM/YYYY"));
 		
-		onDateBox.setOnMouseClicked(event -> onDateAction.run()); 
+		onDateBox.setOnMouseClicked(event -> onDateAction.accept(date.getValue())); 
 		
 		onDateBox.setOnKeyPressed(event -> {
 			if (event.getCode() == KeyCode.ENTER)
-				onDateAction.run();
+				onDateAction.accept(date.getValue());
 		});
 		
-		Runnable beforeDateAction = () -> filterAction.accept(entry -> {
-			return entry.getCreationDate().isBefore(date.getValue().withMillisOfDay(86399999));
-		}, "Before: " + date.getValue().toString("dd/MM/YYYY"));
+		Consumer<DateTime> beforeDateAction = date -> filterAction.accept(entry -> {
+			return entry.getCreationDate().isBefore(date.withMillisOfDay(86399999));
+		}, "Before: " + date.toString("dd/MM/YYYY"));
 		
-		beforeDateBox.setOnMouseClicked(event -> beforeDateAction.run()); 
+		beforeDateBox.setOnMouseClicked(event -> beforeDateAction.accept(date.getValue())); 
 		
 		beforeDateBox.setOnKeyPressed(event -> {
 			if (event.getCode() == KeyCode.ENTER)
-				beforeDateAction.run();
+				beforeDateAction.accept(date.getValue());
 		});
 		
-		Runnable afterDateAction = () -> filterAction.accept(entry -> {
-			return entry.getCreationDate().isAfter(date.getValue().withMillisOfDay(0));
-		}, "After: " + date.getValue().toString("dd/MM/YYYY"));
+		Consumer<DateTime> afterDateAction = date -> filterAction.accept(entry -> {
+			return entry.getCreationDate().isAfter(date.withMillisOfDay(0));
+		}, "After: " + date.toString("dd/MM/YYYY"));
 		
-		afterDateBox.setOnMouseClicked(event -> afterDateAction.run()); 
+		afterDateBox.setOnMouseClicked(event -> afterDateAction.accept(date.getValue())); 
 		
 		afterDateBox.setOnKeyPressed(event -> {
 			if (event.getCode() == KeyCode.ENTER)
-				afterDateAction.run();
+				afterDateAction.accept(date.getValue());
 		});
 	}
 	

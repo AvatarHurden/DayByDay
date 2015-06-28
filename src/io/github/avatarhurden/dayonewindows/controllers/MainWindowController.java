@@ -129,7 +129,7 @@ public class MainWindowController {
 	
 	@FXML
 	private void showNewEntry() {
-		entryListViewController.showList();
+		entryListViewController.showList(false);
 		transitionTo(newEntryView);
 		
 		if (entryViewController.getEntry() != null && entryViewController.getEntry().isEmpty())
@@ -141,7 +141,7 @@ public class MainWindowController {
 	
 	@FXML
 	private void showEntryList() {
-		entryListViewController.showList();
+		entryListViewController.showList(true);
 		transitionTo(entryListView);
 		
 		if (entryViewController.getEntry() != null && entryViewController.getEntry().isEmpty())
