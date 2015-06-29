@@ -8,6 +8,9 @@ import java.io.File;
 import java.util.Calendar;
 import java.util.Locale;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.Property;
@@ -17,7 +20,9 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
@@ -25,16 +30,26 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.effect.BlendMode;
+import javafx.scene.effect.BoxBlur;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.TransferMode;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
+import javafx.scene.text.Font;
 import javafx.scene.web.WebView;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
+import javafx.util.Duration;
 import javafx.util.StringConverter;
 import jfxtras.scene.control.CalendarPicker;
 
@@ -47,6 +62,8 @@ import org.pegdown.PegDownProcessor;
 
 public class EntryViewController {
 
+	@FXML private AnchorPane root;
+	
 	// Date
 	@FXML private Label dayOfWeekLabel, dayOfMonthLabel, monthYearLabel, timeLabel;
 	@FXML private HBox dateBox;
@@ -81,6 +98,11 @@ public class EntryViewController {
 	@FXML private WebView webView;
 	@FXML private Button editButton, saveButton;
 
+	//DragAndDropImage
+	private StackPane dragAndDropPane;
+	private ImageView dragAndDropImageView;
+	private SnapshotParameters snapshotParameters;
+	
 	private JournalEntry entry;
 	
 	@FXML
@@ -117,6 +139,8 @@ public class EntryViewController {
 		});
 		
 		photoIcon.fillProperty().bind(Bindings.when(photoPane.hoverProperty()).then(Color.ALICEBLUE.saturate()).otherwise(Color.TRANSPARENT));
+		
+		bindDragAndDrop();
 	}
 	
 	public JournalEntry getEntry() {
@@ -156,6 +180,84 @@ public class EntryViewController {
 		entry = newEntry;
 	}
 	
+	private void bindDragAndDrop() {
+		snapshotParameters = new SnapshotParameters();
+		
+		dragAndDropImageView = new ImageView();
+		dragAndDropImageView.setEffect(new BoxBlur(7, 7, 3));
+		
+		dragAndDropPane = new StackPane();
+		AnchorPane.setTopAnchor(dragAndDropPane, 0d);
+		AnchorPane.setRightAnchor(dragAndDropPane, 0d);
+		AnchorPane.setBottomAnchor(dragAndDropPane, 0d);
+		AnchorPane.setLeftAnchor(dragAndDropPane, 0d);
+		
+		dragAndDropPane.getChildren().add(dragAndDropImageView);
+		
+		Label label = new Label("Add Photo to Entry");
+		label.setPadding(new Insets(30));
+		label.setFont(Font.font(20));
+		label.setBackground(new Background(new BackgroundFill(Color.WHITE.deriveColor(0, 1, 1, 0.8), new CornerRadii(6), Insets.EMPTY)));
+		
+		dragAndDropPane.getChildren().add(label);
+		
+		final WebView box = new WebView();
+		box.setOpacity(0d);
+		dragAndDropPane.getChildren().add(box);
+		
+		dragAndDropPane.setVisible(false);
+		root.getChildren().add(dragAndDropPane);
+
+		box.setOnDragEntered(event -> root.fireEvent(event));
+		root.setOnDragEntered(event -> {
+			Dragboard db = event.getDragboard();
+            if (db.hasFiles()) {
+            	boolean accepted =  db.getFiles().get(0).getName().endsWith(".jpg");
+            	
+            	if (accepted) {
+            		addImageDragFilter();
+                    event.acceptTransferModes(TransferMode.COPY);
+            	}
+            }
+		});
+
+		box.setOnDragDropped(event -> root.fireEvent(event));
+		root.setOnDragDropped(event -> {
+			Dragboard db = event.getDragboard();
+            if (db.hasFiles()) {
+            	boolean accepted =  db.getFiles().get(0).getName().endsWith(".jpg");
+            	if (accepted) 
+            		entry.setNewImage(db.getFiles().get(0));
+            }
+		});
+
+		box.setOnDragExited(event -> root.fireEvent(event));
+		root.setOnDragExited(event -> {
+			Timeline timeline = new Timeline();
+			timeline.setOnFinished(e -> dragAndDropPane.setVisible(false));
+			timeline.getKeyFrames().add(new KeyFrame(new Duration(100),	
+					new KeyValue(dragAndDropPane.opacityProperty(), 0)));
+			timeline.play();
+		});
+	}
+	
+	private void addImageDragFilter() {
+		if (dragAndDropPane.isVisible())
+			return;
+
+		dragAndDropPane.setVisible(true);
+		dragAndDropPane.setOpacity(0d);
+		snapshotParameters.setViewport(new Rectangle2D(0, 0, root.getWidth(), root.getHeight()));
+		
+		Image frostImage = root.snapshot(snapshotParameters, null);
+		dragAndDropImageView.setImage(frostImage);
+		
+		Timeline timeline = new Timeline();
+		timeline.getKeyFrames().add(new KeyFrame(new Duration(100),	
+				new KeyValue(dragAndDropPane.opacityProperty(), 1)));
+		timeline.play();
+	}
+
 	private void bindDateLabels() {
 		dayOfWeekLabel.textProperty().bind(Bindings.createStringBinding(() -> 
 			dateProperty.getValue().toString("EEE"), dateProperty));

@@ -186,6 +186,7 @@ public class JournalEntry implements Entry {
 	public Property<Image> imageProperty() {
 		if (image == null) {
 			image = new SimpleObjectProperty<Image>();
+			image.addListener((obs, oldValue, newValue) -> isEmpty = false);
 			setImage();
 		}
 		return image;
