@@ -71,7 +71,9 @@ public class ListEntryViewController {
 	@FXML private HBox filterPane; 
 	private FilterBar filterBox;
 	
+	// Wide View
 	private BooleanProperty wideView;
+	private SplitPane splitView;
 	
 	private ObservableList<Entry> visibleItems;
 	private DoubleProperty visibleSize;
@@ -175,17 +177,19 @@ public class ListEntryViewController {
 	}
 	
 	private void setupWideView() {
+		splitView = new SplitPane(listViewPane, singleViewPane);
+    	AnchorPane.setTopAnchor(splitView, 0d);
+    	AnchorPane.setRightAnchor(splitView, 0d);
+    	AnchorPane.setBottomAnchor(splitView, 0d);
+    	AnchorPane.setLeftAnchor(splitView, 0d);
+    	
 		wideView = new SimpleBooleanProperty();
 		
 		wideView.bind(root.widthProperty().greaterThan(1050));
 		wideView.addListener((obs, oldValue, newValue) -> {
 			if (newValue) {
-				SplitPane pane = new SplitPane(listViewPane, singleViewPane);
-		    	AnchorPane.setTopAnchor(pane, 0d);
-		    	AnchorPane.setRightAnchor(pane, 0d);
-		    	AnchorPane.setBottomAnchor(pane, 0d);
-		    	AnchorPane.setLeftAnchor(pane, 0d);
-				root.getChildren().setAll(pane);
+				splitView.getItems().setAll(listViewPane, singleViewPane);
+				root.getChildren().setAll(splitView);
 			} else {
 				multiPane.getChildren().setAll(listViewPane, singleViewPane);
 				root.getChildren().setAll(multiPane);
@@ -327,6 +331,14 @@ public class ListEntryViewController {
 	private void showSingle() {
 		if (wideView.get()) return;
 		transitionTo(singleViewPane);
+	}
+	
+	public void saveState() {
+		Config.get().setProperty("list_view_wide_divider", String.valueOf(splitView.getDividerPositions()[0]));
+	}
+	
+	public void loadState() {
+		splitView.setDividerPosition(0, Config.get().getDouble("list_view_wide_divider", 0.5));
 	}
 	
 	private class EntryCell extends ListCell<Entry> {

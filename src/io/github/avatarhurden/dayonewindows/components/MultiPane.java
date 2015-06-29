@@ -29,6 +29,8 @@ public class MultiPane extends AnchorPane {
 	private Supplier<ReadOnlyDoubleProperty> lenghtProperty;
 	private BiConsumer<Node, Double> directAnchor, inverseAnchor, emptyAnchor;
 	
+	private Node selectedNode;
+	
 	public MultiPane(MultiPaneOrientation orientation) {
 		this(orientation, new Node[]{});
 	}
@@ -103,6 +105,8 @@ public class MultiPane extends AnchorPane {
 	
 	public void show(Node child, boolean transition) {
 		show(getChildren().indexOf(child), transition);
+		
+		selectedNode = child;
 	}
 	
 	public void show(int child, boolean transition) {
@@ -113,6 +117,12 @@ public class MultiPane extends AnchorPane {
 			timeline.getKeyFrames().add(new KeyFrame(new Duration(300),	new KeyValue(shownChild, child)));
 			timeline.play();
 		}
+
+		selectedNode = getChildren().get(child);
+	}
+	
+	public Node getSelectedNode() {
+		return selectedNode;
 	}
 	
 }

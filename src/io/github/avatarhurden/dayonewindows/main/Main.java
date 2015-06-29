@@ -51,6 +51,8 @@ public class Main extends Application {
 		controller = loader.<MainWindowController>getController();
 		controller.setJournal(entryManager);
 		
+		controller.loadState();
+		
 		primaryStage.setOnCloseRequest(event -> exit());
 		
 //		trayIcon = new DayOneTray(primaryStage);
@@ -92,9 +94,9 @@ public class Main extends Application {
 	public void exit() {
 		try {
 			savePosition(primaryStage);
-//			SystemTray.getSystemTray().remove(trayIcon.getTrayIcon());
-			Config.save();
 			controller.getJournal().close();
+			controller.saveState();
+			Config.save();
 			Platform.exit();
 		} catch (Exception e) {
 			e.printStackTrace();

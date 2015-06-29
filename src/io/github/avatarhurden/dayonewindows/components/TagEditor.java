@@ -12,6 +12,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.BorderPane;
@@ -61,9 +62,19 @@ public class TagEditor extends VBox {
 			textField.clear();
 		});
 
-		textField.textProperty().addListener((obs, oldValue, newValue) -> {
-			existingTags.setPredicate(tag -> tag.getName().toLowerCase().contains(newValue.toLowerCase())
+		textField.textProperty().addListener(event -> {
+			existingTags.setPredicate(tag -> tag.getName().toLowerCase().contains(textField.getText().toLowerCase())
 					&& !addedTags.contains(tag.getName()));
+		});
+		
+		textField.setOnKeyPressed(event -> {
+			if (event.getCode() == KeyCode.DOWN) {
+				existingTagsView.getSelectionModel().select(0);
+				existingTagsView.requestFocus();
+			} else if (event.getCode() == KeyCode.UP) {
+				addedTagsView.getSelectionModel().select(addedTagsView.getItems().size() - 1);
+				addedTagsView.requestFocus();
+			}
 		});
 		
 		addedTagsView = new ListView<String>(addedTags);
@@ -72,6 +83,16 @@ public class TagEditor extends VBox {
 		addedTagsView.prefHeightProperty().bind(Bindings.size(addedTagsView.getItems()).multiply(23).add(4));
 		addedTagsView.maxHeightProperty().set(6 * 23 + 4);
 		
+		addedTagsView.setOnKeyPressed(event -> {
+			if (event.getCode() == KeyCode.DOWN && 
+					addedTagsView.getSelectionModel().getSelectedIndex() == addedTagsView.getItems().size() - 1)
+				textField.requestFocus();
+			else if (event.getCode() == KeyCode.DELETE) {
+				entry.removeTag(addedTagsView.getSelectionModel().getSelectedItem());
+				textField.clear();
+			}
+		});
+		
 		existingTagsView = new ListView<Tag>(existingTags);
 		existingTagsView.visibleProperty().bind(Bindings.size(existingTags).greaterThan(0));
 		existingTagsView.setCellFactory(view -> new PossibleTagCell());
@@ -79,10 +100,16 @@ public class TagEditor extends VBox {
 		existingTagsView.maxHeightProperty().set(6 * 23 + 2);
 		
 		existingTagsView.setOnMouseClicked(event -> {
-			if (event.getClickCount() == 2) {
+			if (event.getClickCount() == 2)
 				entry.addTag(existingTagsView.getSelectionModel().getSelectedItem().getName());
-				System.out.println(addedTags.size());
-			}
+		});
+		
+		existingTagsView.setOnKeyPressed(event -> {
+			if (event.getCode() == KeyCode.ENTER) {
+				entry.addTag(existingTagsView.getSelectionModel().getSelectedItem().getName());
+				textField.clear();
+			} if (event.getCode() == KeyCode.UP && existingTagsView.getSelectionModel().getSelectedIndex() == 0)
+				textField.requestFocus();
 		});
 		
 		Label label = new Label("All tags");

@@ -47,22 +47,6 @@ public class MainWindowController {
 		
 		entryListViewController.setItems(manager.getEntries());
 		entryListViewController.setAvailableTags(manager.getTags());
-		
-		String startScreen = Config.get().getProperty("start_screen", "Open New Entry View");
-		
-    	if (startScreen.equals("Open Last View"))
-    		startScreen = "Open " + Config.get().getProperty("last_screen", "New Entry") + " View";
-    	
-    	switch (startScreen) {
-		case "Open New Entry View":
-			multiPane.show(0, false);
-			newButton.fire();
-			break;
-		case "Open Entry List View":
-			multiPane.show(1, false);
-			listButton.fire();
-			break;
-		}
 	}
 	
 	@FXML
@@ -135,8 +119,6 @@ public class MainWindowController {
 		if (entryViewController.getEntry() != null && entryViewController.getEntry().isEmpty())
 			journal.deleteEntry(entryViewController.getEntry());
 		entryViewController.setEntry(journal.addEntry());
-		
-		Config.get().setProperty("last_screen", "New Entry");
 	}
 	
 	@FXML
@@ -145,12 +127,41 @@ public class MainWindowController {
 		transitionTo(entryListView);
 		
 		if (entryViewController.getEntry() != null && entryViewController.getEntry().isEmpty())
-			journal.deleteEntry(entryViewController.getEntry());
-		
-		Config.get().setProperty("last_screen", "Entry List");
+			journal.deleteEntry(entryViewController.getEntry());	
 	}
 
 	public Journal getJournal() {
 		return journal;
+	}
+
+	public void saveState() {
+		entryListViewController.saveState();
+
+		Node selected = multiPane.getSelectedNode();
+		if (selected == entryListView)
+			Config.get().setProperty("last_screen", "Entry List");
+		else if (selected == newEntryView)
+			Config.get().setProperty("last_screen", "New Entry");
+	}
+	
+	public void loadState() {
+		entryListViewController.loadState();
+		
+		String startScreen = Config.get().getProperty("start_screen", "Open New Entry View");
+		
+    	if (startScreen.equals("Open Last View"))
+    		startScreen = "Open " + Config.get().getProperty("last_screen", "New Entry") + " View";
+    	
+    	switch (startScreen) {
+		case "Open New Entry View":
+			multiPane.show(0, false);
+			newButton.fire();
+			break;
+		case "Open Entry List View":
+			multiPane.show(1, false);
+			listButton.fire();
+			break;
+		}
+    	
 	}
 }

@@ -88,7 +88,7 @@ public class Config {
 		return prop.getProperty(name) == null ? defaultValue : Boolean.valueOf(prop.getProperty(name));
 	}
 	
-	public double getBoolean(String name, double defaultValue) {
+	public double getDouble(String name, double defaultValue) {
 		return prop.getProperty(name) == null ? defaultValue : Double.valueOf(prop.getProperty(name));
 	}
 	
@@ -195,4 +195,5 @@ public class Config {
 	public void saveConfig() throws FileNotFoundException, IOException {
 		prop.store(new FileOutputStream(configFile), "LifeOrganizer Properties");
 	}
+
 }
