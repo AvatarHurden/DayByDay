@@ -15,9 +15,9 @@
          <children>
             <AnchorPane AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                <children>
-                  <HBox alignment="CENTER_RIGHT" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                     <children>
-                        <StackPane fx:id="monthPane" HBox.hgrow="ALWAYS">
+                  <BorderPane AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                     <center>
+                        <StackPane fx:id="monthPane">
                            <children>
                               <Label fx:id="monthLabel" text="Janeiro 2015">
                                  <font>
@@ -26,16 +26,18 @@
                               </Label>
                            </children>
                         </StackPane>
-                        <HBox fx:id="filterPane" alignment="CENTER" fillHeight="false" minHeight="45.0" prefHeight="45.0">
-                           <HBox.margin>
+                     </center>
+                     <right>
+                        <HBox fx:id="filterPane" alignment="CENTER" fillHeight="false" minHeight="45.0" prefHeight="45.0" BorderPane.alignment="CENTER">
+                           <BorderPane.margin>
                               <Insets />
-                           </HBox.margin>
+                           </BorderPane.margin>
+                           <padding>
+                              <Insets right="14.0" />
+                           </padding>
                         </HBox>
-                     </children>
-                     <padding>
-                        <Insets right="20.0" />
-                     </padding>
-                  </HBox>
+                     </right>
+                  </BorderPane>
                </children>
             </AnchorPane>
             <ListView fx:id="listView" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="45.0" />

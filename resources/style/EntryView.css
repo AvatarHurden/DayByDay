@@ -1,5 +1,5 @@
 
-.text-area{
+.text-area {
     -fx-background-color: transparent;
 }
 
@@ -11,3 +11,48 @@
     -fx-background-insets: 0;
     -fx-padding: 0;
 }
+
+.tag-pane {
+	-fx-fill: transparent;
+}
+
+.tag-pane:hover {
+	-fx-fill: aliceblue;
+}
+
+.tag-pane:active {
+	-fx-fill: lightcyan;
+}
+
+.starred-pane {
+	-fx-fill: transparent;
+}
+
+.starred-pane:hover {
+	-fx-fill: #F7EBAB;
+}
+
+.starred-pane:active {
+	-fx-fill: gold;
+}
+
+.photo-pane {
+	-fx-fill: transparent;
+}
+
+.photo-pane:hover {
+	-fx-fill: aliceblue;
+}
+
+.photo-pane:active {
+	-fx-fill: lightcyan;
+}
+
+.delete-pane {
+	-fx-fill: black;
+}
+
+.delete-pane:active {
+	-fx-fill: red;
+}
+

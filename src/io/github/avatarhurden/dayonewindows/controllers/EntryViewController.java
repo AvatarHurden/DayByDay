@@ -12,11 +12,12 @@ import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.beans.binding.Bindings;
-import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -40,6 +41,10 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.Border;
+import javafx.scene.layout.BorderStroke;
+import javafx.scene.layout.BorderStrokeStyle;
+import javafx.scene.layout.BorderWidths;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
@@ -115,9 +120,9 @@ public class EntryViewController {
 		bindDateLabels();
 
 		tagEditor = new TagEditor();
-		tagIcon.fillProperty().bind(Bindings.when(tagsLabel.textProperty().isNotEmpty()).then(Color.LIGHTCYAN).otherwise(
-				Bindings.when(BooleanBinding.booleanExpression(tagIcon.hoverProperty())).then(Color.ALICEBLUE.saturate()).otherwise(Color.TRANSPARENT)));
+		tagIcon.getStyleClass().add("tag-pane");
 		
+		favoriteIcon.getStyleClass().add("starred-pane");
 		favoriteIcon.setOnMouseClicked(event -> entry.starredProperty().setValue(!entry.starredProperty().getValue()));
 		
 		setImageViewMenu();
@@ -132,21 +137,28 @@ public class EntryViewController {
 		saveButton.managedProperty().bind(saveButton.visibleProperty());
 		editButton.managedProperty().bind(editButton.visibleProperty());
 		
-		deleteLidIcon.fillProperty().bind(Bindings.when(deleteIcon.hoverProperty()).then(Color.RED).otherwise(Color.BLACK));
-		deleteLidIcon.rotateProperty().bind(Bindings.when(deleteIcon.hoverProperty()).then(40.6).otherwise(0));
-		deleteBodyIcon.fillProperty().bind(Bindings.when(deleteIcon.hoverProperty()).then(Color.RED).otherwise(Color.BLACK));
+		deleteLidIcon.getStyleClass().add("delete-pane");
+		deleteBodyIcon.getStyleClass().add("delete-pane");
 		
 		deleteIcon.hoverProperty().addListener((obs, oldValue, newValue) -> {
-			VBox.setMargin((Node) deleteLidIcon, newValue ? new Insets(4, 0, 0, 12) : new Insets(4, 12, 0, 0));
+			deleteLidIcon.pseudoClassStateChanged(PseudoClass.getPseudoClass("active"), newValue);
+			deleteBodyIcon.pseudoClassStateChanged(PseudoClass.getPseudoClass("active"), newValue);
+			VBox.setMargin((Node) deleteLidIcon, newValue ? new Insets(4, 0, 0, 13) : new Insets(4, 13, 0, 0));
 		});
 		
-		photoIcon.fillProperty().bind(Bindings.when(photoPane.hoverProperty()).then(Color.ALICEBLUE.saturate()).otherwise(Color.TRANSPARENT));
+		deleteLidIcon.rotateProperty().bind(Bindings.when(deleteIcon.hoverProperty()).then(40.6).otherwise(0));
+		
+		photoIcon.getStyleClass().add("photo-pane");
 		
 		imageView.imageProperty().addListener((obs, oldValue, newValue) -> {
-			if (newValue == null)
+			if (newValue == null) {
 				splitPane.getItems().remove(imageScroll);
-			else if (!splitPane.getItems().contains(imageScroll))
-				splitPane.getItems().add(0, imageScroll);
+				photoIcon.pseudoClassStateChanged(PseudoClass.getPseudoClass("active"), false);
+			} else {
+				photoIcon.pseudoClassStateChanged(PseudoClass.getPseudoClass("active"), true);
+				if (!splitPane.getItems().contains(imageScroll))
+					splitPane.getItems().add(0, imageScroll);
+			}
 		});
 		// Since it starts with no image, must remove from the items
 		splitPane.getItems().remove(imageScroll);
@@ -174,20 +186,26 @@ public class EntryViewController {
 		editButton.setVisible(true);
 		
 		tagsLabel.textProperty().unbind();
+		
 		tagsLabel.textProperty().bind(Bindings.createStringBinding(() -> {
-				if (newEntry.getTags().size() > 0)
+			tagIcon.pseudoClassStateChanged(PseudoClass.getPseudoClass("active"), newEntry.getTags().size() > 0);
+			
+				if (newEntry.getTags().size() > 0) 
 					return newEntry.getTags().size()+"";
-				else
+				else 
 					return "";
 		}, newEntry.getObservableTags()));
+		
 		tagEditor.setEntry(newEntry);
 		tagEditor.setPossibleTags(newEntry.getManager().getTags());
-		
-		favoriteIcon.fillProperty().unbind();
-		favoriteIcon.fillProperty().bind(Bindings.when(
-				BooleanBinding.booleanExpression(newEntry.starredProperty())).then(Color.GOLD).otherwise(
-						Bindings.when(BooleanBinding.booleanExpression(favoriteIcon.hoverProperty())).then(Color.GOLD.deriveColor(0, 1, 1, 0.3)).otherwise(Color.TRANSPARENT)));
-		
+
+		ChangeListener<Boolean> favoriteListener = (obs, oldValue, newValue) -> {
+			favoriteIcon.pseudoClassStateChanged(PseudoClass.getPseudoClass("active"), newValue);
+		};
+		if (entry != null)
+			entry.starredProperty().removeListener(favoriteListener);
+		newEntry.starredProperty().addListener(favoriteListener);
+		favoriteIcon.pseudoClassStateChanged(PseudoClass.getPseudoClass("active"), newEntry.isStarred());
 
 		imageView.imageProperty().unbind();
 		imageView.imageProperty().bind(newEntry.imageProperty());
@@ -214,10 +232,13 @@ public class EntryViewController {
 		label.setPadding(new Insets(30));
 		label.setFont(Font.font(20));
 		label.setBackground(new Background(new BackgroundFill(Color.WHITE.deriveColor(0, 1, 1, 0.8), new CornerRadii(6), Insets.EMPTY)));
+		label.setBorder(new Border(
+				new BorderStroke(Color.LIGHTGRAY, BorderStrokeStyle.DASHED, new CornerRadii(6), BorderWidths.DEFAULT)));
 		
 		dragAndDropPane.getChildren().add(label);
 		
 		final WebView box = new WebView();
+		box.setPrefWidth(0);
 		box.setOpacity(0d);
 		
 		box.setOnDragEntered(event -> root.fireEvent(event));
@@ -228,10 +249,16 @@ public class EntryViewController {
 		
 		dragAndDropPane.setVisible(false);
 		root.getChildren().add(dragAndDropPane);
-
 	}
 
 	private void bindDragAndDrop() {
+		HBox rejectBox = new HBox();
+		rejectBox.setOpacity(0d);
+		AnchorPane.setTopAnchor(rejectBox, 0d);
+		AnchorPane.setRightAnchor(rejectBox, 0d);
+		AnchorPane.setBottomAnchor(rejectBox, 0d);
+		AnchorPane.setLeftAnchor(rejectBox, 0d);
+		
 		root.setOnDragEntered(event -> {
 			Dragboard db = event.getDragboard();
             if (db.hasFiles()) {
@@ -240,7 +267,8 @@ public class EntryViewController {
             	if (accepted) {
             		addImageDragFilter();
                     event.acceptTransferModes(TransferMode.COPY);
-            	}
+            	} else if (!root.getChildren().contains(rejectBox))
+            		root.getChildren().add(rejectBox);
             }
 		});
 
@@ -259,6 +287,9 @@ public class EntryViewController {
 			timeline.getKeyFrames().add(new KeyFrame(new Duration(100),	
 					new KeyValue(dragAndDropPane.opacityProperty(), 0)));
 			timeline.play();
+			
+			if (root.getChildren().contains(rejectBox))
+        		root.getChildren().remove(rejectBox);
 		});
 	}
 	

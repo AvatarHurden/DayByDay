@@ -4,8 +4,8 @@ import io.github.avatarhurden.dayonewindows.components.FilterBar;
 import io.github.avatarhurden.dayonewindows.components.MultiPane;
 import io.github.avatarhurden.dayonewindows.components.MultiPane.MultiPaneOrientation;
 import io.github.avatarhurden.dayonewindows.managers.Config;
-import io.github.avatarhurden.dayonewindows.models.JournalEntry;
 import io.github.avatarhurden.dayonewindows.models.Entry;
+import io.github.avatarhurden.dayonewindows.models.JournalEntry;
 import io.github.avatarhurden.dayonewindows.models.MonthEntry;
 import io.github.avatarhurden.dayonewindows.models.Tag;
 
@@ -39,6 +39,11 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.SplitPane;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Border;
+import javafx.scene.layout.BorderStroke;
+import javafx.scene.layout.BorderStrokeStyle;
+import javafx.scene.layout.BorderWidths;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -196,6 +201,8 @@ public class ListEntryViewController {
 			}
 		});
 		
+		
+		
 	}
 	
 	private void createSearchToolTip() {
@@ -226,7 +233,6 @@ public class ListEntryViewController {
     		else
     			listView.scrollTo(listView.getItems().size() - 1);
 		});
-    	
 	}
 	
 	private void setFilterBoxExpanded(boolean expand) {
@@ -385,6 +391,7 @@ public class ListEntryViewController {
 	        		setText(item.getCreationDate().toString("MMMMMMMMMMMMMMM YYYY"));
 	        		setFont(Font.font(30));
 	        		setAlignment(Pos.CENTER);
+	        		setBorder(null);
 	        	} else if (((JournalEntry) item).isEmpty()) {
 	        		setText("Create new Entry");
 	        		setFont(Font.font(30));
@@ -392,7 +399,13 @@ public class ListEntryViewController {
 	        		setAlignment(Pos.CENTER);
 	        		setGraphic(null);
 	        		setPrefHeight(90);
+	        		
+	        		Border border = new Border(
+	        				new BorderStroke(Color.LIGHTGRAY, BorderStrokeStyle.DASHED, new CornerRadii(6), BorderWidths.DEFAULT));
+	        		
+	        		setBorder(border);
 	        	} else {
+	        		setBorder(null);
 		            setText(null);
 	        		setGraphic(n);
 					setPadding(Insets.EMPTY);
