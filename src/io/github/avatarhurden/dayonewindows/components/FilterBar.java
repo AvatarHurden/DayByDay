@@ -1,6 +1,7 @@
 package io.github.avatarhurden.dayonewindows.components;
 
 import io.github.avatarhurden.dayonewindows.controllers.SearchTooltipController;
+import io.github.avatarhurden.dayonewindows.managers.Config;
 import io.github.avatarhurden.dayonewindows.models.Entry;
 import io.github.avatarhurden.dayonewindows.models.JournalEntry;
 import io.github.avatarhurden.dayonewindows.models.MonthEntry;
@@ -204,6 +205,22 @@ public class FilterBar extends HBox {
 	
 	public ObservableList<Predicate<Entry>> getFilters() {
 		return predicates;
+	}
+	
+	public Predicate<Entry> getCombinedFilter() {
+		boolean all = Config.get().getProperty("list_filter_system").equals("all");
+		Predicate<Entry> filter = entry -> all;
+		
+		for (int i = 0; i < predicates.size(); i++)
+			if (all)
+				filter = filter.and(predicates.get(i));
+			else
+				filter = filter.or(predicates.get(i));
+				
+		if (predicates.size() == 0)
+			filter = entry -> true;
+		
+		return filter;
 	}
 	
 	public void setAvailableTags(ObservableList<Tag> tags) {

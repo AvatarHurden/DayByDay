@@ -12,6 +12,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
@@ -27,7 +29,9 @@ public class ConfigViewController {
 	@FXML private CheckBox animationCheckBox;
 	
 	@FXML private Label folderPathLabel;
-//	@FXML private ImageView folderIcon;
+	
+	@FXML private RadioButton allFiltersButton, anyFilterButton;
+	private ToggleGroup filterGroup;
 	
 	private Runnable onClose;
 	
@@ -51,6 +55,22 @@ public class ConfigViewController {
 		
 		String folder = Config.get().getProperty("data_folder");
 		folderPathLabel.setText(folder);
+		
+		filterGroup = new ToggleGroup();
+		allFiltersButton.setToggleGroup(filterGroup);
+		allFiltersButton.setUserData("all");
+		anyFilterButton.setToggleGroup(filterGroup);
+		anyFilterButton.setUserData("any");
+		
+		String filter = Config.get().getPropertyAndSave("list_filter_system", "all");
+		if (filter.equals("all"))
+			filterGroup.selectToggle(allFiltersButton);
+		else if (filter.equals("any"))
+			filterGroup.selectToggle(anyFilterButton);
+		
+		filterGroup.selectedToggleProperty().addListener((obs, oldValue, newValue) -> {
+			Config.get().setProperty("list_filter_system", (String) newValue.getUserData());
+		});
 	}
 
 	private void populateScreenComboBox() {

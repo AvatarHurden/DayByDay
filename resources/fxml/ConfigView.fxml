@@ -8,9 +8,9 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<VBox fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="389.0" prefWidth="521.0" spacing="10.0" style="-fx-background-color: white; -fx-border-radius: 10; -fx-border-color: lightblue; -fx-background-radius: 10;" stylesheets="@../style/ConfigView.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.avatarhurden.dayonewindows.controllers.ConfigViewController">
+<VBox fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="507.0" prefWidth="521.0" spacing="10.0" style="-fx-background-color: white; -fx-border-radius: 10; -fx-border-color: lightblue; -fx-background-radius: 10;" stylesheets="@../style/ConfigView.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.avatarhurden.dayonewindows.controllers.ConfigViewController">
    <children>
-      <HBox fx:id="menuBar" alignment="CENTER_RIGHT" prefHeight="57.0" prefWidth="439.0" />
+      <HBox fx:id="menuBar" alignment="CENTER_RIGHT" prefHeight="18.0" prefWidth="439.0" />
       <VBox prefHeight="110.0" prefWidth="441.0" spacing="10.0">
          <children>
             <Label text="General">
@@ -29,7 +29,7 @@
          </children>
       </VBox>
       <Separator prefWidth="200.0" />
-      <VBox prefHeight="200.0" prefWidth="100.0" spacing="10.0">
+      <VBox prefHeight="141.0" prefWidth="439.0" spacing="10.0">
          <children>
             <Label text="File Location">
                <font>
@@ -49,6 +49,26 @@
          </children>
       </VBox>
       <Separator prefWidth="200.0" />
+      <VBox prefHeight="126.0" prefWidth="439.0" spacing="10.0">
+         <children>
+            <Label text="Filtering">
+               <font>
+                  <Font name="System Bold" size="16.0" />
+               </font>
+            </Label>
+            <Label text="Multiple filters" />
+            <RadioButton fx:id="allFiltersButton" mnemonicParsing="false" text="Match All Filters">
+               <padding>
+                  <Insets left="10.0" />
+               </padding>
+            </RadioButton>
+            <RadioButton fx:id="anyFilterButton" mnemonicParsing="false" text="Match Any Filter">
+               <padding>
+                  <Insets left="10.0" />
+               </padding>
+            </RadioButton>
+         </children>
+      </VBox>
    </children>
    <padding>
       <Insets bottom="40.0" left="40.0" right="40.0" top="10.0" />
