@@ -28,6 +28,7 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.effect.BlendMode;
 import javafx.scene.effect.BoxBlur;
@@ -63,6 +64,7 @@ import org.pegdown.PegDownProcessor;
 public class EntryViewController {
 
 	@FXML private AnchorPane root;
+	@FXML private SplitPane splitPane;
 	
 	// Date
 	@FXML private Label dayOfWeekLabel, dayOfMonthLabel, monthYearLabel, timeLabel;
@@ -140,6 +142,17 @@ public class EntryViewController {
 		
 		photoIcon.fillProperty().bind(Bindings.when(photoPane.hoverProperty()).then(Color.ALICEBLUE.saturate()).otherwise(Color.TRANSPARENT));
 		
+		imageView.imageProperty().addListener((obs, oldValue, newValue) -> {
+			if (newValue == null)
+				splitPane.getItems().remove(imageScroll);
+			else if (!splitPane.getItems().contains(imageScroll))
+				splitPane.getItems().add(0, imageScroll);
+		});
+		// Since it starts with no image, must remove from the items
+		splitPane.getItems().remove(imageScroll);
+		
+		createDragAndDropPanel();
+		
 		bindDragAndDrop();
 	}
 	
@@ -151,6 +164,9 @@ public class EntryViewController {
 		if (entry != null)
 			dateProperty.unbindBidirectional(entry.creationDateProperty());
 		dateProperty.bindBidirectional(newEntry.creationDateProperty());
+		
+		if (newEntry.isEmpty())
+			dateProperty.setValue(new DateTime());
 		
 		if (entry != null)
 			textArea.textProperty().unbindBidirectional(entry.entryTextProperty());
@@ -179,8 +195,8 @@ public class EntryViewController {
 		
 		entry = newEntry;
 	}
-	
-	private void bindDragAndDrop() {
+
+	private void createDragAndDropPanel() {
 		snapshotParameters = new SnapshotParameters();
 		
 		dragAndDropImageView = new ImageView();
@@ -203,12 +219,19 @@ public class EntryViewController {
 		
 		final WebView box = new WebView();
 		box.setOpacity(0d);
+		
+		box.setOnDragEntered(event -> root.fireEvent(event));
+		box.setOnDragDropped(event -> root.fireEvent(event));
+		box.setOnDragExited(event -> root.fireEvent(event));
+		
 		dragAndDropPane.getChildren().add(box);
 		
 		dragAndDropPane.setVisible(false);
 		root.getChildren().add(dragAndDropPane);
 
-		box.setOnDragEntered(event -> root.fireEvent(event));
+	}
+
+	private void bindDragAndDrop() {
 		root.setOnDragEntered(event -> {
 			Dragboard db = event.getDragboard();
             if (db.hasFiles()) {
@@ -221,7 +244,6 @@ public class EntryViewController {
             }
 		});
 
-		box.setOnDragDropped(event -> root.fireEvent(event));
 		root.setOnDragDropped(event -> {
 			Dragboard db = event.getDragboard();
             if (db.hasFiles()) {
@@ -231,7 +253,6 @@ public class EntryViewController {
             }
 		});
 
-		box.setOnDragExited(event -> root.fireEvent(event));
 		root.setOnDragExited(event -> {
 			Timeline timeline = new Timeline();
 			timeline.setOnFinished(e -> dragAndDropPane.setVisible(false));
@@ -334,7 +355,10 @@ public class EntryViewController {
 		
 		Button delete = new Button("Delete Entry");
 		delete.setTextFill(Color.RED);
-		delete.setOnAction(event2 -> entry.delete());
+		delete.setOnAction(event2 -> { 
+			entry.delete();
+			over.hide();
+		});
 		
 		VBox box = new VBox(5);
 		box.setAlignment(Pos.CENTER);

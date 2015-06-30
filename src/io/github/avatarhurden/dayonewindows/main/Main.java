@@ -36,6 +36,7 @@ public class Main extends Application {
 		
 		Journal entryManager = new Journal(Config.get().getProperty("data_folder"));
 		entryManager.loadAndWatch();
+		entryManager.setKeepEmptyEntry(true);
 
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainWindow.fxml"));
 		

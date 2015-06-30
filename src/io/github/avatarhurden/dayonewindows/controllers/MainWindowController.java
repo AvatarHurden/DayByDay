@@ -116,18 +116,13 @@ public class MainWindowController {
 		entryListViewController.showList(false);
 		transitionTo(newEntryView);
 		
-		if (entryViewController.getEntry() != null && entryViewController.getEntry().isEmpty())
-			journal.deleteEntry(entryViewController.getEntry());
-		entryViewController.setEntry(journal.addEntry());
+		entryViewController.setEntry(journal.getEmptyEntry());
 	}
 	
 	@FXML
 	private void showEntryList() {
 		entryListViewController.showList(true);
 		transitionTo(entryListView);
-		
-		if (entryViewController.getEntry() != null && entryViewController.getEntry().isEmpty())
-			journal.deleteEntry(entryViewController.getEntry());	
 	}
 
 	public Journal getJournal() {

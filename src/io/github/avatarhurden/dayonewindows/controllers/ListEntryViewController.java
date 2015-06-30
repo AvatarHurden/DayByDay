@@ -217,17 +217,14 @@ public class ListEntryViewController {
     	filterBox.getFilters().addListener((ListChangeListener.Change<? extends Predicate<Entry>> event) -> {
     		Entry selected = listView.getSelectionModel().getSelectedItem();
     		
-			filteredItems.setPredicate(entry -> {
-				BooleanProperty accepted = new SimpleBooleanProperty(true);
-				
-				filterBox.getFilters().forEach(predicate -> accepted.setValue(accepted.getValue() && predicate.test(entry)));
-				
-				return accepted.getValue();
-			});
+			filteredItems.setPredicate(filterBox.getCombinedFilter());
 			
     		addMonths();
     		listView.getSelectionModel().select(selected);
-    		listView.scrollTo(selected);
+    		if (selected != null)
+    			listView.scrollTo(selected);
+    		else
+    			listView.scrollTo(listView.getItems().size() - 1);
 		});
     	
 	}
@@ -388,6 +385,13 @@ public class ListEntryViewController {
 	        		setText(item.getCreationDate().toString("MMMMMMMMMMMMMMM YYYY"));
 	        		setFont(Font.font(30));
 	        		setAlignment(Pos.CENTER);
+	        	} else if (((JournalEntry) item).isEmpty()) {
+	        		setText("Create new Entry");
+	        		setFont(Font.font(30));
+	        		setTextFill(Color.LIGHTGREY);
+	        		setAlignment(Pos.CENTER);
+	        		setGraphic(null);
+	        		setPrefHeight(90);
 	        	} else {
 		            setText(null);
 	        		setGraphic(n);

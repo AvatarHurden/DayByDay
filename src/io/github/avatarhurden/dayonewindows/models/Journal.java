@@ -15,6 +15,9 @@ import java.util.regex.Pattern;
 
 import javafx.application.Platform;
 import javafx.beans.Observable;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -32,6 +35,10 @@ public class Journal {
 	
 	private DirectoryWatcher watcher;
 	private DirectoryWatcher imageWatcher;
+	
+	private BooleanProperty keepEmptyEntry;
+	private JournalEntry emptyEntry;
+	private ChangeListener<Boolean> emptyChange;
 	
 	public static boolean isInitiliazed() {
 		return Config.get().getProperty("data_folder") != null;
@@ -68,6 +75,20 @@ public class Journal {
 		entryMap = FXCollections.observableHashMap();
 		
 		tagsList = FXCollections.observableArrayList();
+		
+		keepEmptyEntry = new SimpleBooleanProperty(false);
+		
+		keepEmptyEntry.addListener((obs, oldValue, newValue) -> {
+			if (newValue) {
+				addEmptyEntry();
+			} else
+				emptyEntry = null;
+		});
+		
+		emptyChange = (obs, oldValue, newValue) -> {
+			if (!newValue && keepEmptyEntry.get()) 
+				addEmptyEntry();
+		};
 	}
 	
 	public JournalEntry getEntry(String id) {
@@ -190,11 +211,35 @@ public class Journal {
 		if (entry.getImageFile() != null)
 			imageWatcher.watchPath(entry.getImageFile().toPath());
 	}
+	
+	public boolean getKeepEmptyEntry() {
+		return keepEmptyEntry.get();
+	}
+	
+	public void setKeepEmptyEntry(boolean value) {
+		keepEmptyEntry.setValue(value);
+	}
+	
+	public BooleanProperty keepEmptyEntryProperty() {
+		return keepEmptyEntry;
+	}
 
 	public JournalEntry addEntry() {
 		JournalEntry t = JournalEntry.createNewEntry(this);
 		entryList.add(t);
 		return t;
+	}
+	
+	private void addEmptyEntry() {
+		if (emptyEntry != null)
+			emptyEntry.emptyProperty().removeListener(emptyChange);
+		emptyEntry = addEntry();
+		
+		emptyEntry.emptyProperty().addListener(emptyChange);
+	}
+
+	public JournalEntry getEmptyEntry() {
+		return emptyEntry;
 	}
 	
 	public void deleteEntry(JournalEntry entry) {

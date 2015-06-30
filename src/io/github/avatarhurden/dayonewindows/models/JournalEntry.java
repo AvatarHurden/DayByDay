@@ -12,7 +12,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.adapter.JavaBeanObjectPropertyBuilder;
 import javafx.collections.FXCollections;
@@ -69,7 +71,7 @@ public class JournalEntry implements Entry {
 	/** If true, changes will not result in an attempt to save the file **/
 	private boolean ignoreChanges = false;
 	/** Is true only when created. After any changes to any field (i.e. after a save), is set to false **/
-	private boolean isEmpty = true;
+	private BooleanProperty isEmpty;
 	
 	private JournalEntry(Journal manager, NSDictionary dictionary, File file) {
 		this.manager = manager;
@@ -77,6 +79,11 @@ public class JournalEntry implements Entry {
 		this.file = file;
 		
 		observableTags = FXCollections.observableArrayList(getTags());
+		
+		if (!getEntryText().isEmpty())
+			isEmpty = new SimpleBooleanProperty(false);
+		else
+			isEmpty = new SimpleBooleanProperty(true);
 	}
 	
 	public void setImageFile(File imageFile) {
@@ -118,7 +125,7 @@ public class JournalEntry implements Entry {
 		})).start();
 	
 		ignoreChanges = true;
-		isEmpty = false;
+		isEmpty.setValue(false);
 	}
 	
 	public File getFile() {
@@ -138,6 +145,10 @@ public class JournalEntry implements Entry {
 	}
 	
 	public boolean isEmpty() {
+		return isEmpty.get();
+	}
+	
+	public BooleanProperty emptyProperty() {
 		return isEmpty;
 	}
 	
@@ -186,7 +197,7 @@ public class JournalEntry implements Entry {
 	public Property<Image> imageProperty() {
 		if (image == null) {
 			image = new SimpleObjectProperty<Image>();
-			image.addListener((obs, oldValue, newValue) -> isEmpty = false);
+			image.addListener((obs, oldValue, newValue) -> isEmpty.setValue(false));
 			setImage();
 		}
 		return image;
@@ -264,11 +275,11 @@ public class JournalEntry implements Entry {
 	
 	// Properties
 	
-	Property<String> entryTextProperty;
-	Property<Boolean> starredProperty;
-	Property<DateTime> creationDateProperty;
+	private Property<String> entryTextProperty;
+	private Property<Boolean> starredProperty;
+	private Property<DateTime> creationDateProperty;
 	
-	ObservableList<String> observableTags;
+	private ObservableList<String> observableTags;
 	
 	@SuppressWarnings("unchecked")
 	public Property<String> entryTextProperty() {
