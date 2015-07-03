@@ -26,6 +26,7 @@
             </HBox>
             <CheckBox fx:id="launchOnStartupCheckBox" mnemonicParsing="false" text="Launch on Windows login" />
             <CheckBox fx:id="animationCheckBox" mnemonicParsing="false" onAction="#enableAnimations" selected="true" text="Enable Animations" />
+            <CheckBox fx:id="boldCheckBox" mnemonicParsing="false" onAction="#enableBold" text="Bold Title" />
          </children>
       </VBox>
       <Separator prefWidth="200.0" />

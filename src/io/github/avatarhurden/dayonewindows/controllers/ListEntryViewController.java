@@ -10,8 +10,8 @@ import io.github.avatarhurden.dayonewindows.models.MonthEntry;
 import io.github.avatarhurden.dayonewindows.models.Tag;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import javafx.animation.KeyFrame;
@@ -83,7 +83,7 @@ public class ListEntryViewController {
 	private ObservableList<Entry> visibleItems;
 	private DoubleProperty visibleSize;
 	
-	private List<MonthEntry> months;
+	private Set<MonthEntry> months;
 	
 	private ObservableList<Entry> items;
 	private FilteredList<Entry> filteredItems;
@@ -92,7 +92,7 @@ public class ListEntryViewController {
 	
 	@FXML
 	private void initialize() {
-		months = new ArrayList<MonthEntry>();
+		months = new HashSet<MonthEntry>();
 		
 		listSize = new SimpleIntegerProperty();
 		
@@ -280,11 +280,10 @@ public class ListEntryViewController {
 		items.removeAll(months);
 		months.clear();
 		for (Entry t : filteredItems) {
-			if (t instanceof MonthEntry)
+			if (t instanceof MonthEntry || t.isEmpty())
 				continue;
 			MonthEntry month = new MonthEntry(t.getCreationDate());
-			if (!months.contains(month))
-				months.add(month);
+			months.add(month);
 		}
 		if (filteredItems.containsAll(items) && months.size() > 0)
 			months.remove(0);
@@ -310,6 +309,9 @@ public class ListEntryViewController {
 				listView.getSelectionModel().clearSelection();
 				showList(true);
 			}
+			if (event.wasAdded())
+				for (Entry t : event.getAddedSubList())
+					months.add(new MonthEntry(t.getCreationDate()));
 		});
 		listView.scrollTo(sorted.size() - 1);
 		listSize.bind(Bindings.size(sorted));

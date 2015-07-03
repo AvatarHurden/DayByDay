@@ -11,4 +11,6 @@ public interface Entry extends Comparable<Entry> {
 	public DateTime getCreationDate();
 	
 	public Property<DateTime> creationDateProperty();
+	
+	public boolean isEmpty();
 }

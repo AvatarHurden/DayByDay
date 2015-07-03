@@ -21,3 +21,8 @@
 	-fx-color: #D9EBF9;
 	-fx-cursor: hand;
 }
+
+.title-label {
+	-fx-font-weight: bold;
+	-fx-font-size: 15;
+}

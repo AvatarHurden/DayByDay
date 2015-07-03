@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.web.*?>
 <?import javafx.scene.effect.*?>
 <?import javafx.scene.paint.*?>
 <?import javafx.scene.shape.*?>
@@ -44,6 +45,11 @@
             <ImageView fx:id="imageView" fitHeight="90.0" fitWidth="90.0" nodeOrientation="INHERIT" pickOnBounds="true" preserveRatio="true" />
          </children>
       </StackPane>
-      <Label fx:id="textLabel" layoutX="90.0" layoutY="6.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="90.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+      <VBox fx:id="textBox" prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="90.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <Label fx:id="titleLabel" styleClass="title-label" />
+            <Label fx:id="bodyLabel" />
+         </children>
+      </VBox>
    </children>
 </AnchorPane>

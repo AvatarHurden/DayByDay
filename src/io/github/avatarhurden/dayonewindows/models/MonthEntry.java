@@ -43,4 +43,8 @@ public class MonthEntry implements Entry {
 	public Property<DateTime> creationDateProperty() {
 		return new SimpleObjectProperty<DateTime>();
 	}
+
+	public boolean isEmpty() {
+		return false;
+	}
 }

@@ -27,6 +27,7 @@ public class ConfigViewController {
 	@FXML private ComboBox<String> startScreenSelector;
 	
 	@FXML private CheckBox animationCheckBox;
+	@FXML private CheckBox boldCheckBox;
 	
 	@FXML private Label folderPathLabel;
 	
@@ -55,6 +56,9 @@ public class ConfigViewController {
 		
 		String folder = Config.get().getProperty("data_folder");
 		folderPathLabel.setText(folder);
+		
+		String boldTitles = Config.get().getPropertyAndSave("bold_titles", "true");
+		boldCheckBox.setSelected(Boolean.valueOf(boldTitles));
 		
 		filterGroup = new ToggleGroup();
 		allFiltersButton.setToggleGroup(filterGroup);
@@ -87,6 +91,12 @@ public class ConfigViewController {
 	private void enableAnimations() {
 		boolean selected = animationCheckBox.isSelected();
 		Config.get().setProperty("enable_animations", String.valueOf(selected));
+	}
+	
+	@FXML
+	private void enableBold() {
+		boolean selected = boldCheckBox.isSelected();
+		Config.get().setProperty("bold_titles", String.valueOf(selected));
 	}
 	
 	@FXML

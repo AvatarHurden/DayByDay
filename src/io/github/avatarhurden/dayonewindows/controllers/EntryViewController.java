@@ -1,6 +1,7 @@
 package io.github.avatarhurden.dayonewindows.controllers;
 
 import io.github.avatarhurden.dayonewindows.components.TagEditor;
+import io.github.avatarhurden.dayonewindows.managers.Config;
 import io.github.avatarhurden.dayonewindows.models.JournalEntry;
 
 import java.awt.Desktop;
@@ -138,6 +139,7 @@ public class EntryViewController {
 		editButton.managedProperty().bind(editButton.visibleProperty());
 		
 		deleteLidIcon.getStyleClass().add("delete-pane");
+		deleteLidIcon.setId("lid");
 		deleteBodyIcon.getStyleClass().add("delete-pane");
 		
 		deleteIcon.hoverProperty().addListener((obs, oldValue, newValue) -> {
@@ -448,8 +450,9 @@ public class EntryViewController {
 		PegDownProcessor processor = new PegDownProcessor(Extensions.TABLES);
 		textArea.textProperty().addListener((obs, oldValue, newValue) -> {
 			String[] lines = newValue.split("\n");
-			if (lines[0].length() > 0 && lines[0].length() <= 140 && Character.isAlphabetic(lines[0].charAt(0)))
-				newValue = "## " + newValue;
+			if (Config.get().getBoolean("bold_titles", true) 
+					&& lines[0].length() > 0 && lines[0].length() <= 140 && Character.isAlphabetic(lines[0].charAt(0)))
+				newValue = "### " + newValue;
 			String html = processor.markdownToHtml(newValue);
 	        webView.getEngine().loadContent(html);
 		});

@@ -1,6 +1,10 @@
 package io.github.avatarhurden.dayonewindows.controllers;
 
+import io.github.avatarhurden.dayonewindows.managers.Config;
 import io.github.avatarhurden.dayonewindows.models.JournalEntry;
+
+import java.util.Arrays;
+
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
@@ -9,6 +13,8 @@ import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -19,13 +25,12 @@ import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
 
 import org.joda.time.DateTime;
-
-
 
 public class EntryCellController {
 
@@ -38,8 +43,10 @@ public class EntryCellController {
 	private ObservableList<String> tags;
 	
 	@FXML private ImageView imageView;
-	
-	@FXML private Label textLabel;	
+
+	@FXML private VBox textBox;
+	@FXML private Label titleLabel, bodyLabel;
+	private StringProperty text;
 	
 	@FXML private SVGPath favoriteIcon;
 	private BooleanProperty isStarred;
@@ -50,6 +57,31 @@ public class EntryCellController {
 	
 	@FXML
 	private void initialize() {
+		text = new SimpleStringProperty();
+		text.addListener((obs, oldValue, newValue) -> {
+			String[] lines = newValue.split("\n");
+			String body;
+			if (Config.get().getBoolean("bold_titles", true) 
+					&& lines[0].length() > 0 && lines[0].length() <= 140 && Character.isAlphabetic(lines[0].charAt(0))) {
+				titleLabel.setManaged(true);
+				titleLabel.setText(lines[0]);
+				
+				int start = 1;
+				while (lines[start].isEmpty())
+					start++;
+				
+				body = String.join("\n", Arrays.asList(lines).subList(start, lines.length));
+				bodyLabel.setText(body);
+			} else {
+				titleLabel.setText("");
+				titleLabel.setManaged(false);
+				bodyLabel.setText(newValue);
+			}
+		});
+
+		titleLabel.setWrapText(true);
+		bodyLabel.setWrapText(true);
+		
 		bindImagePane();
 
 		bindDateTexts();
@@ -58,14 +90,12 @@ public class EntryCellController {
 
 		bindTagPane();
 		
-		textLabel.setWrapText(true);
-		
 		width = new SimpleDoubleProperty();
 		root.prefWidthProperty().bind(width);
 	}
 	
 	public void setContent(JournalEntry entry) {
-		textLabel.textProperty().bind(entry.entryTextProperty());
+		text.bind(entry.entryTextProperty());
 		
 		if (current != null)
 			Bindings.unbindContent(tags, current.getObservableTags());
@@ -119,10 +149,10 @@ public class EntryCellController {
 			}
 
 			tagPane.setPrefHeight(tags.isEmpty() ? 0 : 31);
-			AnchorPane.setBottomAnchor(textLabel, tags.isEmpty() ? 10d : 31d);
+			AnchorPane.setBottomAnchor(textBox, tags.isEmpty() ? 10d : 31d);
 		});
 		
-		tagPane.prefWidthProperty().bindBidirectional(textLabel.prefWidthProperty());
+		tagPane.prefWidthProperty().bindBidirectional(textBox.prefWidthProperty());
 		
 	}
 	
@@ -132,9 +162,9 @@ public class EntryCellController {
 		imageView.managedProperty().bind(imageView.visibleProperty());
 		
 		imageView.imageProperty().addListener((obs, oldValue, newValue) -> {
-			AnchorPane.setLeftAnchor(textLabel, newValue == null ? 90d : 190d);
+			AnchorPane.setLeftAnchor(textBox, newValue == null ? 90d : 190d);
 			AnchorPane.setLeftAnchor(tagPane, newValue == null ? 90d : 190d);
-			textLabel.prefWidthProperty().bind(width.subtract(newValue == null ? 90 : 190));
+			textBox.prefWidthProperty().bind(width.subtract(newValue == null ? 90 : 190));
 		});
 	}
 	
