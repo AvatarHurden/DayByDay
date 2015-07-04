@@ -67,7 +67,7 @@ public class EntryCellController {
 				titleLabel.setText(lines[0]);
 				
 				int start = 1;
-				while (lines[start].isEmpty())
+				while (start < lines.length && lines[start].isEmpty())
 					start++;
 				
 				body = String.join("\n", Arrays.asList(lines).subList(start, lines.length));
@@ -105,7 +105,10 @@ public class EntryCellController {
 		
 		date.bind(entry.creationDateProperty());
 		
+		if (current != null)
+			current.decrementImageReferences();
 		imageView.imageProperty().bind(entry.imageProperty());
+		entry.incrementImageReferences();
 		
 		current = entry;
 	}

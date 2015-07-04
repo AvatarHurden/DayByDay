@@ -114,8 +114,11 @@ public class ConfigViewController {
 		if (chosen != null && chosen.getAbsolutePath() != Config.get().getProperty("data_folder")) {
 			Config.get().setProperty("data_folder", chosen.getAbsolutePath());
 			Journal oldJournal = manager;
+			
 			manager = new Journal(chosen.getAbsolutePath());
 			manager.loadAndWatch();
+			manager.setKeepEmptyEntry(true);
+			
 			parent.setJournal(manager);
 			oldJournal.close();
 			folderPathLabel.setText(chosen.getAbsolutePath());

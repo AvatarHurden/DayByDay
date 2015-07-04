@@ -209,9 +209,11 @@ public class EntryViewController {
 		newEntry.starredProperty().addListener(favoriteListener);
 		favoriteIcon.pseudoClassStateChanged(PseudoClass.getPseudoClass("active"), newEntry.isStarred());
 
-		imageView.imageProperty().unbind();
+		if (entry != null)
+			entry.decrementImageReferences();
 		imageView.imageProperty().bind(newEntry.imageProperty());
 		zoomProperty.setValue(1d);
+		newEntry.incrementImageReferences();
 		
 		entry = newEntry;
 	}

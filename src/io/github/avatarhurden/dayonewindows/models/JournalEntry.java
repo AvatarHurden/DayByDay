@@ -13,8 +13,10 @@ import java.util.List;
 import java.util.UUID;
 
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.adapter.JavaBeanObjectPropertyBuilder;
 import javafx.collections.FXCollections;
@@ -80,6 +82,11 @@ public class JournalEntry implements Entry {
 		
 		observableTags = FXCollections.observableArrayList(getTags());
 		
+		imageReferences = new SimpleIntegerProperty(0);
+		imageReferences.addListener((obs, oldValue, newValue) -> {
+			if (newValue.intValue() == 0)
+				image = null;
+		});
 		if (!getEntryText().isEmpty())
 			isEmpty = new SimpleBooleanProperty(false);
 		else
@@ -225,7 +232,6 @@ public class JournalEntry implements Entry {
 		if (tags.contains(tag))
 			return false;
 		
-		System.out.println("added tag " + tag);
 		tags.add(tag);
 		observableTags.add(tag);
 		manager.addTag(tag, this);
@@ -278,6 +284,7 @@ public class JournalEntry implements Entry {
 	private Property<String> entryTextProperty;
 	private Property<Boolean> starredProperty;
 	private Property<DateTime> creationDateProperty;
+	private IntegerProperty imageReferences;
 	
 	private ObservableList<String> observableTags;
 	
@@ -313,7 +320,14 @@ public class JournalEntry implements Entry {
 			}
 		return creationDateProperty;
 	}
+
+	public void incrementImageReferences() {
+		imageReferences.setValue(imageReferences.get() + 1);
+	}
 	
+	public void decrementImageReferences() {
+		imageReferences.setValue(imageReferences.get() - 1);
+	}
 	public ObservableList<String> getObservableTags() {
 		return observableTags;
 	}

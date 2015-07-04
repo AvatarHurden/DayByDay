@@ -10,8 +10,6 @@ import io.github.avatarhurden.dayonewindows.models.MonthEntry;
 import io.github.avatarhurden.dayonewindows.models.Tag;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.function.Predicate;
 
 import javafx.animation.KeyFrame;
@@ -25,7 +23,9 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
+import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
@@ -83,7 +83,7 @@ public class ListEntryViewController {
 	private ObservableList<Entry> visibleItems;
 	private DoubleProperty visibleSize;
 	
-	private Set<MonthEntry> months;
+	private ObservableMap<MonthEntry, Integer> monthsMap;
 	
 	private ObservableList<Entry> items;
 	private FilteredList<Entry> filteredItems;
@@ -92,7 +92,14 @@ public class ListEntryViewController {
 	
 	@FXML
 	private void initialize() {
-		months = new HashSet<MonthEntry>();
+		monthsMap = FXCollections.observableHashMap();
+		monthsMap.addListener((MapChangeListener.Change<? extends MonthEntry,? extends Integer> event) -> {
+			MonthEntry key = event.getKey();
+			if (monthsMap.containsKey(key) && event.getValueAdded() == 1)
+				items.add(key);
+			else if (!monthsMap.containsKey(key))
+				items.remove(key);
+		});
 		
 		listSize = new SimpleIntegerProperty();
 		
@@ -179,6 +186,26 @@ public class ListEntryViewController {
     	setupWideView();
     	homeButton.visibleProperty().bind(wideView.not());
     	homeButton.managedProperty().bind(homeButton.visibleProperty());
+    	
+    	items = FXCollections.observableArrayList();
+    	items.addListener((ListChangeListener.Change<? extends Entry> event) -> {
+			event.next();
+			if (event.wasRemoved()) {
+				listView.getSelectionModel().clearSelection();
+				showList(true);
+			}
+		});
+		SortedList<Entry> sorted = new SortedList<Entry>(items);
+		// Compares opposite so that later entries are on top
+		sorted.setComparator((entry1, entry2) -> entry1.compareTo(entry2));
+		
+		filteredItems = sorted.filtered(entry -> true);
+		filteredItems.predicateProperty().addListener((obs, oldValue, newValue) ->  visibleItems.clear());
+		
+		listView.setItems(filteredItems);
+		
+		listView.scrollTo(sorted.size() - 1);
+		listSize.bind(Bindings.size(sorted));
 	}
 	
 	private void setupWideView() {
@@ -226,7 +253,6 @@ public class ListEntryViewController {
     		
 			filteredItems.setPredicate(filterBox.getCombinedFilter());
 			
-    		addMonths();
     		listView.getSelectionModel().select(selected);
     		if (selected != null)
     			listView.scrollTo(selected);
@@ -276,47 +302,39 @@ public class ListEntryViewController {
 		filterBox.setAvailableTags(tags);
 	}
 	
-	private void addMonths() {
-		items.removeAll(months);
-		months.clear();
-		for (Entry t : filteredItems) {
-			if (t instanceof MonthEntry || t.isEmpty())
-				continue;
-			MonthEntry month = new MonthEntry(t.getCreationDate());
-			months.add(month);
+	private void addMonth(MonthEntry month) {
+		if (monthsMap.containsKey(month))
+			monthsMap.put(month, monthsMap.get(month) + 1);
+		else
+			monthsMap.put(month, 1);
+	}
+	
+	private void removeMonth(MonthEntry month) {
+		if (monthsMap.containsKey(month)) {
+			monthsMap.put(month, monthsMap.get(month) - 1);
+			if (monthsMap.get(month) == 0)
+				monthsMap.remove(month);
 		}
-		if (filteredItems.containsAll(items) && months.size() > 0)
-			months.remove(0);
-		items.addAll(months);
 	}
 	
 	public void setItems(ObservableList<Entry> items) {
-		this.items = items;
-		SortedList<Entry> sorted = new SortedList<Entry>(items);
-		// Compares opposite so that later entries are on top
-		sorted.setComparator((entry1, entry2) -> entry1.compareTo(entry2));
-		
-		filteredItems = sorted.filtered(entry -> true);
-		filteredItems.predicateProperty().addListener((obs, oldValue, newValue) ->  visibleItems.clear());
-		
-		addMonths();
-		
-		listView.setItems(filteredItems);
-		
-		sorted.addListener((ListChangeListener.Change<? extends Entry> event) -> {
-			event.next();
-			if (event.wasRemoved()) {
-				listView.getSelectionModel().clearSelection();
-				showList(true);
+		items.addListener((ListChangeListener.Change<? extends Entry> event) -> {
+			while (event.next()) {
+				for (Entry t : event.getAddedSubList()) {
+					this.items.add(t);
+					addMonth(new MonthEntry(t.getCreationDate()));
+				}
+				for (Entry t : event.getRemoved()) {
+					this.items.remove(t);
+					removeMonth(new MonthEntry(t.getCreationDate()));
+				}
 			}
-			if (event.wasAdded())
-				for (Entry t : event.getAddedSubList())
-					months.add(new MonthEntry(t.getCreationDate()));
 		});
-		listView.scrollTo(sorted.size() - 1);
-		listSize.bind(Bindings.size(sorted));
 		
-		monthLabel.setText(sorted.get(0).getCreationDate().toString("MMMMMMMMMMMMMMM YYYY"));
+		this.items.setAll(items);
+		
+		for (Entry t : items)
+			addMonth(new MonthEntry(t.getCreationDate()));
 	}
 	
 	private void transitionTo(Node view) {

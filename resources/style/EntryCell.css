@@ -17,10 +17,6 @@
     -fx-background-radius:  6.4, 5, 4, 3;
 }
 
-.tag:hover {
-	-fx-color: #D9EBF9;
-	-fx-cursor: hand;
-}
 
 .title-label {
 	-fx-font-weight: bold;
