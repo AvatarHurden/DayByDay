@@ -9,21 +9,22 @@ import io.github.avatarhurden.dayonewindows.models.Tag;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.function.Predicate;
 
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
@@ -41,6 +42,8 @@ public class FilterBar extends HBox {
 	private Runnable onSelected, onUnselected;
 	private TextField text;
 	
+	private CloseButton clearAll;
+	
 	private ObservableList<Predicate<Entry>> predicates;
 	private HashMap<HBox, Predicate<Entry>> boxMap;
 	private ListView<Pair<String, Predicate<Entry>>> overflowPredicates;
@@ -52,12 +55,31 @@ public class FilterBar extends HBox {
 	public FilterBar() {
 		getStylesheets().add("style/FilterBar.css");
 
-		bindPredicates();
 		initialize();
+		bindPredicates();
 		createToolTip();
 	}
 
 	private void initialize() {
+		predicates = FXCollections.observableArrayList();
+		
+		clearAll = new CloseButton();
+		Tooltip.install(clearAll, new Tooltip("Remove all filters"));
+		clearAll.managedProperty().bind(clearAll.visibleProperty());
+		clearAll.visibleProperty().bind(Bindings.isNotEmpty(predicates));
+		
+		clearAll.setOnAction(() -> {
+			overflowPredicates.getItems().clear();
+			for (Iterator<HBox> it = boxMap.keySet().iterator(); it.hasNext(); ) {
+				removeFilterInstance(it.next());
+				it.remove();
+			}
+			predicates.clear();
+		});
+		
+		HBox.setMargin(clearAll, new Insets(0, 10, 0, 0));
+		getChildren().add(clearAll);
+		
 		text = new TextField();
 		text.getStyleClass().add("unique");
 		text.setPromptText("Search");
@@ -82,10 +104,10 @@ public class FilterBar extends HBox {
 		setHgrow(text, Priority.ALWAYS);
 		
 		getChildren().add(text);
+	
 	}
 	
 	private void bindPredicates() {
-		predicates = FXCollections.observableArrayList();
 		boxMap = new HashMap<HBox, Predicate<Entry>>();
 		
 		overflowPredicates = new ListView<>();
@@ -106,7 +128,7 @@ public class FilterBar extends HBox {
 			over.show(overflowButton);
 		});
 		
-		getChildren().add(overflowButton);
+		getChildren().add(1, overflowButton);
 	}
 	
 	private void createToolTip() {
@@ -138,16 +160,16 @@ public class FilterBar extends HBox {
 	private void addFilterInstance(Predicate<Entry> predicate, String textValue) {
 		HBox box = getFilterBox(textValue);
 		
-		if (getChildren().size() == 2) {
+		if (getChildren().size() == 3) {
 			text.getStyleClass().add("right");
 			box.getStyleClass().add("left");
 			text.getStyleClass().remove("unique");
 		}
 		
-		double estimatedWidth = new Text(textValue).getLayoutBounds().getWidth() + 31;
+		double estimatedWidth = new Text(textValue).getLayoutBounds().getWidth() + 60;
 		
-		for (HBox b : boxMap.keySet())
-			estimatedWidth += b.getWidth();
+		for (Node b : getChildren().filtered(node -> node instanceof HBox))
+			estimatedWidth += ((HBox) b).getWidth();
 		
 		if (estimatedWidth > getPrefWidth() - 150)
 			overflowPredicates.getItems().add(new Pair<String, Predicate<Entry>>(textValue, predicate));
@@ -159,22 +181,21 @@ public class FilterBar extends HBox {
 	
 	private void removeFilterInstance(HBox box) {
 		predicates.remove(boxMap.get(box));
-		boxMap.remove(box);
 		
 		getChildren().remove(box);
 		
-		if (getChildren().size() > 2)
+		if (getChildren().size() > 3)
 			getChildren().get(0).getStyleClass().add("left");
-		else if (getChildren().size() == 2) {
+		else if (getChildren().size() == 3) {
 			text.getStyleClass().add("unique");
 			text.getStyleClass().remove("right");
 		}
 		
-		DoubleProperty width = new SimpleDoubleProperty();
-		for (HBox b : boxMap.keySet())
-			width.setValue(width.getValue() + b.getWidth());
+		double width = 0;
+		for (Node b : getChildren().filtered(node -> node instanceof HBox))
+			width += ((HBox) b).getWidth();
 		
-		if (width.getValue() < getPrefWidth() - 150 && !overflowPredicates.getItems().isEmpty()) {
+		if (width < getPrefWidth() - 150 && !overflowPredicates.getItems().isEmpty()) {
 			Pair<String, Predicate<Entry>> pair = overflowPredicates.getItems().get(0);
 			overflowPredicates.getItems().remove(pair);
 			addFilterInstance(pair.getValue(), pair.getKey());
@@ -195,6 +216,7 @@ public class FilterBar extends HBox {
 		
 		deleteButton.setOnAction(() -> {
 			removeFilterInstance(itemBox);
+			boxMap.remove(itemBox);
 			this.text.requestFocus();
 		});
 

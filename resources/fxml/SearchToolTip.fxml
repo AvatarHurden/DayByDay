@@ -26,9 +26,9 @@
                <center>
                   <TextFlow fx:id="textBox" styleClass="clickable">
                      <children>
-                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Search for &quot;" />
+                        <Text fx:id="textLabel" strokeType="OUTSIDE" strokeWidth="0.0" text="Search for entires with &quot;" />
                         <Text fx:id="textSearchLabel" strokeType="OUTSIDE" strokeWidth="0.0" text="Text to search" />
-                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="&quot; in entries" />
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="&quot;" />
                      </children>
                      <padding>
                         <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
@@ -51,7 +51,7 @@
                      <children>
                         <HBox fx:id="onDateBox" alignment="CENTER_LEFT" prefWidth="251.0" spacing="31.0" styleClass="clickable">
                            <children>
-                              <Label text="On" />
+                              <Label fx:id="onLabel" text="On" />
                               <Label fx:id="onDateLabel" text="Monday - 22/10/2015" />
                            </children>
                            <padding>
@@ -60,7 +60,7 @@
                         </HBox>
                         <HBox fx:id="beforeDateBox" prefHeight="38.0" prefWidth="251.0" spacing="10.0" styleClass="clickable">
                            <children>
-                              <Label text="Before" />
+                              <Label fx:id="beforeLabel" text="Before" />
                               <Label fx:id="beforeDateLabel" text="Monday - 22/10/2015" />
                            </children>
                            <padding>
@@ -69,7 +69,7 @@
                         </HBox>
                         <HBox fx:id="afterDateBox" prefHeight="38.0" prefWidth="251.0" spacing="20.0" styleClass="clickable">
                            <children>
-                              <Label text="After" />
+                              <Label fx:id="afterLabel" text="After" />
                               <Label fx:id="afterDateLabel" text="Monday - 22/10/2015" />
                            </children>
                            <padding>
@@ -85,7 +85,7 @@
             </BorderPane>
             <BorderPane fx:id="tagPane" prefHeight="141.0" prefWidth="294.0">
                <top>
-                  <Label text="Tags" BorderPane.alignment="CENTER_LEFT">
+                  <Label fx:id="tagLabel" text="Tags" BorderPane.alignment="CENTER_LEFT">
                      <BorderPane.margin>
                         <Insets bottom="10.0" />
                      </BorderPane.margin></Label>

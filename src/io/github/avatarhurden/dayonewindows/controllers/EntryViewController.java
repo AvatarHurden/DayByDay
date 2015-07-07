@@ -472,6 +472,11 @@ public class EntryViewController {
         		editButton.setVisible(true);
         });
         
+        webView.setOnKeyPressed(event -> {
+        	if (event.isControlDown() && event.getCode() == KeyCode.ENTER)
+        		editButton.setVisible(false);
+        });
+        
         webView.setOnMouseClicked(event -> {
         	if (event.getClickCount() == 2)
         		editButton.setVisible(false);

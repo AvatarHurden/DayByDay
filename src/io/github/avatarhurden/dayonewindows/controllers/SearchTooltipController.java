@@ -9,7 +9,9 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -38,11 +40,12 @@ public class SearchTooltipController {
 	
 	// Text
 	@FXML private BorderPane textPane;
-	@FXML private Text textSearchLabel;
+	@FXML private Text textSearchLabel, textLabel;
 	@FXML private TextFlow textBox;
 	
 	// Tag
 	@FXML private BorderPane tagPane;
+	@FXML private Label tagLabel;
 	@FXML private ListView<Tag> tagsView;
 	private ObservableList<Tag> tags;
 	private FilteredList<Tag> filteredTags;
@@ -51,6 +54,7 @@ public class SearchTooltipController {
 	@FXML private BorderPane datePane;
 	@FXML private VBox dateBox;
 	@FXML private HBox onDateBox, beforeDateBox, afterDateBox;
+	@FXML private Label onLabel, beforeLabel, afterLabel;
 	@FXML private Label onDateLabel, beforeDateLabel, afterDateLabel;
 	
 	private ObservableList<Node> tabOrder;
@@ -62,6 +66,8 @@ public class SearchTooltipController {
 	private Property<DateTime> date;
 	
 	private BiConsumer<Predicate<JournalEntry>, String> filterAction;
+	private BiConsumer<Predicate<JournalEntry>, String> negator;
+	private BooleanProperty negated;
 	
 	@FXML
 	public void initialize() {
@@ -94,30 +100,53 @@ public class SearchTooltipController {
 		bindDates();
 		bindTags();
 		
+		negated = new SimpleBooleanProperty(false);
+		negated.addListener((obs, oldValue, newValue) -> {
+			if (newValue) {
+				onLabel.setText("Not " + onLabel.getText());
+				afterLabel.setText("Not " + afterLabel.getText());
+				beforeLabel.setText("Not " + beforeLabel.getText());
+				textLabel.setText(textLabel.getText().replace("with", "without"));
+				tagLabel.setText("Exclude " + tagLabel.getText());
+			} else {
+				onLabel.setText(onLabel.getText().replace("Not ", ""));
+				afterLabel.setText(afterLabel.getText().replace("Not ", ""));
+				beforeLabel.setText(beforeLabel.getText().replace("Not ", ""));
+				textLabel.setText(textLabel.getText().replace("without", "with"));
+				tagLabel.setText(tagLabel.getText().replace("Exclude ", ""));
+			}
+		});
+		
 		searchText.addListener(event -> {
-			matchText(searchText.getValue());
-			matchDates(searchText.getValue());
-			matchTags(searchText.getValue());
+			String text = searchText.getValue();
+			negated.setValue(text.startsWith("-"));
+			if (text.startsWith("-")) {
+				negator = (pred, s) -> filterAction.accept(pred.negate(), "Not " + s);
+				text = text.substring(1);
+			} else
+				negator = (pred, s) -> filterAction.accept(pred, s);
+			matchText(text);
+			matchDates(text);
+			matchTags(text);
 		});
 	}
 	
 	
 
 	private void bindText() {
-		textBox.setOnMouseClicked(event -> filterAction.accept(
+		textBox.setOnMouseClicked(event -> negator.accept(
 				entry -> entry.getEntryText().toLowerCase().contains(searchText.getValue().toLowerCase()), searchText.getValue()));
 		textBox.setOnKeyPressed(event -> {
 			if (event.getCode() == KeyCode.ENTER) {
-				filterAction.accept(entry -> entry.getEntryText().toLowerCase().contains(searchText.getValue().toLowerCase()), searchText.getValue());
+				negator.accept(entry -> entry.getEntryText().toLowerCase().contains(searchText.getValue().toLowerCase()),
+						searchText.getValue());
 				event.consume();
 			}
 		});
-		
-		textSearchLabel.textProperty().bind(searchText);
 	}
 
 	private void bindDates() {
-		Consumer<DateTime> onDateAction = date -> filterAction.accept(entry -> {
+		Consumer<DateTime> onDateAction = date -> negator.accept(entry -> {
 			return entry.getCreationDate().isAfter(date.withMillisOfDay(0))
 					&& entry.getCreationDate().isBefore(date.withMillisOfDay(86399999));
 		}, "On: " + date.toString("dd/MM/YYYY"));
@@ -129,7 +158,7 @@ public class SearchTooltipController {
 				onDateAction.accept(date.getValue());
 		});
 		
-		Consumer<DateTime> beforeDateAction = date -> filterAction.accept(entry -> {
+		Consumer<DateTime> beforeDateAction = date -> negator.accept(entry -> {
 			return entry.getCreationDate().isBefore(date.withMillisOfDay(86399999));
 		}, "Before: " + date.toString("dd/MM/YYYY"));
 		
@@ -140,7 +169,7 @@ public class SearchTooltipController {
 				beforeDateAction.accept(date.getValue());
 		});
 		
-		Consumer<DateTime> afterDateAction = date -> filterAction.accept(entry -> {
+		Consumer<DateTime> afterDateAction = date -> negator.accept(entry -> {
 			return entry.getCreationDate().isAfter(date.withMillisOfDay(0));
 		}, "After: " + date.toString("dd/MM/YYYY"));
 		
@@ -157,21 +186,21 @@ public class SearchTooltipController {
 		filteredTags = tags.filtered(tag -> true);
 		
 		tagsView.setItems(filteredTags);
-		tagsView.setFocusTraversable(false);
 		tagsView.getSelectionModel().select(0);
 		
 		tagsView.setOnMouseClicked(event -> {
 			if (event.getClickCount() == 2) {
 				Tag tag = tagsView.getSelectionModel().getSelectedItem();
-				filterAction.accept(entry -> entry.getTags().contains(tag.getName()), "Tag: " + tag.getName());
+				negator.accept(entry -> entry.getTags().contains(tag.getName()), "Tag: " + tag.getName());
 			}
 		});
 		
 		tagsView.setOnKeyPressed(event -> {
 			if (event.getCode() == KeyCode.ENTER) {
 				Tag tag = tagsView.getSelectionModel().getSelectedItem();
-				filterAction.accept(entry -> entry.getTags().contains(tag.getName()), "Tag: " + tag.getName());
-			} else if (event.getCode() == KeyCode.UP && tagsView.getSelectionModel().getSelectedIndex() == 0)
+				negator.accept(entry -> entry.getTags().contains(tag.getName()), "Tag: " + tag.getName());
+			} else if (event.getCode() == KeyCode.UP && (
+					tagsView.getSelectionModel().getSelectedIndex() == 0 || filteredTags.isEmpty()))
 				root.fireEvent(event);
 		});
 	}
@@ -215,10 +244,10 @@ public class SearchTooltipController {
 	private void matchTags(String text) {
 		filteredTags.setPredicate(tag -> tag.getName().toLowerCase().contains(text.toLowerCase()));
 
-		if (filteredTags.size() > 0 && !tabOrder.contains(tagsView)) 
-			tabOrder.add(tagsView);
-		else
+		if (filteredTags.isEmpty()) 
 			tabOrder.remove(tagsView);
+		else if (!tabOrder.contains(tagsView))
+			tabOrder.add(tagsView);
 	}
 	
 	private void matchText(String text) {
@@ -226,6 +255,7 @@ public class SearchTooltipController {
 			textPane.setCenter(new Label("Enter a search term to filter your entries"));
 			tabOrder.remove(textBox);
 		} else {
+			textSearchLabel.setText(text);
 			textPane.setCenter(textBox);
 			if (!tabOrder.contains(textBox))
 				tabOrder.add(0, textBox);

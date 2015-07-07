@@ -10,11 +10,15 @@ import io.github.avatarhurden.dayonewindows.models.MonthEntry;
 import io.github.avatarhurden.dayonewindows.models.Tag;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
@@ -83,9 +87,10 @@ public class ListEntryViewController {
 	private ObservableList<Entry> visibleItems;
 	private DoubleProperty visibleSize;
 	
-	private ObservableMap<MonthEntry, Integer> monthsMap;
+	private ObservableMap<MonthEntry, Set<JournalEntry>> monthsMap;
 	
-	private ObservableList<Entry> items;
+	private ObservableList<Entry> items, source;
+	private ListChangeListener<Entry> changeListener;
 	private FilteredList<Entry> filteredItems;
 	
 	private SimpleIntegerProperty listSize;
@@ -93,10 +98,10 @@ public class ListEntryViewController {
 	@FXML
 	private void initialize() {
 		monthsMap = FXCollections.observableHashMap();
-		monthsMap.addListener((MapChangeListener.Change<? extends MonthEntry,? extends Integer> event) -> {
+		monthsMap.addListener((MapChangeListener.Change<? extends MonthEntry,? extends Set<JournalEntry>> event) -> {
 			MonthEntry key = event.getKey();
-			if (monthsMap.containsKey(key) && event.getValueAdded() == 1)
-				items.add(key);
+			if (monthsMap.containsKey(key))
+				Platform.runLater(() -> items.add(key));
 			else if (!monthsMap.containsKey(key))
 				items.remove(key);
 		});
@@ -177,7 +182,7 @@ public class ListEntryViewController {
     	visibleItems.addListener((ListChangeListener.Change<? extends Entry> event) -> {
     		if (visibleItems.isEmpty())
     			return;
-
+    		
     		monthLabel.setText(visibleItems.get(0).getCreationDate().toString("MMMMMMMMMMMMMMM YYYY"));
 		});
     	
@@ -202,6 +207,31 @@ public class ListEntryViewController {
 		filteredItems = sorted.filtered(entry -> true);
 		filteredItems.predicateProperty().addListener((obs, oldValue, newValue) ->  visibleItems.clear());
 		
+		filteredItems.addListener((ListChangeListener.Change<? extends Entry> event) -> {
+			while (event.next()) {
+				for (Entry t : event.getRemoved()) 
+					if (t instanceof MonthEntry)
+						continue;
+					else
+						removeMonth(new MonthEntry(t.getCreationDate()), (JournalEntry) t);
+				for (Entry t : event.getList()) 
+					if (t instanceof MonthEntry)
+						continue;
+					else
+						addMonth(new MonthEntry(t.getCreationDate()), (JournalEntry) t);
+			}
+		});
+		
+		changeListener = (ListChangeListener.Change<? extends Entry> event) -> {
+			while (event.next()) {
+				for (Entry t : event.getRemoved())
+					this.items.remove(t);
+				for (Entry t : event.getAddedSubList())
+					this.items.add(t);
+				
+			}
+		};
+		
 		listView.setItems(filteredItems);
 		
 		listView.scrollTo(sorted.size() - 1);
@@ -222,6 +252,9 @@ public class ListEntryViewController {
 			if (newValue) {
 				splitView.getItems().setAll(listViewPane, singleViewPane);
 				root.getChildren().setAll(splitView);
+				double div = splitView.getDividerPositions()[0];
+				splitView.setDividerPositions(0.6);
+				splitView.setDividerPositions(div);
 			} else {
 				multiPane.getChildren().setAll(listViewPane, singleViewPane);
 				root.getChildren().setAll(multiPane);
@@ -251,7 +284,8 @@ public class ListEntryViewController {
     	filterBox.getFilters().addListener((ListChangeListener.Change<? extends Predicate<Entry>> event) -> {
     		Entry selected = listView.getSelectionModel().getSelectedItem();
     		
-			filteredItems.setPredicate(filterBox.getCombinedFilter());
+    		Predicate<Entry> pred = filterBox.getCombinedFilter();
+			filteredItems.setPredicate(entry -> pred.test(entry) || entry.isEmpty());
 			
     		listView.getSelectionModel().select(selected);
     		if (selected != null)
@@ -302,39 +336,31 @@ public class ListEntryViewController {
 		filterBox.setAvailableTags(tags);
 	}
 	
-	private void addMonth(MonthEntry month) {
+	private void addMonth(MonthEntry month, JournalEntry entry) {
 		if (monthsMap.containsKey(month))
-			monthsMap.put(month, monthsMap.get(month) + 1);
+			monthsMap.get(month).add(entry);
 		else
-			monthsMap.put(month, 1);
+			monthsMap.put(month, new HashSet<JournalEntry>(Arrays.asList(entry)));
 	}
 	
-	private void removeMonth(MonthEntry month) {
+	private void removeMonth(MonthEntry month, JournalEntry entry) {
 		if (monthsMap.containsKey(month)) {
-			monthsMap.put(month, monthsMap.get(month) - 1);
-			if (monthsMap.get(month) == 0)
+			monthsMap.get(month).remove(entry);
+			if (monthsMap.get(month).isEmpty())
 				monthsMap.remove(month);
 		}
 	}
 	
 	public void setItems(ObservableList<Entry> items) {
-		items.addListener((ListChangeListener.Change<? extends Entry> event) -> {
-			while (event.next()) {
-				for (Entry t : event.getAddedSubList()) {
-					this.items.add(t);
-					addMonth(new MonthEntry(t.getCreationDate()));
-				}
-				for (Entry t : event.getRemoved()) {
-					this.items.remove(t);
-					removeMonth(new MonthEntry(t.getCreationDate()));
-				}
-			}
-		});
+		if (source != null)
+			source.removeListener(changeListener);
+		items.addListener(changeListener);
+
+		for (Entry t : this.items)
+			removeMonth(new MonthEntry(t.getCreationDate()), (JournalEntry) t);
 		
 		this.items.setAll(items);
-		
-		for (Entry t : items)
-			addMonth(new MonthEntry(t.getCreationDate()));
+		source = items;
 	}
 	
 	private void transitionTo(Node view) {
@@ -391,9 +417,9 @@ public class ListEntryViewController {
 	            setText(null);
 	            setGraphic(null);
 	        } else {
+        		setPrefHeight(90);
 	        	
 	        	boolean addedBeggining = true;
-	        	
 	        	if (visibleItems.isEmpty())
 	        		visibleItems.add(item);
 	        	else if (item.getCreationDate().isBefore(visibleItems.get(0).getCreationDate()))
@@ -410,6 +436,7 @@ public class ListEntryViewController {
 	        		setGraphic(null);
 	        		setText(item.getCreationDate().toString("MMMMMMMMMMMMMMM YYYY"));
 	        		setFont(Font.font(30));
+	        		setTextFill(Color.BLACK);
 	        		setAlignment(Pos.CENTER);
 	        		setBorder(null);
 	        	} else if (((JournalEntry) item).isEmpty()) {
@@ -418,7 +445,6 @@ public class ListEntryViewController {
 	        		setTextFill(Color.LIGHTGREY);
 	        		setAlignment(Pos.CENTER);
 	        		setGraphic(null);
-	        		setPrefHeight(90);
 	        		
 	        		Border border = new Border(
 	        				new BorderStroke(Color.LIGHTGRAY, BorderStrokeStyle.DASHED, new CornerRadii(6), BorderWidths.DEFAULT));
