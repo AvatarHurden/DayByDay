@@ -5,7 +5,10 @@ import io.github.avatarhurden.dayonewindows.managers.Config;
 import io.github.avatarhurden.dayonewindows.models.JournalEntry;
 
 import java.awt.Desktop;
+import java.awt.Toolkit;
+import java.awt.datatransfer.StringSelection;
 import java.io.File;
+import java.net.URI;
 import java.util.Calendar;
 import java.util.Locale;
 
@@ -18,7 +21,9 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
+import javafx.concurrent.Worker;
 import javafx.css.PseudoClass;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -38,6 +43,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Background;
@@ -65,6 +71,11 @@ import org.controlsfx.control.PopOver.ArrowLocation;
 import org.joda.time.DateTime;
 import org.pegdown.Extensions;
 import org.pegdown.PegDownProcessor;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.events.EventListener;
+import org.w3c.dom.events.EventTarget;
 
 
 public class EntryViewController {
@@ -107,9 +118,9 @@ public class EntryViewController {
 	@FXML private Button editButton, saveButton;
 
 	//DragAndDropImage
-	private StackPane dragAndDropPane;
-	private ImageView dragAndDropImageView;
-	private SnapshotParameters snapshotParameters;
+	private StackPane blurOver;
+	private Label blurOverLabel;
+	private ImageView blurOverImageView;
 	
 	private JournalEntry entry;
 	
@@ -219,27 +230,26 @@ public class EntryViewController {
 	}
 
 	private void createDragAndDropPanel() {
-		snapshotParameters = new SnapshotParameters();
 		
-		dragAndDropImageView = new ImageView();
-		dragAndDropImageView.setEffect(new BoxBlur(7, 7, 3));
+		blurOverImageView = new ImageView();
+		blurOverImageView.setEffect(new BoxBlur(7, 7, 3));
 		
-		dragAndDropPane = new StackPane();
-		AnchorPane.setTopAnchor(dragAndDropPane, 0d);
-		AnchorPane.setRightAnchor(dragAndDropPane, 0d);
-		AnchorPane.setBottomAnchor(dragAndDropPane, 0d);
-		AnchorPane.setLeftAnchor(dragAndDropPane, 0d);
+		blurOver = new StackPane();
+		AnchorPane.setTopAnchor(blurOver, 0d);
+		AnchorPane.setRightAnchor(blurOver, 0d);
+		AnchorPane.setBottomAnchor(blurOver, 0d);
+		AnchorPane.setLeftAnchor(blurOver, 0d);
 		
-		dragAndDropPane.getChildren().add(dragAndDropImageView);
+		blurOver.getChildren().add(blurOverImageView);
 		
-		Label label = new Label("Add Photo to Entry");
-		label.setPadding(new Insets(30));
-		label.setFont(Font.font(20));
-		label.setBackground(new Background(new BackgroundFill(Color.WHITE.deriveColor(0, 1, 1, 0.8), new CornerRadii(6), Insets.EMPTY)));
-		label.setBorder(new Border(
+		blurOverLabel = new Label();
+		blurOverLabel.setPadding(new Insets(30));
+		blurOverLabel.setFont(Font.font(20));
+		blurOverLabel.setBackground(new Background(new BackgroundFill(Color.WHITE.deriveColor(0, 1, 1, 0.8), new CornerRadii(6), Insets.EMPTY)));
+		blurOverLabel.setBorder(new Border(
 				new BorderStroke(Color.LIGHTGRAY, BorderStrokeStyle.DASHED, new CornerRadii(6), BorderWidths.DEFAULT)));
 		
-		dragAndDropPane.getChildren().add(label);
+		blurOver.getChildren().add(blurOverLabel);
 		
 		final WebView box = new WebView();
 		box.setPrefWidth(0);
@@ -249,10 +259,10 @@ public class EntryViewController {
 		box.setOnDragDropped(event -> root.fireEvent(event));
 		box.setOnDragExited(event -> root.fireEvent(event));
 		
-		dragAndDropPane.getChildren().add(box);
+		blurOver.getChildren().add(box);
 		
-		dragAndDropPane.setVisible(false);
-		root.getChildren().add(dragAndDropPane);
+		blurOver.setVisible(false);
+		root.getChildren().add(blurOver);
 	}
 
 	private void bindDragAndDrop() {
@@ -269,7 +279,7 @@ public class EntryViewController {
             	boolean accepted =  db.getFiles().get(0).getName().endsWith(".jpg");
             	
             	if (accepted) {
-            		addImageDragFilter();
+            		addImageDragFilter("Add Photo to Entry");
                     event.acceptTransferModes(TransferMode.COPY);
             	} else if (!root.getChildren().contains(rejectBox))
             		root.getChildren().add(rejectBox);
@@ -286,31 +296,37 @@ public class EntryViewController {
 		});
 
 		root.setOnDragExited(event -> {
-			Timeline timeline = new Timeline();
-			timeline.setOnFinished(e -> dragAndDropPane.setVisible(false));
-			timeline.getKeyFrames().add(new KeyFrame(new Duration(100),	
-					new KeyValue(dragAndDropPane.opacityProperty(), 0)));
-			timeline.play();
-			
+			removeImageDragFilter();
 			if (root.getChildren().contains(rejectBox))
-        		root.getChildren().remove(rejectBox);
+				root.getChildren().remove(rejectBox);
 		});
 	}
 	
-	private void addImageDragFilter() {
-		if (dragAndDropPane.isVisible())
+	private void addImageDragFilter(String text) {
+		if (blurOver.isVisible())
 			return;
 
-		dragAndDropPane.setVisible(true);
-		dragAndDropPane.setOpacity(0d);
+		blurOverLabel.setText(text);
+		blurOver.setVisible(true);
+		blurOver.setOpacity(0d);
+
+		SnapshotParameters snapshotParameters = new SnapshotParameters();
 		snapshotParameters.setViewport(new Rectangle2D(0, 0, root.getWidth(), root.getHeight()));
 		
 		Image frostImage = root.snapshot(snapshotParameters, null);
-		dragAndDropImageView.setImage(frostImage);
+		blurOverImageView.setImage(frostImage);
 		
 		Timeline timeline = new Timeline();
 		timeline.getKeyFrames().add(new KeyFrame(new Duration(100),	
-				new KeyValue(dragAndDropPane.opacityProperty(), 1)));
+				new KeyValue(blurOver.opacityProperty(), 1)));
+		timeline.play();
+	}
+	
+	private void removeImageDragFilter() {
+		Timeline timeline = new Timeline();
+		timeline.setOnFinished(e -> blurOver.setVisible(false));
+		timeline.getKeyFrames().add(new KeyFrame(new Duration(100),	
+				new KeyValue(blurOver.opacityProperty(), 0)));
 		timeline.play();
 	}
 
@@ -454,11 +470,31 @@ public class EntryViewController {
 			String[] lines = newValue.split("\n");
 			if (Config.get().getBoolean("bold_titles", true) 
 					&& lines[0].length() > 0 && lines[0].length() <= 140 && Character.isAlphabetic(lines[0].charAt(0)))
-				newValue = "### " + newValue;
-			String html = processor.markdownToHtml(newValue);
-	        webView.getEngine().loadContent(html);
+				lines[0] = "<h3>" + lines[0] + "</h3>";
+			
+			if (Config.get().getBoolean("markdown", true)) {
+				String html = processor.markdownToHtml(String.join("\n", lines));
+					webView.getEngine().loadContent(html);
+			} else
+				webView.getEngine().loadContent(String.join("<br />", lines));
 		});
         webView.setBlendMode(BlendMode.DARKEN);
+        webView.setContextMenuEnabled(false);
+        webView.getEngine().getLoadWorker().stateProperty().addListener((obs, oldValue, newValue) -> {
+        	if (newValue != Worker.State.SUCCEEDED)
+        		return;
+        	
+            EventListener listener = ev -> {
+              	String href = ((Element)ev.getTarget()).getAttribute("href");
+               	ev.preventDefault();
+               	openLink(href);
+            };
+
+            Document doc =  webView.getEngine().getDocument();
+            NodeList lista = doc.getElementsByTagName("a");
+            for (int i = 0; i < lista.getLength(); i++) 
+             	((EventTarget) lista.item(i)).addEventListener("click", listener, false);
+        });
         
         saveButton.visibleProperty().addListener((obs, oldValue, newValue) -> {
 			if (newValue) {
@@ -481,6 +517,21 @@ public class EntryViewController {
         	if (event.getClickCount() == 2)
         		editButton.setVisible(false);
         });
+	}
+	
+	private void openLink(String text) {
+		try {
+			Desktop.getDesktop().browse(new URI(text));
+		} catch (Exception e) {
+			Toolkit.getDefaultToolkit().getSystemClipboard()
+				.setContents(new StringSelection(text), null);
+			EventHandler<MouseEvent> listener2 = event -> {
+				blurOver.setOnMouseClicked(null);
+				removeImageDragFilter();
+			};
+			addImageDragFilter("Copied link to clipboard");
+			blurOver.setOnMouseClicked(listener2);
+		}
 	}
 	
 	private void setImageViewMenu() {

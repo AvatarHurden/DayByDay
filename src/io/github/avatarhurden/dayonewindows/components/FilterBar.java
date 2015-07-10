@@ -65,7 +65,6 @@ public class FilterBar extends HBox {
 		
 		clearAll = new CloseButton();
 		Tooltip.install(clearAll, new Tooltip("Remove all filters"));
-		clearAll.managedProperty().bind(clearAll.visibleProperty());
 		clearAll.visibleProperty().bind(Bindings.isNotEmpty(predicates));
 		
 		clearAll.setOnAction(() -> {

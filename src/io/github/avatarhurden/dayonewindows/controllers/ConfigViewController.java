@@ -28,6 +28,7 @@ public class ConfigViewController {
 	
 	@FXML private CheckBox animationCheckBox;
 	@FXML private CheckBox boldCheckBox;
+	@FXML private CheckBox markdownCheckBox;
 	
 	@FXML private Label folderPathLabel;
 	
@@ -59,6 +60,9 @@ public class ConfigViewController {
 		
 		String boldTitles = Config.get().getPropertyAndSave("bold_titles", "true");
 		boldCheckBox.setSelected(Boolean.valueOf(boldTitles));
+
+		String markdown = Config.get().getPropertyAndSave("markdown", "true");
+		markdownCheckBox.setSelected(Boolean.valueOf(markdown));
 		
 		filterGroup = new ToggleGroup();
 		allFiltersButton.setToggleGroup(filterGroup);
@@ -97,6 +101,12 @@ public class ConfigViewController {
 	private void enableBold() {
 		boolean selected = boldCheckBox.isSelected();
 		Config.get().setProperty("bold_titles", String.valueOf(selected));
+	}
+	
+	@FXML
+	private void enableMarkdown() {
+		boolean selected = markdownCheckBox.isSelected();
+		Config.get().setProperty("markdown", String.valueOf(selected));
 	}
 	
 	@FXML

@@ -272,6 +272,7 @@ public class JournalEntry implements Entry {
 	
 	public void setCreationDate(DateTime date) {
 		dictionary.put("Creation Date", date.toDate());
+		save();
 	}
 
 	@Override
