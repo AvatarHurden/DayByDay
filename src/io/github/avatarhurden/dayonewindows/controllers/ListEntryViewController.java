@@ -8,6 +8,7 @@ import io.github.avatarhurden.dayonewindows.models.Entry;
 import io.github.avatarhurden.dayonewindows.models.JournalEntry;
 import io.github.avatarhurden.dayonewindows.models.MonthEntry;
 import io.github.avatarhurden.dayonewindows.models.Tag;
+import io.github.avatarhurden.dayonewindows.models.VisibleListItems;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -21,10 +22,7 @@ import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
@@ -84,16 +82,13 @@ public class ListEntryViewController {
 	private BooleanProperty wideView;
 	private SplitPane splitView;
 	
-	private ObservableList<Entry> visibleItems;
-	private DoubleProperty visibleSize;
+	private VisibleListItems<Entry> visibleItems;
 	
 	private ObservableMap<MonthEntry, Set<JournalEntry>> monthsMap;
 	
 	private ObservableList<Entry> items, source;
 	private ListChangeListener<Entry> changeListener;
 	private FilteredList<Entry> filteredItems;
-	
-	private SimpleIntegerProperty listSize;
 	
 	@FXML
 	private void initialize() {
@@ -106,41 +101,13 @@ public class ListEntryViewController {
 				items.remove(key);
 		});
 		
-		listSize = new SimpleIntegerProperty();
-		
 		listView.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) -> {
 			if (newValue instanceof JournalEntry)
 				entryViewController.setEntry((JournalEntry) newValue);
 		});
 		
-		visibleItems = FXCollections.<Entry>observableArrayList();
-		visibleSize = new SimpleDoubleProperty(0);
-		visibleItems.addListener((ListChangeListener.Change<? extends Entry> event) -> {
-			while (event.next()) {
-				for (Entry t : event.getRemoved())
-					visibleSize.setValue(visibleSize.getValue() - (t instanceof JournalEntry ? 90 : 23));
-				for (Entry t : event.getAddedSubList())
-					visibleSize.setValue(visibleSize.getValue() + (t instanceof JournalEntry ? 90 : 23));
-			}
-		});
-		
 		listView.setCellFactory(table -> new EntryCell());
 		
-		previousButton.strokeProperty().bind(Bindings.when(previousButton.hoverProperty()).then(Color.BLUE).otherwise(Color.TRANSPARENT));
-		nextButton.strokeProperty().bind(Bindings.when(nextButton.hoverProperty()).then(Color.BLUE).otherwise(Color.TRANSPARENT));
-		homeButton.strokeProperty().bind(Bindings.when(homeButton.hoverProperty()).then(Color.BLUE).otherwise(Color.TRANSPARENT));
-		
-		nextButton.fillProperty().bind(Bindings.when(nextButton.disableProperty()).then(Color.LIGHTGRAY).otherwise(Color.BLACK));
-		previousButton.fillProperty().bind(Bindings.when(previousButton.disableProperty()).then(Color.LIGHTGRAY).otherwise(Color.BLACK));
-		
-		previousButton.disableProperty().bind(listView.getSelectionModel().selectedIndexProperty().isEqualTo(0));
-		nextButton.disableProperty().bind(listView.getSelectionModel().selectedIndexProperty().isEqualTo(listSize.subtract(1)));
-		
-		homeButton.setOnMouseClicked(event -> showList(true));
-    	previousButton.setOnMouseClicked(event -> listView.getSelectionModel().selectPrevious());
-    	nextButton.setOnMouseClicked(event -> listView.getSelectionModel().selectNext());
-		
-    	
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/EntryView.fxml"));
     	try {
     		entryView = loader.<AnchorPane>load();
@@ -179,8 +146,10 @@ public class ListEntryViewController {
 				showList(true);
     	});
     	
-    	visibleItems.addListener((ListChangeListener.Change<? extends Entry> event) -> {
-    		if (visibleItems.isEmpty())
+    	visibleItems = new VisibleListItems<Entry>((e1, e2) -> e1.getCreationDate().compareTo(e2.getCreationDate()));
+    	visibleItems.maxHeightProperty().bind(listView.heightProperty());
+    	visibleItems.getList().addListener((ListChangeListener.Change<? extends Entry> event) -> {
+    		if (visibleItems.getList().isEmpty())
     			return;
     		
     		monthLabel.setText(visibleItems.get(0).getCreationDate().toString("MMMMMMMMMMMMMMM YYYY"));
@@ -205,7 +174,7 @@ public class ListEntryViewController {
 		sorted.setComparator((entry1, entry2) -> entry1.compareTo(entry2));
 		
 		filteredItems = sorted.filtered(entry -> true);
-		filteredItems.predicateProperty().addListener((obs, oldValue, newValue) ->  visibleItems.clear());
+		filteredItems.predicateProperty().addListener((obs, oldValue, newValue) ->  visibleItems.getList().clear());
 		
 		filteredItems.addListener((ListChangeListener.Change<? extends Entry> event) -> {
 			while (event.next()) {
@@ -234,8 +203,20 @@ public class ListEntryViewController {
 		
 		listView.setItems(filteredItems);
 		
-		listView.scrollTo(sorted.size() - 1);
-		listSize.bind(Bindings.size(sorted));
+		previousButton.strokeProperty().bind(Bindings.when(previousButton.hoverProperty()).then(Color.BLUE).otherwise(Color.TRANSPARENT));
+		nextButton.strokeProperty().bind(Bindings.when(nextButton.hoverProperty()).then(Color.BLUE).otherwise(Color.TRANSPARENT));
+		homeButton.strokeProperty().bind(Bindings.when(homeButton.hoverProperty()).then(Color.BLUE).otherwise(Color.TRANSPARENT));
+		
+		nextButton.fillProperty().bind(Bindings.when(nextButton.disableProperty()).then(Color.LIGHTGRAY).otherwise(Color.BLACK));
+		previousButton.fillProperty().bind(Bindings.when(previousButton.disableProperty()).then(Color.LIGHTGRAY).otherwise(Color.BLACK));
+		
+		previousButton.disableProperty().bind(listView.getSelectionModel().selectedIndexProperty().isEqualTo(0));
+		nextButton.disableProperty().bind(listView.getSelectionModel().selectedIndexProperty().isEqualTo(Bindings.size(sorted).subtract(1)));
+		
+		homeButton.setOnMouseClicked(event -> showList(true));
+    	previousButton.setOnMouseClicked(event -> listView.getSelectionModel().selectPrevious());
+    	nextButton.setOnMouseClicked(event -> listView.getSelectionModel().selectNext());
+		
 	}
 	
 	private void setupWideView() {
@@ -297,7 +278,7 @@ public class ListEntryViewController {
 	
 	private void setFilterBoxExpanded(boolean expand) {
 		double opacity = expand ? 0 : 1;
-		double width = expand ? listViewPane.getWidth() - 40 : 120;
+		double width = expand ? listViewPane.getWidth() - 10 : 120;
 
 		if (expand)
 	    	monthPane.setManaged(false);
@@ -360,6 +341,7 @@ public class ListEntryViewController {
 			removeMonth(new MonthEntry(t.getCreationDate()), (JournalEntry) t);
 		
 		this.items.setAll(items);
+		listView.scrollTo(listView.getItems().size() - 1);
 		source = items;
 	}
 	
@@ -419,18 +401,7 @@ public class ListEntryViewController {
 	        } else {
         		setPrefHeight(90);
 	        	
-	        	boolean addedBeggining = true;
-	        	if (visibleItems.isEmpty())
-	        		visibleItems.add(item);
-	        	else if (item.getCreationDate().isBefore(visibleItems.get(0).getCreationDate()))
-	        		visibleItems.add(0, item);
-	        	else if (item.getCreationDate().isAfter(visibleItems.get(visibleItems.size() - 1).getCreationDate())) {
-	        		visibleItems.add(item);
-	        		addedBeggining = false;
-	        	}
-	        	
-	        	if (visibleSize.getValue() > listView.getHeight())
-	        		visibleItems.remove(addedBeggining ? visibleItems.size() - 1 : 0);
+        		visibleItems.add(item, 90);
 	        	
 	        	if (item instanceof MonthEntry) {
 	        		setGraphic(null);
