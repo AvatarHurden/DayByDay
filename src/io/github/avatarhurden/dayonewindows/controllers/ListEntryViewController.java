@@ -72,8 +72,11 @@ public class ListEntryViewController {
 	// List View Pane
 	@FXML private AnchorPane listViewPane;
 	@FXML private ListView<Entry> listView;
+	
 	@FXML private StackPane monthPane;
 	@FXML private Label monthLabel;
+	@FXML private SVGPath orderButton;
+	
 		// Filter Pane
 	@FXML private HBox filterPane; 
 	private FilterBar filterBox;
@@ -83,12 +86,14 @@ public class ListEntryViewController {
 	private SplitPane splitView;
 	
 	private VisibleListItems<Entry> visibleItems;
+	private BooleanProperty ascendingOrder;
 	
 	private ObservableMap<MonthEntry, Set<JournalEntry>> monthsMap;
 	
-	private ObservableList<Entry> items, source;
-	private ListChangeListener<Entry> changeListener;
+	private ObservableList<Entry> source, items;
+	private SortedList<Entry> sortedItems;
 	private FilteredList<Entry> filteredItems;
+	private ListChangeListener<Entry> changeListener;
 	
 	@FXML
 	private void initialize() {
@@ -146,7 +151,9 @@ public class ListEntryViewController {
 				showList(true);
     	});
     	
-    	visibleItems = new VisibleListItems<Entry>((e1, e2) -> e1.getCreationDate().compareTo(e2.getCreationDate()));
+    	ascendingOrder = new SimpleBooleanProperty(true);
+
+    	visibleItems = new VisibleListItems<Entry>((e1, e2) -> e2.compareTo(e1));
     	visibleItems.maxHeightProperty().bind(listView.heightProperty());
     	visibleItems.getList().addListener((ListChangeListener.Change<? extends Entry> event) -> {
     		if (visibleItems.getList().isEmpty())
@@ -161,7 +168,7 @@ public class ListEntryViewController {
     	homeButton.visibleProperty().bind(wideView.not());
     	homeButton.managedProperty().bind(homeButton.visibleProperty());
     	
-    	items = FXCollections.observableArrayList();
+    	items = FXCollections.<Entry>observableArrayList();
     	items.addListener((ListChangeListener.Change<? extends Entry> event) -> {
 			event.next();
 			if (event.wasRemoved()) {
@@ -169,11 +176,24 @@ public class ListEntryViewController {
 				showList(true);
 			}
 		});
-		SortedList<Entry> sorted = new SortedList<Entry>(items);
+    	
+    	sortedItems = new SortedList<>(items);
 		// Compares opposite so that later entries are on top
-		sorted.setComparator((entry1, entry2) -> entry1.compareTo(entry2));
-		
-		filteredItems = sorted.filtered(entry -> true);
+    	sortedItems.setComparator((e1, e2) -> {
+			if (e1 instanceof JournalEntry && e2 instanceof JournalEntry)
+				return e2.getCreationDate().compareTo(e1.getCreationDate());
+			else if (e1 instanceof MonthEntry && e2 instanceof MonthEntry)
+				return e2.getCreationDate().compareTo(e1.getCreationDate());
+			else if (e2 instanceof MonthEntry)
+				return e2.getCreationDate().millisOfDay().withMaximumValue().
+						dayOfMonth().withMaximumValue().compareTo(e1.getCreationDate());
+			else
+				return e2.getCreationDate().compareTo(e1.getCreationDate().millisOfDay().withMaximumValue().
+						dayOfMonth().withMaximumValue());
+		});
+    	visibleItems.comparatorProperty().bind(sortedItems.comparatorProperty());
+    	
+		filteredItems = sortedItems.filtered(entry -> true);
 		filteredItems.predicateProperty().addListener((obs, oldValue, newValue) ->  visibleItems.getList().clear());
 		
 		filteredItems.addListener((ListChangeListener.Change<? extends Entry> event) -> {
@@ -211,14 +231,55 @@ public class ListEntryViewController {
 		previousButton.fillProperty().bind(Bindings.when(previousButton.disableProperty()).then(Color.LIGHTGRAY).otherwise(Color.BLACK));
 		
 		previousButton.disableProperty().bind(listView.getSelectionModel().selectedIndexProperty().isEqualTo(0));
-		nextButton.disableProperty().bind(listView.getSelectionModel().selectedIndexProperty().isEqualTo(Bindings.size(sorted).subtract(1)));
+		nextButton.disableProperty().bind(listView.getSelectionModel().selectedIndexProperty().isEqualTo(Bindings.size(sortedItems).subtract(1)));
 		
 		homeButton.setOnMouseClicked(event -> showList(true));
     	previousButton.setOnMouseClicked(event -> listView.getSelectionModel().selectPrevious());
     	nextButton.setOnMouseClicked(event -> listView.getSelectionModel().selectNext());
-		
+    	
+    	orderButton.strokeProperty().bind(Bindings.when(orderButton.hoverProperty()).then(Color.BLUE).otherwise(Color.TRANSPARENT));
+    	orderButton.setOnMouseClicked(event -> {
+    		boolean ascending = orderButton.getRotate() == 180;
+    		orderButton.setRotate(ascending ? 0 : 180);
+    		setDisplayOrder(!ascending);
+    	});
 	}
 	
+	private void setDisplayOrder(boolean ascending) {
+		ascendingOrder.setValue(ascending);
+		if (ascending) {
+			sortedItems.setComparator((e1, e2) -> {
+				if (e1 instanceof JournalEntry && e2 instanceof JournalEntry)
+					return e1.getCreationDate().compareTo(e2.getCreationDate());
+				else if (e1 instanceof MonthEntry && e2 instanceof MonthEntry)
+					return e1.getCreationDate().compareTo(e2.getCreationDate());
+				else if (e1 instanceof MonthEntry)
+					return e1.getCreationDate().millisOfDay().withMinimumValue().
+							dayOfMonth().withMinimumValue().compareTo(e2.getCreationDate());
+				else
+					return e1.getCreationDate().compareTo(e2.getCreationDate().millisOfDay().withMinimumValue().
+							dayOfMonth().withMinimumValue());
+			});
+			visibleItems.clear();
+			listView.scrollTo(sortedItems.size() - 1);
+		} else {
+			sortedItems.setComparator((e1, e2) -> {
+				if (e1 instanceof JournalEntry && e2 instanceof JournalEntry)
+					return e2.getCreationDate().compareTo(e1.getCreationDate());
+				else if (e1 instanceof MonthEntry && e2 instanceof MonthEntry)
+					return e2.getCreationDate().compareTo(e1.getCreationDate());
+				else if (e2 instanceof MonthEntry)
+					return e2.getCreationDate().millisOfDay().withMaximumValue().
+							dayOfMonth().withMaximumValue().compareTo(e1.getCreationDate());
+				else
+					return e2.getCreationDate().compareTo(e1.getCreationDate().millisOfDay().withMaximumValue().
+							dayOfMonth().withMaximumValue());
+			});
+			visibleItems.clear();
+			listView.scrollTo(0);
+		}
+	}
+
 	private void setupWideView() {
 		splitView = new SplitPane(listViewPane, singleViewPane);
     	AnchorPane.setTopAnchor(splitView, 0d);
@@ -241,9 +302,6 @@ public class ListEntryViewController {
 				root.getChildren().setAll(multiPane);
 			}
 		});
-		
-		
-		
 	}
 	
 	private void createSearchToolTip() {
@@ -341,7 +399,7 @@ public class ListEntryViewController {
 			removeMonth(new MonthEntry(t.getCreationDate()), (JournalEntry) t);
 		
 		this.items.setAll(items);
-		listView.scrollTo(listView.getItems().size() - 1);
+//		listView.scrollTo(listView.getItems().size() - 1);
 		source = items;
 	}
 	

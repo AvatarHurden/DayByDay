@@ -105,7 +105,7 @@
                   </StackPane>
               </content>
             </ScrollPane>
-            <VBox fx:id="contentPane" alignment="TOP_CENTER">
+            <VBox fx:id="contentPane" alignment="TOP_CENTER" maxWidth="800.0">
                <children>
                   <TextArea fx:id="textArea">
                      <VBox.margin>

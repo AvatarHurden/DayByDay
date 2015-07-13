@@ -376,6 +376,11 @@ public class EntryViewController {
 			}
 		});
 		
+		dateProperty.addListener((obs, oldValue, newValue) -> {
+			if (entry != null)
+				entry.save();
+		});
+		
 		StackPane pane = new StackPane(picker);
 		pane.setPadding(new Insets(5));
 		over.setContentNode(pane);
