@@ -607,4 +607,8 @@ public class EntryViewController {
 			});
 	}
 
+	public void setEdit(boolean b) {
+		editButton.setVisible(!b);
+	}
+
 }

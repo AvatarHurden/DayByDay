@@ -13,6 +13,7 @@ import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -47,6 +48,8 @@ public class Main extends Application {
 		primaryStage.setScene(scene);
 		primaryStage.show();
 
+		primaryStage.getIcons().add(new Image(("images/Line.png")));
+		
 		setPosition(primaryStage);
 		
 		controller = loader.<MainWindowController>getController();

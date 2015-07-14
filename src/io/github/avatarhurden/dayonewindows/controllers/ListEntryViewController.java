@@ -22,7 +22,9 @@ import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
@@ -34,6 +36,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -54,7 +57,7 @@ import javafx.scene.text.Font;
 import javafx.util.Duration;
 
 
-public class ListEntryViewController {
+public class ListEntryViewController<V> {
 
 	@FXML private AnchorPane root;
 	
@@ -89,6 +92,7 @@ public class ListEntryViewController {
 	private BooleanProperty ascendingOrder;
 	
 	private ObservableMap<MonthEntry, Set<JournalEntry>> monthsMap;
+	private Property<MonthEntry> earliestMonth;
 	
 	private ObservableList<Entry> source, items;
 	private SortedList<Entry> sortedItems;
@@ -97,13 +101,21 @@ public class ListEntryViewController {
 	
 	@FXML
 	private void initialize() {
+		earliestMonth = new SimpleObjectProperty<>();
 		monthsMap = FXCollections.observableHashMap();
 		monthsMap.addListener((MapChangeListener.Change<? extends MonthEntry,? extends Set<JournalEntry>> event) -> {
 			MonthEntry key = event.getKey();
-			if (monthsMap.containsKey(key))
-				Platform.runLater(() -> items.add(key));
-			else if (!monthsMap.containsKey(key))
-				items.remove(key);
+			MonthEntry old = earliestMonth.getValue();
+			
+			if (monthsMap.containsKey(key)) {
+				if (old == null || sortedItems.getComparator().compare(key, old) < 0) {
+					earliestMonth.setValue(key);
+					if (old != null) 
+						Platform.runLater(() -> items.add(old));
+				} else 
+					Platform.runLater(() -> items.add(key));
+			} else 
+				Platform.runLater(() -> items.remove(key));
 		});
 		
 		listView.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) -> {
@@ -181,9 +193,9 @@ public class ListEntryViewController {
 		// Compares opposite so that later entries are on top
     	sortedItems.setComparator((e1, e2) -> {
 			if (e1 instanceof JournalEntry && e2 instanceof JournalEntry)
-				return e2.getCreationDate().compareTo(e1.getCreationDate());
+				return e2.compareTo(e1);
 			else if (e1 instanceof MonthEntry && e2 instanceof MonthEntry)
-				return e2.getCreationDate().compareTo(e1.getCreationDate());
+				return e2.compareTo(e1);
 			else if (e2 instanceof MonthEntry)
 				return e2.getCreationDate().millisOfDay().withMaximumValue().
 						dayOfMonth().withMaximumValue().compareTo(e1.getCreationDate());
@@ -194,7 +206,7 @@ public class ListEntryViewController {
     	visibleItems.comparatorProperty().bind(sortedItems.comparatorProperty());
     	
 		filteredItems = sortedItems.filtered(entry -> true);
-		filteredItems.predicateProperty().addListener((obs, oldValue, newValue) ->  visibleItems.getList().clear());
+		filteredItems.predicateProperty().addListener((obs, oldValue, newValue) -> visibleItems.getList().clear());
 		
 		filteredItems.addListener((ListChangeListener.Change<? extends Entry> event) -> {
 			while (event.next()) {
@@ -250,9 +262,9 @@ public class ListEntryViewController {
 		if (ascending) {
 			sortedItems.setComparator((e1, e2) -> {
 				if (e1 instanceof JournalEntry && e2 instanceof JournalEntry)
-					return e1.getCreationDate().compareTo(e2.getCreationDate());
+					return e1.compareTo(e2);
 				else if (e1 instanceof MonthEntry && e2 instanceof MonthEntry)
-					return e1.getCreationDate().compareTo(e2.getCreationDate());
+					return e1.compareTo(e2);
 				else if (e1 instanceof MonthEntry)
 					return e1.getCreationDate().millisOfDay().withMinimumValue().
 							dayOfMonth().withMinimumValue().compareTo(e2.getCreationDate());
@@ -265,9 +277,9 @@ public class ListEntryViewController {
 		} else {
 			sortedItems.setComparator((e1, e2) -> {
 				if (e1 instanceof JournalEntry && e2 instanceof JournalEntry)
-					return e2.getCreationDate().compareTo(e1.getCreationDate());
+					return e2.compareTo(e1);
 				else if (e1 instanceof MonthEntry && e2 instanceof MonthEntry)
-					return e2.getCreationDate().compareTo(e1.getCreationDate());
+					return e2.compareTo(e1);
 				else if (e2 instanceof MonthEntry)
 					return e2.getCreationDate().millisOfDay().withMaximumValue().
 							dayOfMonth().withMaximumValue().compareTo(e1.getCreationDate());
@@ -278,6 +290,14 @@ public class ListEntryViewController {
 			visibleItems.clear();
 			listView.scrollTo(0);
 		}
+
+		ObservableMap<MonthEntry, Set<JournalEntry>> newMap = FXCollections.observableHashMap();
+		newMap.putAll(monthsMap);
+		for (MonthEntry entry : newMap.keySet())
+			monthsMap.remove(entry);
+		earliestMonth.setValue(null);
+		for (MonthEntry entry : newMap.keySet())
+			monthsMap.put(entry, newMap.get(entry));
 	}
 
 	private void setupWideView() {
@@ -322,7 +342,8 @@ public class ListEntryViewController {
     	
     	filterBox.getFilters().addListener((ListChangeListener.Change<? extends Predicate<Entry>> event) -> {
     		Entry selected = listView.getSelectionModel().getSelectedItem();
-    		
+
+			earliestMonth.setValue(null);
     		Predicate<Entry> pred = filterBox.getCombinedFilter();
 			filteredItems.setPredicate(entry -> pred.test(entry) || entry.isEmpty());
 			
@@ -330,7 +351,7 @@ public class ListEntryViewController {
     		if (selected != null)
     			listView.scrollTo(selected);
     		else
-    			listView.scrollTo(listView.getItems().size() - 1);
+    			listView.scrollTo(visibleItems.get(0));
 		});
 	}
 	
@@ -434,12 +455,15 @@ public class ListEntryViewController {
 		
 		private Node n;
 		private EntryCellController controller;
-		
+		private boolean isEmpty;
 		{
 			setOnMouseClicked(event -> {
-		        if (event.getClickCount() == 2)
+		        if (event.getClickCount() == 2 || isEmpty)
 		        	showSingle();
+		        if (isEmpty)
+    		        entryViewController.setEdit(true);
 		    });
+			
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/EntryCell.fxml"));
 			
 			try {
@@ -452,11 +476,11 @@ public class ListEntryViewController {
 		
 		@Override public void updateItem(Entry item, boolean empty) {
 	        super.updateItem(item, empty);
-	        
 	        if (empty) {
 	            setText(null);
 	            setGraphic(null);
 	        } else {
+		        isEmpty = item.isEmpty();
         		setPrefHeight(90);
 	        	
         		visibleItems.add(item, 90);
@@ -468,34 +492,39 @@ public class ListEntryViewController {
 	        		setTextFill(Color.BLACK);
 	        		setAlignment(Pos.CENTER);
 	        		setBorder(null);
+	        		setCursor(Cursor.DEFAULT);
 	        	} else if (((JournalEntry) item).isEmpty()) {
 	        		setText("Create new Entry");
 	        		setFont(Font.font(30));
 	        		setTextFill(Color.LIGHTGREY);
 	        		setAlignment(Pos.CENTER);
 	        		setGraphic(null);
+	        		setCursor(Cursor.HAND);
 	        		
 	        		Border border = new Border(
 	        				new BorderStroke(Color.LIGHTGRAY, BorderStrokeStyle.DASHED, new CornerRadii(6), BorderWidths.DEFAULT));
 	        		
 	        		setBorder(border);
+	        		
 	        	} else {
 	        		setBorder(null);
 		            setText(null);
 	        		setGraphic(n);
 					setPadding(Insets.EMPTY);
+	        		setCursor(Cursor.DEFAULT);
 
 					controller.setContent((JournalEntry) item);
 					
 					int index = listView.getItems().indexOf(item);
-					if (index == 0 || listView.getItems().get(index - 1) instanceof MonthEntry) 
+					int previousIndex = ascendingOrder.get() ? index - 1 : index + 1;
+					Entry previous = listView.getItems().get(previousIndex);
+					if (index == 0 || previous instanceof MonthEntry || previous.isEmpty()) 
 						controller.setDateEnabled(true); // First item, and items after monthEntries, must always have the date
-					else {
-						Entry previous = listView.getItems().get(index - 1);
+					else 
 						controller.setDateEnabled(previous.getCreationDate().getDayOfYear() != item.getCreationDate().getDayOfYear());
-					}
 				
 					controller.widthProperty().bind(listView.widthProperty().subtract(40));
+					
 	        	}
 	        }
 	    }
