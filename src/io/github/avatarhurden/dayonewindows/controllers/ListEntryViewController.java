@@ -12,9 +12,11 @@ import io.github.avatarhurden.dayonewindows.models.VisibleListItems;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -25,6 +27,7 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
@@ -38,7 +41,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
-import javafx.scene.control.Label;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SplitPane;
@@ -77,7 +80,10 @@ public class ListEntryViewController<V> {
 	@FXML private ListView<Entry> listView;
 	
 	@FXML private StackPane monthPane;
-	@FXML private Label monthLabel;
+	@FXML private ComboBox<MonthEntry> monthCombo;
+	private ChangeListener<MonthEntry> monthListener;
+	
+//	@FXML private Label monthLabel;
 	@FXML private SVGPath orderButton;
 	
 		// Filter Pane
@@ -90,6 +96,7 @@ public class ListEntryViewController<V> {
 	
 	private VisibleListItems<Entry> visibleItems;
 	private BooleanProperty ascendingOrder;
+	private Comparator<Entry> descendingComparator, ascendingComparator;
 	
 	private ObservableMap<MonthEntry, Set<JournalEntry>> monthsMap;
 	private Property<MonthEntry> earliestMonth;
@@ -101,11 +108,41 @@ public class ListEntryViewController<V> {
 	
 	@FXML
 	private void initialize() {
+		monthListener = (obs, oldValue, newValue) -> {
+			visibleItems.clear();
+			if (filteredItems.contains(newValue))
+				listView.scrollTo(newValue);
+			else if (monthsMap.containsKey(newValue))
+				listView.scrollTo(monthsMap.get(newValue).stream().sorted(sortedItems.getComparator()).collect(Collectors.toList()).get(0));
+		};
+		monthCombo.valueProperty().addListener(monthListener);
+		monthCombo.setCellFactory(list -> new ListCell<MonthEntry>() {
+			@Override
+			public void updateItem(MonthEntry item, boolean empty) {
+				super.updateItem(item, empty);
+				setAlignment(Pos.CENTER);
+				setFont(Font.font(20));
+				if (!empty && item != null)
+					setText(item.toString());
+			}
+		});
+		monthCombo.setButtonCell(new ListCell<MonthEntry>() {
+			@Override
+			public void updateItem(MonthEntry item, boolean empty) {
+				super.updateItem(item, empty);
+				setAlignment(Pos.CENTER);
+				setFont(Font.font(30));
+				if (!empty && item != null)
+					setText(item.toString());
+			}
+		});
+		
 		earliestMonth = new SimpleObjectProperty<>();
 		monthsMap = FXCollections.observableHashMap();
 		monthsMap.addListener((MapChangeListener.Change<? extends MonthEntry,? extends Set<JournalEntry>> event) -> {
 			MonthEntry key = event.getKey();
 			MonthEntry old = earliestMonth.getValue();
+			monthCombo.setItems(FXCollections.observableArrayList(monthsMap.keySet().stream().sorted(sortedItems.getComparator()).collect(Collectors.toList())));
 			
 			if (monthsMap.containsKey(key)) {
 				if (old == null || sortedItems.getComparator().compare(key, old) < 0) {
@@ -171,7 +208,13 @@ public class ListEntryViewController<V> {
     		if (visibleItems.getList().isEmpty())
     			return;
     		
-    		monthLabel.setText(visibleItems.get(0).getCreationDate().toString("MMMMMMMMMMMMMMM YYYY"));
+    		for (java.util.Map.Entry<MonthEntry, Set<JournalEntry>> entry : monthsMap.entrySet())
+    			if (entry.getValue().contains(visibleItems.get(0))) {
+    				monthCombo.valueProperty().removeListener(monthListener);
+    				monthCombo.setValue(entry.getKey());
+    				monthCombo.valueProperty().addListener(monthListener);
+    				break;
+    			}
 		});
     	
     	createSearchToolTip();
@@ -191,8 +234,12 @@ public class ListEntryViewController<V> {
     	
     	sortedItems = new SortedList<>(items);
 		// Compares opposite so that later entries are on top
-    	sortedItems.setComparator((e1, e2) -> {
-			if (e1 instanceof JournalEntry && e2 instanceof JournalEntry)
+    	descendingComparator = (e1, e2) -> {
+    		if (e1.isEmpty())
+    			return -1;
+    		else if (e2.isEmpty())
+    			return 1;
+    		else if (e1 instanceof JournalEntry && e2 instanceof JournalEntry)
 				return e2.compareTo(e1);
 			else if (e1 instanceof MonthEntry && e2 instanceof MonthEntry)
 				return e2.compareTo(e1);
@@ -202,7 +249,20 @@ public class ListEntryViewController<V> {
 			else
 				return e2.getCreationDate().compareTo(e1.getCreationDate().millisOfDay().withMaximumValue().
 						dayOfMonth().withMaximumValue());
-		});
+		};
+		ascendingComparator = (e1, e2) -> {
+			if (e1 instanceof JournalEntry && e2 instanceof JournalEntry)
+				return e1.compareTo(e2);
+			else if (e1 instanceof MonthEntry && e2 instanceof MonthEntry)
+				return e1.compareTo(e2);
+			else if (e1 instanceof MonthEntry)
+				return e1.getCreationDate().millisOfDay().withMinimumValue().
+						dayOfMonth().withMinimumValue().compareTo(e2.getCreationDate());
+			else
+				return e1.getCreationDate().compareTo(e2.getCreationDate().millisOfDay().withMinimumValue().
+						dayOfMonth().withMinimumValue());
+		};
+    	sortedItems.setComparator(descendingComparator);
     	visibleItems.comparatorProperty().bind(sortedItems.comparatorProperty());
     	
 		filteredItems = sortedItems.filtered(entry -> true);
@@ -229,7 +289,6 @@ public class ListEntryViewController<V> {
 					this.items.remove(t);
 				for (Entry t : event.getAddedSubList())
 					this.items.add(t);
-				
 			}
 		};
 		
@@ -260,44 +319,24 @@ public class ListEntryViewController<V> {
 	private void setDisplayOrder(boolean ascending) {
 		ascendingOrder.setValue(ascending);
 		if (ascending) {
-			sortedItems.setComparator((e1, e2) -> {
-				if (e1 instanceof JournalEntry && e2 instanceof JournalEntry)
-					return e1.compareTo(e2);
-				else if (e1 instanceof MonthEntry && e2 instanceof MonthEntry)
-					return e1.compareTo(e2);
-				else if (e1 instanceof MonthEntry)
-					return e1.getCreationDate().millisOfDay().withMinimumValue().
-							dayOfMonth().withMinimumValue().compareTo(e2.getCreationDate());
-				else
-					return e1.getCreationDate().compareTo(e2.getCreationDate().millisOfDay().withMinimumValue().
-							dayOfMonth().withMinimumValue());
-			});
+			sortedItems.setComparator(ascendingComparator);
 			visibleItems.clear();
 			listView.scrollTo(sortedItems.size() - 1);
 		} else {
-			sortedItems.setComparator((e1, e2) -> {
-				if (e1 instanceof JournalEntry && e2 instanceof JournalEntry)
-					return e2.compareTo(e1);
-				else if (e1 instanceof MonthEntry && e2 instanceof MonthEntry)
-					return e2.compareTo(e1);
-				else if (e2 instanceof MonthEntry)
-					return e2.getCreationDate().millisOfDay().withMaximumValue().
-							dayOfMonth().withMaximumValue().compareTo(e1.getCreationDate());
-				else
-					return e2.getCreationDate().compareTo(e1.getCreationDate().millisOfDay().withMaximumValue().
-							dayOfMonth().withMaximumValue());
-			});
+			sortedItems.setComparator(descendingComparator);
 			visibleItems.clear();
 			listView.scrollTo(0);
 		}
 
 		ObservableMap<MonthEntry, Set<JournalEntry>> newMap = FXCollections.observableHashMap();
 		newMap.putAll(monthsMap);
+		monthCombo.valueProperty().removeListener(monthListener);
 		for (MonthEntry entry : newMap.keySet())
 			monthsMap.remove(entry);
 		earliestMonth.setValue(null);
 		for (MonthEntry entry : newMap.keySet())
 			monthsMap.put(entry, newMap.get(entry));
+		monthCombo.valueProperty().addListener(monthListener);
 	}
 
 	private void setupWideView() {
@@ -365,7 +404,7 @@ public class ListEntryViewController<V> {
 		if (!Config.get().getBoolean("enable_animations")) {
 	    	monthPane.setManaged(!expand);
 			filterBox.setPrefWidth(width);
-			monthLabel.setOpacity(opacity);
+			monthCombo.setOpacity(opacity);
 			
 			if (expand)
 				filterBox.showPopup(50);
@@ -376,7 +415,7 @@ public class ListEntryViewController<V> {
 			Timeline timeline = new Timeline();
 			timeline.getKeyFrames().add(new KeyFrame(new Duration(200), 
 				new KeyValue(filterBox.prefWidthProperty(), width),
-				new KeyValue(monthLabel.opacityProperty(), opacity)
+				new KeyValue(monthCombo.opacityProperty(), opacity)
 			));
 
 			timeline.setOnFinished(event -> {
@@ -517,12 +556,17 @@ public class ListEntryViewController<V> {
 					
 					int index = listView.getItems().indexOf(item);
 					int previousIndex = ascendingOrder.get() ? index - 1 : index + 1;
-					Entry previous = listView.getItems().get(previousIndex);
-					if (index == 0 || previous instanceof MonthEntry || previous.isEmpty()) 
-						controller.setDateEnabled(true); // First item, and items after monthEntries, must always have the date
-					else 
-						controller.setDateEnabled(previous.getCreationDate().getDayOfYear() != item.getCreationDate().getDayOfYear());
-				
+					int min = ascendingOrder.get() ? 1 : listView.getItems().size() - 1;
+					if (index == min)
+						controller.setDateEnabled(true);
+					else {
+						Entry previous = listView.getItems().get(previousIndex);
+						if (previous instanceof MonthEntry || previous.isEmpty()) 
+							// First item, and items after monthEntries, must always have the date
+							controller.setDateEnabled(true);
+						else 
+							controller.setDateEnabled(previous.getCreationDate().getDayOfYear() != item.getCreationDate().getDayOfYear());
+					}
 					controller.widthProperty().bind(listView.widthProperty().subtract(40));
 					
 	        	}

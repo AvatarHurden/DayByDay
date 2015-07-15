@@ -25,6 +25,14 @@ public class MonthEntry implements Entry {
 		return date;
 	}
 
+	public Property<DateTime> creationDateProperty() {
+		return new SimpleObjectProperty<DateTime>();
+	}
+
+	public boolean isEmpty() {
+		return false;
+	}
+	
 	public int compareTo(Entry o) {
 		return getCreationDate().compareTo(o.getCreationDate());
 	}
@@ -40,11 +48,7 @@ public class MonthEntry implements Entry {
 		return date.hashCode();
 	}
 	
-	public Property<DateTime> creationDateProperty() {
-		return new SimpleObjectProperty<DateTime>();
-	}
-
-	public boolean isEmpty() {
-		return false;
+	public String toString() {
+		return date.toString("MMMMMMMMMMM YYYY");
 	}
 }

@@ -276,7 +276,7 @@ public class EntryViewController {
 		root.setOnDragEntered(event -> {
 			Dragboard db = event.getDragboard();
             if (db.hasFiles()) {
-            	boolean accepted =  db.getFiles().get(0).getName().endsWith(".jpg");
+            	boolean accepted =  db.getFiles().get(0).getName().toLowerCase().endsWith(".jpg");
             	
             	if (accepted) {
             		addImageDragFilter("Add Photo to Entry");
@@ -289,7 +289,7 @@ public class EntryViewController {
 		root.setOnDragDropped(event -> {
 			Dragboard db = event.getDragboard();
             if (db.hasFiles()) {
-            	boolean accepted =  db.getFiles().get(0).getName().endsWith(".jpg");
+            	boolean accepted =  db.getFiles().get(0).getName().toLowerCase().endsWith(".jpg");
             	if (accepted) 
             		entry.setNewImage(db.getFiles().get(0));
             }
