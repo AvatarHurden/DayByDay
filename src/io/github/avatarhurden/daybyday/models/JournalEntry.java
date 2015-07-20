@@ -1,4 +1,4 @@
-package io.github.avatarhurden.dayonewindows.models;
+package io.github.avatarhurden.daybyday.models;
 
 import java.io.File;
 import java.io.FileInputStream;

@@ -1,4 +1,4 @@
-package io.github.avatarhurden.dayonewindows.managers;
+package io.github.avatarhurden.daybyday.managers;
 
 import java.io.IOException;
 import java.nio.file.FileSystems;

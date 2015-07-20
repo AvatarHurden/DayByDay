@@ -1,7 +1,7 @@
-package io.github.avatarhurden.dayonewindows.controllers;
+package io.github.avatarhurden.daybyday.controllers;
 
-import io.github.avatarhurden.dayonewindows.models.JournalEntry;
-import io.github.avatarhurden.dayonewindows.models.Tag;
+import io.github.avatarhurden.daybyday.models.JournalEntry;
+import io.github.avatarhurden.daybyday.models.Tag;
 
 import java.util.List;
 import java.util.function.BiConsumer;

@@ -1,4 +1,4 @@
-package io.github.avatarhurden.dayonewindows.components;
+package io.github.avatarhurden.daybyday.components;
 
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;

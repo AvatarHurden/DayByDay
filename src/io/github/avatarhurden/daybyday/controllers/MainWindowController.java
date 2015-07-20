@@ -1,10 +1,10 @@
-package io.github.avatarhurden.dayonewindows.controllers;
+package io.github.avatarhurden.daybyday.controllers;
 
-import io.github.avatarhurden.dayonewindows.components.DropdownPane;
-import io.github.avatarhurden.dayonewindows.components.MultiPane;
-import io.github.avatarhurden.dayonewindows.components.MultiPane.MultiPaneOrientation;
-import io.github.avatarhurden.dayonewindows.managers.Config;
-import io.github.avatarhurden.dayonewindows.models.Journal;
+import io.github.avatarhurden.daybyday.components.DropdownPane;
+import io.github.avatarhurden.daybyday.components.MultiPane;
+import io.github.avatarhurden.daybyday.components.MultiPane.MultiPaneOrientation;
+import io.github.avatarhurden.daybyday.managers.Config;
+import io.github.avatarhurden.daybyday.models.Journal;
 
 import java.io.IOException;
 

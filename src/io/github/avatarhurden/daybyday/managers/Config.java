@@ -1,4 +1,4 @@
-package io.github.avatarhurden.dayonewindows.managers;
+package io.github.avatarhurden.daybyday.managers;
 
 import java.io.File;
 import java.io.FileInputStream;

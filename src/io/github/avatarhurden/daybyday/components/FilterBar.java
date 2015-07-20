@@ -1,11 +1,11 @@
-package io.github.avatarhurden.dayonewindows.components;
+package io.github.avatarhurden.daybyday.components;
 
-import io.github.avatarhurden.dayonewindows.controllers.SearchTooltipController;
-import io.github.avatarhurden.dayonewindows.managers.Config;
-import io.github.avatarhurden.dayonewindows.models.Entry;
-import io.github.avatarhurden.dayonewindows.models.JournalEntry;
-import io.github.avatarhurden.dayonewindows.models.MonthEntry;
-import io.github.avatarhurden.dayonewindows.models.Tag;
+import io.github.avatarhurden.daybyday.controllers.SearchTooltipController;
+import io.github.avatarhurden.daybyday.managers.Config;
+import io.github.avatarhurden.daybyday.models.Entry;
+import io.github.avatarhurden.daybyday.models.JournalEntry;
+import io.github.avatarhurden.daybyday.models.MonthEntry;
+import io.github.avatarhurden.daybyday.models.Tag;
 
 import java.io.IOException;
 import java.util.HashMap;

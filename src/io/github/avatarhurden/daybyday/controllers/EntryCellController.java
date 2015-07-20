@@ -1,7 +1,7 @@
-package io.github.avatarhurden.dayonewindows.controllers;
+package io.github.avatarhurden.daybyday.controllers;
 
-import io.github.avatarhurden.dayonewindows.managers.Config;
-import io.github.avatarhurden.dayonewindows.models.JournalEntry;
+import io.github.avatarhurden.daybyday.managers.Config;
+import io.github.avatarhurden.daybyday.models.JournalEntry;
 
 import java.util.Arrays;
 

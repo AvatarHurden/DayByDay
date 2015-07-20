@@ -13,7 +13,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane fx:id="root" prefHeight="90.0" prefWidth="481.0" stylesheets="@../style/EntryCell.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.avatarhurden.dayonewindows.controllers.EntryCellController">
+<AnchorPane fx:id="root" prefHeight="90.0" prefWidth="481.0" stylesheets="@../style/EntryCell.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.avatarhurden.daybyday.controllers.EntryCellController">
    <children>
       <HBox fx:id="tagPane" alignment="CENTER_LEFT" fillHeight="false" layoutX="90.0" layoutY="90.0" spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="90.0" AnchorPane.rightAnchor="0.0" />
       <AnchorPane layoutY="7.0" prefHeight="85.0" prefWidth="90.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">

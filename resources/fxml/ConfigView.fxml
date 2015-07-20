@@ -8,7 +8,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<VBox fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="507.0" prefWidth="521.0" spacing="10.0" style="-fx-background-color: white; -fx-border-radius: 10; -fx-border-color: lightblue; -fx-background-radius: 10;" stylesheets="@../style/ConfigView.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.avatarhurden.dayonewindows.controllers.ConfigViewController">
+<VBox fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="507.0" prefWidth="521.0" spacing="10.0" style="-fx-background-color: white; -fx-border-radius: 10; -fx-border-color: lightblue; -fx-background-radius: 10;" stylesheets="@../style/ConfigView.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.avatarhurden.daybyday.controllers.ConfigViewController">
    <children>
       <HBox fx:id="menuBar" alignment="CENTER_RIGHT" prefHeight="18.0" prefWidth="439.0" />
       <VBox prefHeight="110.0" prefWidth="441.0" spacing="10.0">

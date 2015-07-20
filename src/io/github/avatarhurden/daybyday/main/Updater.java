@@ -1,6 +1,6 @@
-package io.github.avatarhurden.dayonewindows.main;
+package io.github.avatarhurden.daybyday.main;
 
-import io.github.avatarhurden.dayonewindows.managers.Config;
+import io.github.avatarhurden.daybyday.managers.Config;
 
 import java.io.BufferedReader;
 import java.io.File;

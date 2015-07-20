@@ -1,7 +1,7 @@
-package io.github.avatarhurden.dayonewindows.components;
+package io.github.avatarhurden.daybyday.components;
 
-import io.github.avatarhurden.dayonewindows.models.JournalEntry;
-import io.github.avatarhurden.dayonewindows.models.Tag;
+import io.github.avatarhurden.daybyday.models.JournalEntry;
+import io.github.avatarhurden.daybyday.models.Tag;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

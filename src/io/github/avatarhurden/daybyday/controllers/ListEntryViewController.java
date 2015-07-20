@@ -1,14 +1,14 @@
-package io.github.avatarhurden.dayonewindows.controllers;
+package io.github.avatarhurden.daybyday.controllers;
 
-import io.github.avatarhurden.dayonewindows.components.FilterBar;
-import io.github.avatarhurden.dayonewindows.components.MultiPane;
-import io.github.avatarhurden.dayonewindows.components.MultiPane.MultiPaneOrientation;
-import io.github.avatarhurden.dayonewindows.managers.Config;
-import io.github.avatarhurden.dayonewindows.models.Entry;
-import io.github.avatarhurden.dayonewindows.models.JournalEntry;
-import io.github.avatarhurden.dayonewindows.models.MonthEntry;
-import io.github.avatarhurden.dayonewindows.models.Tag;
-import io.github.avatarhurden.dayonewindows.models.VisibleListItems;
+import io.github.avatarhurden.daybyday.components.FilterBar;
+import io.github.avatarhurden.daybyday.components.MultiPane;
+import io.github.avatarhurden.daybyday.components.MultiPane.MultiPaneOrientation;
+import io.github.avatarhurden.daybyday.managers.Config;
+import io.github.avatarhurden.daybyday.models.Entry;
+import io.github.avatarhurden.daybyday.models.JournalEntry;
+import io.github.avatarhurden.daybyday.models.MonthEntry;
+import io.github.avatarhurden.daybyday.models.Tag;
+import io.github.avatarhurden.daybyday.models.VisibleListItems;
 
 import java.io.IOException;
 import java.util.Arrays;

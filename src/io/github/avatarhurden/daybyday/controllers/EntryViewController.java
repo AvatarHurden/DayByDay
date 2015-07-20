@@ -1,8 +1,8 @@
-package io.github.avatarhurden.dayonewindows.controllers;
+package io.github.avatarhurden.daybyday.controllers;
 
-import io.github.avatarhurden.dayonewindows.components.TagEditor;
-import io.github.avatarhurden.dayonewindows.managers.Config;
-import io.github.avatarhurden.dayonewindows.models.JournalEntry;
+import io.github.avatarhurden.daybyday.components.TagEditor;
+import io.github.avatarhurden.daybyday.managers.Config;
+import io.github.avatarhurden.daybyday.models.JournalEntry;
 
 import java.awt.Desktop;
 import java.awt.Toolkit;

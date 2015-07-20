@@ -1,7 +1,7 @@
-package io.github.avatarhurden.dayonewindows.models;
+package io.github.avatarhurden.daybyday.models;
 
-import io.github.avatarhurden.dayonewindows.managers.Config;
-import io.github.avatarhurden.dayonewindows.managers.DirectoryWatcher;
+import io.github.avatarhurden.daybyday.managers.Config;
+import io.github.avatarhurden.daybyday.managers.DirectoryWatcher;
 
 import java.io.File;
 import java.io.IOException;

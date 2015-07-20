@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane fx:id="root" prefHeight="427.0" prefWidth="294.0" stylesheets="@../style/SearchTooltip.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.avatarhurden.dayonewindows.controllers.SearchTooltipController">
+<AnchorPane fx:id="root" prefHeight="427.0" prefWidth="294.0" stylesheets="@../style/SearchTooltip.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.avatarhurden.daybyday.controllers.SearchTooltipController">
    <children>
       <VBox alignment="TOP_CENTER" prefHeight="418.0" prefWidth="294.0" AnchorPane.bottomAnchor="-43.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>

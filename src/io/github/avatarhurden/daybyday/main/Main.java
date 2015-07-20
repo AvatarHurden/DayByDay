@@ -1,9 +1,9 @@
-package io.github.avatarhurden.dayonewindows.main;
+package io.github.avatarhurden.daybyday.main;
 
-import io.github.avatarhurden.dayonewindows.components.DayOneTray;
-import io.github.avatarhurden.dayonewindows.controllers.MainWindowController;
-import io.github.avatarhurden.dayonewindows.managers.Config;
-import io.github.avatarhurden.dayonewindows.models.Journal;
+import io.github.avatarhurden.daybyday.components.DayOneTray;
+import io.github.avatarhurden.daybyday.controllers.MainWindowController;
+import io.github.avatarhurden.daybyday.managers.Config;
+import io.github.avatarhurden.daybyday.models.Journal;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,19 +38,19 @@ public class Main extends Application {
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		this.primaryStage = primaryStage;
+
+		setPosition(primaryStage);
 		
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainWindow.fxml"));
 		
 		NotificationPane pane = new NotificationPane(loader.load());
 		Scene scene = new Scene(pane);
 		
-		primaryStage.setTitle("LifeOrganizer");
+		primaryStage.setTitle("Day by Day");
 		primaryStage.setScene(scene);
 		primaryStage.show();
-
-		primaryStage.getIcons().add(new Image(("images/Line.png")));
 		
-		setPosition(primaryStage);
+		primaryStage.getIcons().add(new Image(("images/Line.png")));
 		
 		if (!Journal.isInitiliazed()) {
 			
