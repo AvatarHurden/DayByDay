@@ -83,7 +83,6 @@ public class ListEntryViewController<V> {
 	@FXML private ComboBox<MonthEntry> monthCombo;
 	private ChangeListener<MonthEntry> monthListener;
 	
-//	@FXML private Label monthLabel;
 	@FXML private SVGPath orderButton;
 	
 		// Filter Pane
@@ -142,7 +141,7 @@ public class ListEntryViewController<V> {
 		monthsMap.addListener((MapChangeListener.Change<? extends MonthEntry,? extends Set<JournalEntry>> event) -> {
 			MonthEntry key = event.getKey();
 			MonthEntry old = earliestMonth.getValue();
-			monthCombo.setItems(FXCollections.observableArrayList(monthsMap.keySet().stream().sorted(sortedItems.getComparator()).collect(Collectors.toList())));
+			monthCombo.getItems().setAll(monthsMap.keySet().stream().sorted(sortedItems.getComparator()).collect(Collectors.toList()));
 			
 			if (monthsMap.containsKey(key)) {
 				if (old == null || sortedItems.getComparator().compare(key, old) < 0) {
@@ -404,7 +403,7 @@ public class ListEntryViewController<V> {
 		if (!Config.get().getBoolean("enable_animations")) {
 	    	monthPane.setManaged(!expand);
 			filterBox.setPrefWidth(width);
-			monthCombo.setOpacity(opacity);
+			monthPane.setOpacity(opacity);
 			
 			if (expand)
 				filterBox.showPopup(50);
@@ -415,7 +414,7 @@ public class ListEntryViewController<V> {
 			Timeline timeline = new Timeline();
 			timeline.getKeyFrames().add(new KeyFrame(new Duration(200), 
 				new KeyValue(filterBox.prefWidthProperty(), width),
-				new KeyValue(monthCombo.opacityProperty(), opacity)
+				new KeyValue(monthPane.opacityProperty(), opacity)
 			));
 
 			timeline.setOnFinished(event -> {

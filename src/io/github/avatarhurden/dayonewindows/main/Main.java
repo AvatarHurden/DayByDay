@@ -22,6 +22,10 @@ import org.controlsfx.control.NotificationPane;
 
 public class Main extends Application {
 
+	private static final double version = 0.1;
+	private static final String versionName = "0.1";
+	private static final String changelogURL = "https://raw.githubusercontent.com/AvatarHurden/DaybyDay/master/changelog";
+
 	private Stage primaryStage;
 	MainWindowController controller;
 	
@@ -35,10 +39,6 @@ public class Main extends Application {
 	public void start(Stage primaryStage) throws Exception {
 		this.primaryStage = primaryStage;
 		
-		Journal entryManager = new Journal(Config.get().getProperty("data_folder"));
-		entryManager.loadAndWatch();
-		entryManager.setKeepEmptyEntry(true);
-
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainWindow.fxml"));
 		
 		NotificationPane pane = new NotificationPane(loader.load());
@@ -52,6 +52,14 @@ public class Main extends Application {
 		
 		setPosition(primaryStage);
 		
+		if (!Journal.isInitiliazed()) {
+			
+		}
+		
+		Journal entryManager = new Journal(Config.get().getProperty("data_folder"));
+		entryManager.loadAndWatch();
+		entryManager.setKeepEmptyEntry(true);
+
 		controller = loader.<MainWindowController>getController();
 		controller.setJournal(entryManager);
 		
@@ -59,11 +67,20 @@ public class Main extends Application {
 		
 		primaryStage.setOnCloseRequest(event -> exit());
 		
+		startUpdater(pane);
+		
 //		trayIcon = new DayOneTray(primaryStage);
 //		SystemTray.getSystemTray().add(trayIcon.getTrayIcon());
 //		trayIcon.setExitAction(this::exit);
 		
 //		Platform.setImplicitExit(false);
+	}
+	
+	private void startUpdater(NotificationPane pane) {
+		new Thread(() -> {
+			Updater up = new Updater(version, versionName, changelogURL, pane);
+			up.start();
+		}).start();
 	}
 	
 	private void savePosition(Window window) {

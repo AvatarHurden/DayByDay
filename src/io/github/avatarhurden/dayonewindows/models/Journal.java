@@ -291,6 +291,7 @@ public class Journal {
 	private void readFile(Path path, WatchEvent.Kind<?> kind) {
 		String id = path.getFileName().toString().replace(".doentry", "");
 		JournalEntry entry = getEntry(id);
+		System.out.println("detected file " + path);
 		
 		Platform.runLater(() -> {
 			if (kind == StandardWatchEventKinds.ENTRY_CREATE)
