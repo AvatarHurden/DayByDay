@@ -140,7 +140,6 @@ public class MainWindowController {
 	}
 	
 	public void loadState() {
-		entryListViewController.loadState();
 		
 		String startScreen = Config.get().getProperty("start_screen", "Open New Entry View");
 		
@@ -158,5 +157,6 @@ public class MainWindowController {
 			break;
 		}
     	
+		entryListViewController.loadState();
 	}
 }

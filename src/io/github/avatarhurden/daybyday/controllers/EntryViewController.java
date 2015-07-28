@@ -474,7 +474,9 @@ public class EntryViewController {
 		textArea.textProperty().addListener((obs, oldValue, newValue) -> {
 			String[] lines = newValue.split("\n");
 			if (Config.get().getBoolean("bold_titles", true) 
-					&& lines[0].length() > 0 && lines[0].length() <= 140 && Character.isAlphabetic(lines[0].charAt(0)))
+					&& lines.length > 0
+					&& lines[0].length() > 0 && lines[0].length() <= 140 
+					&& Character.isAlphabetic(lines[0].charAt(0)))
 				lines[0] = "<h3>" + lines[0] + "</h3>";
 			
 			if (Config.get().getBoolean("markdown", true)) {

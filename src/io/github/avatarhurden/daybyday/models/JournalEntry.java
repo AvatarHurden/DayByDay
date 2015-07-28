@@ -279,6 +279,11 @@ public class JournalEntry implements Entry {
 		return getCreationDate().compareTo(o.getCreationDate());
 	}
 	
+	@Override
+	public boolean equals(Object o) {
+		return o instanceof JournalEntry && ((JournalEntry) o).getUUID().equals(getUUID());
+	}
+	
 	// Properties
 	
 	private Property<String> entryTextProperty;

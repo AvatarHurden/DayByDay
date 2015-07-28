@@ -55,9 +55,9 @@ public class DropdownPane extends AnchorPane {
 		this.dropdown = dropdown;
 		this.direction = direction;
 		setAnchorConsumers();
-		
-		createListeners();
+
 		createScreenShotComponents();
+		createListeners();
 		
 		getChildren().addAll(parent, dropdown);
 		
@@ -192,7 +192,7 @@ public class DropdownPane extends AnchorPane {
 			shown.setValue(value);
 		else {
 			Timeline timeline = new Timeline();
-			timeline.getKeyFrames().add(new KeyFrame(new Duration(100),	
+			timeline.getKeyFrames().add(new KeyFrame(new Duration(200),	
     				new KeyValue(parentImageView.opacityProperty(), value),
     				new KeyValue(shown, value)));
 			timeline.play();

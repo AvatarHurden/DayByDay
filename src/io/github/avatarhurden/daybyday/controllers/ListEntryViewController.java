@@ -59,8 +59,7 @@ import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Font;
 import javafx.util.Duration;
 
-
-public class ListEntryViewController<V> {
+public class ListEntryViewController {
 
 	@FXML private AnchorPane root;
 	
@@ -198,8 +197,6 @@ public class ListEntryViewController<V> {
     		} else if (event.getCode() == KeyCode.BACK_SPACE || event.getCode() == KeyCode.ESCAPE)
 				showList(true);
     	});
-    	
-    	ascendingOrder = new SimpleBooleanProperty(true);
 
     	visibleItems = new VisibleListItems<Entry>((e1, e2) -> e2.compareTo(e1));
     	visibleItems.maxHeightProperty().bind(listView.heightProperty());
@@ -234,9 +231,9 @@ public class ListEntryViewController<V> {
     	sortedItems = new SortedList<>(items);
 		// Compares opposite so that later entries are on top
     	descendingComparator = (e1, e2) -> {
-    		if (e1.isEmpty())
+    		if (e1 == null || e1.isEmpty())
     			return -1;
-    		else if (e2.isEmpty())
+    		else if (e2 == null || e2.isEmpty())
     			return 1;
     		else if (e1 instanceof JournalEntry && e2 instanceof JournalEntry)
 				return e2.compareTo(e1);
@@ -285,9 +282,9 @@ public class ListEntryViewController<V> {
 		changeListener = (ListChangeListener.Change<? extends Entry> event) -> {
 			while (event.next()) {
 				for (Entry t : event.getRemoved())
-					this.items.remove(t);
-				for (Entry t : event.getAddedSubList())
-					this.items.add(t);
+					Platform.runLater(() -> this.items.remove(t));
+				for (Entry t : event.getAddedSubList()) 
+					Platform.runLater(() -> this.items.add(t));
 			}
 		};
 		
@@ -308,15 +305,14 @@ public class ListEntryViewController<V> {
     	nextButton.setOnMouseClicked(event -> listView.getSelectionModel().selectNext());
     	
     	orderButton.strokeProperty().bind(Bindings.when(orderButton.hoverProperty()).then(Color.BLUE).otherwise(Color.TRANSPARENT));
-    	orderButton.setOnMouseClicked(event -> {
-    		boolean ascending = orderButton.getRotate() == 180;
-    		orderButton.setRotate(ascending ? 0 : 180);
-    		setDisplayOrder(!ascending);
-    	});
+    	orderButton.setOnMouseClicked(event -> ascendingOrder.setValue(!ascendingOrder.get()));
+
+    	ascendingOrder = new SimpleBooleanProperty(false);
+    	ascendingOrder.addListener((obs, oldValue, newValue) -> setDisplayOrder(newValue));
 	}
 	
 	private void setDisplayOrder(boolean ascending) {
-		ascendingOrder.setValue(ascending);
+		orderButton.setRotate(ascending ? 180 : 0);
 		if (ascending) {
 			sortedItems.setComparator(ascendingComparator);
 			visibleItems.clear();
@@ -457,7 +453,7 @@ public class ListEntryViewController<V> {
 		for (Entry t : this.items)
 			removeMonth(new MonthEntry(t.getCreationDate()), (JournalEntry) t);
 		
-		this.items.setAll(items);
+		Platform.runLater(() -> this.items.setAll(items));
 //		listView.scrollTo(listView.getItems().size() - 1);
 		source = items;
 	}
@@ -473,7 +469,7 @@ public class ListEntryViewController<V> {
 		else
 			transitionTo(listViewPane);
 		
-		listView.requestFocus();
+		Platform.runLater(() -> listView.requestFocus());
 	}
 	
 	private void showSingle() {
@@ -483,10 +479,12 @@ public class ListEntryViewController<V> {
 	
 	public void saveState() {
 		Config.get().setProperty("list_view_wide_divider", String.valueOf(splitView.getDividerPositions()[0]));
+		Config.get().setProperty("list_view_ascending", String.valueOf(ascendingOrder.get()));
 	}
 	
 	public void loadState() {
 		splitView.setDividerPosition(0, Config.get().getDouble("list_view_wide_divider", 0.5));
+		ascendingOrder.setValue(Config.get().getBoolean("list_view_ascending", false));
 	}
 	
 	private class EntryCell extends ListCell<Entry> {
@@ -554,12 +552,11 @@ public class ListEntryViewController<V> {
 					controller.setContent((JournalEntry) item);
 					
 					int index = listView.getItems().indexOf(item);
-					int previousIndex = ascendingOrder.get() ? index - 1 : index + 1;
 					int min = ascendingOrder.get() ? 1 : listView.getItems().size() - 1;
 					if (index == min)
 						controller.setDateEnabled(true);
 					else {
-						Entry previous = listView.getItems().get(previousIndex);
+						Entry previous = listView.getItems().get(index - 1);
 						if (previous instanceof MonthEntry || previous.isEmpty()) 
 							// First item, and items after monthEntries, must always have the date
 							controller.setDateEnabled(true);

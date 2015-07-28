@@ -1,6 +1,7 @@
 package io.github.avatarhurden.daybyday.main;
 
 import io.github.avatarhurden.daybyday.components.DayOneTray;
+import io.github.avatarhurden.daybyday.components.DropdownPane;
 import io.github.avatarhurden.daybyday.controllers.MainWindowController;
 import io.github.avatarhurden.daybyday.managers.Config;
 import io.github.avatarhurden.daybyday.models.Journal;
@@ -14,6 +15,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
+import javafx.scene.layout.Pane;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -53,27 +55,54 @@ public class Main extends Application {
 		primaryStage.getIcons().add(new Image(("images/Line.png")));
 		
 		if (!Journal.isInitiliazed()) {
-			
+			Pane node = showSplash(loader.getRoot());
+			scene.setRoot(node);
 		}
 		
-		Journal entryManager = new Journal(Config.get().getProperty("data_folder"));
-		entryManager.loadAndWatch();
-		entryManager.setKeepEmptyEntry(true);
+		new Thread(() -> {
+			controller = loader.<MainWindowController>getController();
+			Platform.runLater(() -> controller.loadState());
+			
+			Journal journal = new Journal(Config.get().getProperty("data_folder"));
+			controller.setJournal(journal);
+			Platform.runLater(() -> { 
+				journal.loadAndWatch();
+			});
+			journal.setKeepEmptyEntry(true);
 
-		controller = loader.<MainWindowController>getController();
-		controller.setJournal(entryManager);
-		
-		controller.loadState();
-		
-		primaryStage.setOnCloseRequest(event -> exit());
-		
-		startUpdater(pane);
+			
+			primaryStage.setOnCloseRequest(event -> exit());
+			
+			startUpdater(pane);
+		}).start();
 		
 //		trayIcon = new DayOneTray(primaryStage);
 //		SystemTray.getSystemTray().add(trayIcon.getTrayIcon());
 //		trayIcon.setExitAction(this::exit);
 		
 //		Platform.setImplicitExit(false);
+	}
+	
+	private Pane showSplash(Pane parent) {
+		
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/SplashPage.fxml"));
+		try {
+			loader.load();
+		} catch (Exception e) {
+			return parent;
+		}
+		
+		DropdownPane pane = new DropdownPane(parent, loader.getRoot());
+		pane.setSpacing(25);
+		new Thread(() -> {
+			try {
+				Thread.sleep(2000);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			Platform.runLater(() -> pane.show(true));
+		}).start();
+		return pane;
 	}
 	
 	private void startUpdater(NotificationPane pane) {

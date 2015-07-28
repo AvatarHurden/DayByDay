@@ -1,2 +1,2 @@
-# DayOneWindows
-A Day One app for Windows
+# DayByDay
+A journaling program.

@@ -62,7 +62,9 @@ public class EntryCellController {
 			String[] lines = newValue.split("\n");
 			String body;
 			if (Config.get().getBoolean("bold_titles", true) 
-					&& lines[0].length() > 0 && lines[0].length() <= 140 && Character.isAlphabetic(lines[0].charAt(0))) {
+					&& lines.length > 0
+					&& lines[0].length() > 0 && lines[0].length() <= 140 
+					&& Character.isAlphabetic(lines[0].charAt(0))) {
 				titleLabel.setManaged(true);
 				titleLabel.setText(lines[0]);
 				
