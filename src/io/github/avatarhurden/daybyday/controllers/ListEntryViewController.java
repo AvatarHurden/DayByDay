@@ -204,8 +204,9 @@ public class ListEntryViewController {
     		if (visibleItems.getList().isEmpty())
     			return;
     		
+    		Entry first = visibleItems.get(0);
     		for (java.util.Map.Entry<MonthEntry, Set<JournalEntry>> entry : monthsMap.entrySet())
-    			if (entry.getValue().contains(visibleItems.get(0))) {
+    			if (entry.getValue().contains(first) || entry.getKey() == first) {
     				monthCombo.valueProperty().removeListener(monthListener);
     				monthCombo.setValue(entry.getKey());
     				monthCombo.valueProperty().addListener(monthListener);
@@ -453,7 +454,7 @@ public class ListEntryViewController {
 		for (Entry t : this.items)
 			removeMonth(new MonthEntry(t.getCreationDate()), (JournalEntry) t);
 		
-		Platform.runLater(() -> this.items.setAll(items));
+		this.items.setAll(items);
 //		listView.scrollTo(listView.getItems().size() - 1);
 		source = items;
 	}
@@ -512,12 +513,12 @@ public class ListEntryViewController {
 		
 		@Override public void updateItem(Entry item, boolean empty) {
 	        super.updateItem(item, empty);
+    		setPrefHeight(90);
 	        if (empty) {
 	            setText(null);
 	            setGraphic(null);
 	        } else {
 		        isEmpty = item.isEmpty();
-        		setPrefHeight(90);
 	        	
         		visibleItems.add(item, 90);
 	        	
@@ -553,7 +554,7 @@ public class ListEntryViewController {
 					
 					int index = listView.getItems().indexOf(item);
 					int min = ascendingOrder.get() ? 1 : listView.getItems().size() - 1;
-					if (index == min)
+					if (index <= min)
 						controller.setDateEnabled(true);
 					else {
 						Entry previous = listView.getItems().get(index - 1);

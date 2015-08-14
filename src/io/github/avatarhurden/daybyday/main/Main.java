@@ -3,6 +3,7 @@ package io.github.avatarhurden.daybyday.main;
 import io.github.avatarhurden.daybyday.components.DayOneTray;
 import io.github.avatarhurden.daybyday.components.DropdownPane;
 import io.github.avatarhurden.daybyday.controllers.MainWindowController;
+import io.github.avatarhurden.daybyday.controllers.SplashPageController;
 import io.github.avatarhurden.daybyday.managers.Config;
 import io.github.avatarhurden.daybyday.models.Journal;
 
@@ -50,31 +51,23 @@ public class Main extends Application {
 		
 		primaryStage.setTitle("Day by Day");
 		primaryStage.setScene(scene);
-		primaryStage.show();
 		
 		primaryStage.getIcons().add(new Image(("images/Line.png")));
+
+		controller = loader.<MainWindowController>getController();
 		
 		if (!Journal.isInitiliazed()) {
 			Pane node = showSplash(loader.getRoot());
 			scene.setRoot(node);
+		} else {
+			loadJournal();
 		}
 		
-		new Thread(() -> {
-			controller = loader.<MainWindowController>getController();
-			Platform.runLater(() -> controller.loadState());
-			
-			Journal journal = new Journal(Config.get().getProperty("data_folder"));
-			controller.setJournal(journal);
-			Platform.runLater(() -> { 
-				journal.loadAndWatch();
-			});
-			journal.setKeepEmptyEntry(true);
+		primaryStage.setOnCloseRequest(event -> exit());
+		
+		primaryStage.show();
 
-			
-			primaryStage.setOnCloseRequest(event -> exit());
-			
-			startUpdater(pane);
-		}).start();
+		startUpdater(pane);
 		
 //		trayIcon = new DayOneTray(primaryStage);
 //		SystemTray.getSystemTray().add(trayIcon.getTrayIcon());
@@ -89,20 +82,30 @@ public class Main extends Application {
 		try {
 			loader.load();
 		} catch (Exception e) {
+			e.printStackTrace();
 			return parent;
 		}
 		
+		
 		DropdownPane pane = new DropdownPane(parent, loader.getRoot());
 		pane.setSpacing(25);
-		new Thread(() -> {
-			try {
-				Thread.sleep(2000);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			Platform.runLater(() -> pane.show(true));
-		}).start();
+		pane.show(true);
+		
+		loader.<SplashPageController>getController().setOnClose(() -> { 
+			loadJournal();
+			pane.hide(true);
+		});
+		
 		return pane;
+	}
+	
+	private void loadJournal() {
+		Journal journal = new Journal(Config.get().getProperty("data_folder"));
+		controller.setJournal(journal);
+		journal.loadAndWatch();
+		journal.setKeepEmptyEntry(true);
+
+		controller.loadState();
 	}
 	
 	private void startUpdater(NotificationPane pane) {

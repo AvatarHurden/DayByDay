@@ -26,7 +26,7 @@
                <center>
                   <TextFlow fx:id="textBox" styleClass="clickable">
                      <children>
-                        <Text fx:id="textLabel" strokeType="OUTSIDE" strokeWidth="0.0" text="Search for entires with &quot;" />
+                        <Text fx:id="textLabel" strokeType="OUTSIDE" strokeWidth="0.0" text="Search for entries with &quot;" />
                         <Text fx:id="textSearchLabel" strokeType="OUTSIDE" strokeWidth="0.0" text="Text to search" />
                         <Text strokeType="OUTSIDE" strokeWidth="0.0" text="&quot;" />
                      </children>

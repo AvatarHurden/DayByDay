@@ -52,7 +52,7 @@ public class JournalEntry implements Entry {
 			creatorDict.put("Host Name", "PC");
 		}
 	    creatorDict.put("OS Agent", System.getProperty("os.name"));
-	    creatorDict.put("Software Agent", "LifeOrganizer");
+	    creatorDict.put("Software Agent", "Day by Day");
 	    dict.put("Creator", creatorDict);
 	    
 	    dict.put("Time Zone", System.getProperty("user.timezone"));
