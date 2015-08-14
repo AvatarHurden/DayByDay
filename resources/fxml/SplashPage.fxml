@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.image.*?>
+<?import javafx.scene.text.*?>
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+
+<AnchorPane fx:id="root" prefHeight="428.0" prefWidth="475.0" style="-fx-background-color: white; -fx-border-radius: 10; -fx-border-color: lightblue; -fx-background-radius: 10;" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.avatarhurden.daybyday.controllers.SplashPageController">
+   <children>
+      <TextField fx:id="folderField" layoutX="56.0" layoutY="294.0" prefHeight="25.0" prefWidth="292.0" />
+      <Label layoutX="56.0" layoutY="259.0" text="Journal location">
+         <font>
+            <Font name="System Bold" size="16.0" />
+         </font>
+      </Label>
+      <Button layoutX="358.0" layoutY="294.0" mnemonicParsing="false" onAction="#changeFolder" text="Change" />
+      <ImageView fitHeight="201.0" fitWidth="191.0" layoutX="56.0" layoutY="34.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../images/Page-1-7.png" />
+         </image>
+      </ImageView>
+      <Label layoutX="281.0" layoutY="76.0" prefHeight="108.0" text="Day by Day">
+         <font>
+            <Font name="System Bold" size="25.0" />
+         </font>
+      </Label>
+      <Button layoutX="207.0" layoutY="354.0" mnemonicParsing="false" onAction="#accept" text="Start">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Button>
+   </children>
+</AnchorPane>
